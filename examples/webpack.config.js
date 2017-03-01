@@ -1,16 +1,16 @@
 module.exports = {
-  entry: './example.jsx',
+  entry: "./example.jsx",
   output: {
-    path: 'static',
-    filename: 'bundle.js'
+    path: "static",
+    filename: "bundle.js"
   },
   module: {
     loaders: [
       {
         test: /\.jsx$/,
-        loader: 'babel-loader',
+        loader: "babel-loader",
         query: {
-          'presets': ['es2015', 'react']
+          "presets": ["es2015", "react"]
         }
       }
     ]
