@@ -73,13 +73,14 @@ class ExampleApp extends React.Component {
     super(props)
     this.state = {
       data: [
-        {weight: 4, title: "Scala", color: "#44aa77"},
-        {weight: 4, title: "Go", color: "#00417A"},
-        {weight: 5, title: "PHP", color: "#4A427F"},
-        {weight: 10, title: "C", color: "#FFB03B"},
-        {weight: 15, title: "Python", color: "#B64926"},
-        {weight: 12, title: "Java", color: "#0E1C0C"},
-        {weight: 40, title: "Javascript", color: "#8E2800"},
+        {weight: 1373, title: "China", color: "#4cab92"},
+        {weight: 1266, title: "India", color: "#ca0004"},
+        {weight: 323, title: "United States", color: "#003953"},
+        {weight: 258, title: "Indonesia", color: "#eccc00"},
+        {weight: 205, title: "Brazil", color: "#9dbd5f"},
+        {weight: 201, title: "Pakistan", color: "#0097bf"},
+        {weight: 186, title: "Nigeria", color: "#005c7a"},
+        {weight: 156, title: "Bangladesh", color: "#fc6000"},
       ]
     }
   }
