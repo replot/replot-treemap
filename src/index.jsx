@@ -1,3 +1,3 @@
-import TreeMap from "./TreeMap.jsx";
+import TreeMap from "./TreeMap.jsx"
 
-export default TreeMap;
+export default TreeMap
