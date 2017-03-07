@@ -1,5 +1,6 @@
 import React from "react"
 import Squarify from "./Squarify.js"
+import isLight from "./isLight.js"
 import {spring, Motion} from "react-motion"
 
 
@@ -7,32 +8,40 @@ class TreeRects extends React.Component {
 
   render() {
     return(
-      <g>
-        <Motion
-          defaultStyle={{
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0,
-          }}
-          style={{
-            x: spring(this.props.x),
-            y: spring(this.props.y),
-            width: spring(this.props.width),
-            height: spring(this.props.height),
-          }}
-        >
-          {
-            interpolatingStyles =>
+      <Motion
+        defaultStyle={{
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+        }}
+        style={{
+          x: spring(this.props.x),
+          y: spring(this.props.y),
+          width: spring(this.props.width),
+          height: spring(this.props.height),
+        }}
+      >
+        {
+          interpolatingStyles =>
+            <g>
               <rect
                 x={interpolatingStyles.x}
                 y={interpolatingStyles.y}
                 width={interpolatingStyles.width}
                 height={interpolatingStyles.height}
                 fill={this.props.fill} />
-          }
-        </Motion>
-      </g>
+              <text
+                x={interpolatingStyles.x + (interpolatingStyles.width / 2)}
+                y={interpolatingStyles.y + (interpolatingStyles.height / 2)}
+                textAnchor="middle"
+                fill={isLight(this.props.fill) ? "#222" : "#eee"}
+                fontSize={interpolatingStyles.width/this.props.title.length}>
+                  {this.props.title}
+              </text>
+            </g>
+        }
+      </Motion>
     )
   }
 }
@@ -56,7 +65,7 @@ class TreeMap extends React.Component {
         rows.push(
           <TreeRects key={row.index} x={row.origin.x} y= {row.origin.y}
             width={row.dimensions.x} height={row.dimensions.y}
-            fill={datum[this.props.colorKey]}
+            fill={datum[this.props.colorKey]} title={datum[this.props.titleKey]}
           />
         )
       }
@@ -74,7 +83,7 @@ class TreeMap extends React.Component {
 
 TreeMap.defaultProps = {
   width: 800,
-  height: 550,
+  height: 400,
   titleKey: "title",
   weightKey: "weight",
   colorKey: "color",

@@ -35,7 +35,6 @@ class KeyValueRow extends React.Component {
 class KeyValueTable extends React.Component {
 
   render() {
-    console.log(this.props.data)
     const style = {
       container: {
         width:"30%",
@@ -86,7 +85,6 @@ class ExampleApp extends React.Component {
   }
 
   updateData(mutatedObject) {
-    console.log(mutatedObject)
     let mutatedData = JSON.parse(JSON.stringify(this.state.data))
     let chosenIndex = -1
     for (let index=0; index < mutatedData.length; index++) {
@@ -96,9 +94,7 @@ class ExampleApp extends React.Component {
       }
     }
     if (chosenIndex > -1) {
-      console.log(chosenIndex)
       mutatedData[chosenIndex].weight = parseInt(mutatedObject.weight)
-      console.log(mutatedData)
       this.setState({data: mutatedData})
     }
   }
