@@ -6,54 +6,66 @@ class Squarify {
     this.data = data
     this.totalHeight = options.height
     this.totalWidth = options.width
-    this.remainingX = options.width
-    this.remainingY = options.height
     this.weightKey = options.weightKey
+    this.titleKey = options.titleKey
+    this.colorKey = options.colorKey
+    // Computed properties
+    this.remainingX = this.totalWidth
+    this.remainingY = this.totalHeight
+    this.totalArea = this.totalWidth * this.totalHeight
     this.rows = []
+    this.maxTitleLength = 0
     this.totalWeight = 0.0
     for (let member of this.data) {
       this.totalWeight += member[this.weightKey]
+      let titleLength = member[this.titleKey].length
+      if (titleLength > this.maxTitleLength) {
+        this.maxTitleLength = titleLength
+      }
     }
     this.data.sort((a, b) => a[this.weightKey] - b[this.weightKey])
   }
 
-  worstRatio(rowData, rowWidth) {
+  squareness(rowData, fixedSide) {
     if (!rowData || rowData.length <= 0) {
       return 0
     }
 
-    let rowMin = Math.max(this.totalWidth, this.totalHeight) + 1
-    let rowMax = -1
-    let rowSum = 0
+    let areaScale = this.totalArea/this.totalWeight
+
+    let rectMinArea = this.totalArea + 1
+    let rectMaxArea = -1
+    let rowArea = 0
 
     for (let member of rowData) {
-      rowSum += member[this.weightKey]
-      if (member[this.weightKey] < rowMin) {
-        rowMin = member[this.weightKey]
+      rowArea += areaScale*member[this.weightKey]
+      if (areaScale*member[this.weightKey] < rectMinArea) {
+        rectMinArea = areaScale*member[this.weightKey]
       }
-      if (member[this.weightKey] > rowMax) {
-        rowMax = member[this.weightKey]
+      if (areaScale*member[this.weightKey] > rectMaxArea) {
+        rectMaxArea = areaScale*member[this.weightKey]
       }
     }
 
-    const squareWidth = rowWidth*rowWidth
-    const squareSum = rowSum*rowSum
-    let ratio = Math.max(
-      squareWidth*rowMax/squareSum,
-      squareSum/(squareWidth*rowMin)
-    )
-    return ratio
+    let floatingSide = (rowArea / fixedSide)
+
+    let maxRatio = rectMaxArea/(floatingSide*floatingSide)
+    let minRatio = rectMinArea/(floatingSide*floatingSide)
+    let maxDistance = (maxRatio < 1) ? 1/(1 - maxRatio) : 1/(1 - (1 / maxRatio))
+    let minDistance = (minRatio < 1) ? 1/(1 - minRatio) : 1/(1 - (1 / minRatio))
+
+    return Math.min(minDistance, maxDistance)
   }
 
   freezeRow(row) {
-    row[this.weightKey] = 0
+    row.weight = 0
 
     for (let member of row.data) {
-      row[this.weightKey] += member[this.weightKey]
+      row.weight += member[this.weightKey]
     }
 
     // Convert weight to area
-    row.area = this.totalWidth*this.totalHeight*row[this.weightKey]/this.totalWeight
+    row.area = this.totalArea*row.weight/this.totalWeight
 
     if (row.type == "vertical") {
       row.dimensions.y = row.width
@@ -64,6 +76,36 @@ class Squarify {
       row.dimensions.y = row.area / row.dimensions.x
       this.remainingY = this.remainingY - row.dimensions.y
     }
+
+    let prev = {
+      origin: row.origin,
+      dimensions: {x: 0, y: 0},
+    }
+
+    row.data = row.data.map( (member, index) => {
+      let rect = {
+        index: `${row.index}_${index}`,
+        origin: {},
+        dimensions: {},
+        weight: member[this.weightKey],
+        color: member[this.colorKey],
+        title: member[this.titleKey],
+      }
+
+      if (row.type == "vertical") {
+        rect.origin.x = prev.origin.x
+        rect.origin.y = prev.origin.y + prev.dimensions.y
+        rect.dimensions.x = row.dimensions.x
+        rect.dimensions.y = (rect.weight/row.weight)*row.dimensions.y
+      } else {
+        rect.origin.x = prev.origin.x + prev.dimensions.x
+        rect.origin.y = prev.origin.y
+        rect.dimensions.x = (rect.weight/row.weight)*row.dimensions.x
+        rect.dimensions.y = row.dimensions.y
+      }
+      prev = rect
+      return rect
+    })
 
     this.rows.push(row)
 
@@ -114,11 +156,13 @@ class Squarify {
 
     let modifiedData = row.data.concat(this.data[this.data.length - 1])
 
-    if (this.worstRatio(row.data, row.width) <= this.worstRatio(modifiedData, row.width)) {
+    if (this.squareness(row.data, row.width) <= this.squareness(modifiedData, row.width)) {
+      console.log("extending row")
       this.data.pop()
       row.data = modifiedData
       this.squarify(row)
     } else {
+      console.log("freezing row")
       let frozenRow = this.freezeRow(row)
       let newRow = this.createRow(frozenRow)
       this.squarify(newRow)

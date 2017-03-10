@@ -16,10 +16,10 @@ class TreeRects extends React.Component {
           height: 0,
         }}
         style={{
-          x: spring(this.props.x),
-          y: spring(this.props.y),
-          width: spring(this.props.width),
-          height: spring(this.props.height),
+          x: spring(this.props.x, {stiffness: 120, damping: 26}),
+          y: spring(this.props.y, {stiffness: 120, damping: 26}),
+          width: spring(this.props.width, {stiffness: 100, damping: 26}),
+          height: spring(this.props.height, {stiffness: 100, damping: 26}),
         }}
       >
         {
@@ -36,7 +36,7 @@ class TreeRects extends React.Component {
                 y={interpolatingStyles.y + (interpolatingStyles.height / 2)}
                 textAnchor="middle"
                 fill={isLight(this.props.fill) ? "#222" : "#eee"}
-                fontSize={interpolatingStyles.width/this.props.title.length}>
+                fontSize={interpolatingStyles.width/this.props.maxTitleLength}>
                   {this.props.title}
               </text>
             </g>
@@ -55,17 +55,21 @@ class TreeMap extends React.Component {
       {
         width: this.props.width,
         height: this.props.height,
-        weightKey: this.props.weightKey
+        weightKey: this.props.weightKey,
+        titleKey: this.props.titleKey,
+        colorKey: this.props.colorKey,
       }
     )
     s.layout()
+    console.log(s)
     let rows = []
     for (let row of s.rows) {
       for (let datum of row.data) {
         rows.push(
-          <TreeRects key={row.index} x={row.origin.x} y= {row.origin.y}
-            width={row.dimensions.x} height={row.dimensions.y}
+          <TreeRects key={datum.index} x={datum.origin.x} y= {datum.origin.y}
+            width={datum.dimensions.x} height={datum.dimensions.y}
             fill={datum[this.props.colorKey]} title={datum[this.props.titleKey]}
+            maxTitleLength={s.maxTitleLength}
           />
         )
       }
