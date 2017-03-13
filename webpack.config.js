@@ -1,26 +1,26 @@
-const webpack = require('webpack')
+const webpack = require("webpack")
 
 module.exports = {
 
   output: {
-    library: 'TreeMap',
-    libraryTarget: 'umd'
+    library: "TreeMap",
+    libraryTarget: "umd"
   },
 
   externals: [
     {
       react: {
-        root: 'React',
-        commonjs2: 'react',
-        commonjs: 'react',
-        amd: 'react'
+        root: "React",
+        commonjs2: "react",
+        commonjs: "react",
+        amd: "react"
       }
     }
   ],
 
   module: {
     loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel' }
+      { test: /\.js$/, exclude: /node_modules/, loader: "babel" }
     ]
   },
 
@@ -31,7 +31,7 @@ module.exports = {
   plugins: [
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "development")
     })
   ]
 
