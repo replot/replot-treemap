@@ -23,6 +23,7 @@ class Squarify {
         this.maxTitleLength = titleLength
       }
     }
+    this.maxTitleLength = Math.min(this.maxTitleLength, 18)
     this.data.sort((a, b) => a[this.weightKey] - b[this.weightKey])
   }
 
