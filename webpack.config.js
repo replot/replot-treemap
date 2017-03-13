@@ -2,6 +2,8 @@ const webpack = require("webpack")
 
 module.exports = {
 
+  entry: "./src/index.jsx",
+
   output: {
     library: "TreeMap",
     libraryTarget: "umd"
@@ -20,7 +22,13 @@ module.exports = {
 
   module: {
     loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: "babel" }
+      {
+        test: /\.jsx$/,
+        loader: "babel-loader",
+        query: {
+          "presets": ["es2015", "react"]
+        }
+      }
     ]
   },
 
@@ -28,11 +36,11 @@ module.exports = {
     Buffer: false
   },
 
-  plugins: [
-    new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "development")
-    })
-  ]
+  // plugins: [
+  //   new webpack.optimize.OccurenceOrderPlugin(),
+  //   new webpack.DefinePlugin({
+  //     "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "development")
+  //   })
+  // ]
 
 }
