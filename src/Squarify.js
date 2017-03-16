@@ -7,23 +7,15 @@ class Squarify {
     this.totalHeight = options.height
     this.totalWidth = options.width
     this.weightKey = options.weightKey
-    this.titleKey = options.titleKey
-    this.colorKey = options.colorKey
     // Computed properties
     this.remainingX = this.totalWidth
     this.remainingY = this.totalHeight
     this.totalArea = this.totalWidth * this.totalHeight
     this.rows = []
-    this.maxTitleLength = 0
     this.totalWeight = 0.0
     for (let member of this.data) {
       this.totalWeight += member[this.weightKey]
-      let titleLength = member[this.titleKey].length
-      if (titleLength > this.maxTitleLength) {
-        this.maxTitleLength = titleLength
-      }
     }
-    this.maxTitleLength = Math.min(this.maxTitleLength, 18)
     this.data.sort((a, b) => a[this.weightKey] - b[this.weightKey])
   }
 
@@ -89,8 +81,7 @@ class Squarify {
         origin: {},
         dimensions: {},
         weight: member[this.weightKey],
-        color: member[this.colorKey],
-        title: member[this.titleKey],
+        raw: member
       }
 
       if (row.type == "vertical") {
