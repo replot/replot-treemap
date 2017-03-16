@@ -7,6 +7,10 @@ import {spring, Motion} from "react-motion"
 class TreeRects extends React.Component {
 
   render() {
+    let percentage = null
+    if (this.props.displayPercentages) {
+      percentage = `${this.props.percentage}%`
+    }
     return(
       <Motion
         defaultStyle={{
@@ -38,6 +42,16 @@ class TreeRects extends React.Component {
                 fill={isLight(this.props.fill) ? this.props.textDark : this.props.textLight}
                 fontSize={this.props.textScale * interpolatingStyles.width/25}>
                   {this.props.title}
+              </text>
+              <text
+                x={interpolatingStyles.x + (interpolatingStyles.width / 2)}
+                y={interpolatingStyles.y + (interpolatingStyles.height / 2)
+                  + (1.25 * this.props.textScale * interpolatingStyles.width/25)}
+                textAnchor="middle"
+                fill={isLight(this.props.fill) ? this.props.textDark : this.props.textLight}
+                fillOpacity={0.75}
+                fontSize={0.5 * this.props.textScale * interpolatingStyles.width/25}>
+                  {percentage}
               </text>
             </g>
         }
@@ -88,6 +102,9 @@ class TreeMap extends React.Component {
             title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
             textLight={this.props.textLight} textScale={this.props.textScale}
+            percentage={datum.weightPercent}
+            displayPercentages={this.props.displayPercentages}
+            percentLight={this.props.percentLight} percentDark={this.props.percentDark}
           />
         )
       }
@@ -118,6 +135,7 @@ TreeMap.defaultProps = {
   textDark: "#222",
   textLight: "#eee",
   textScale: 3.5,
+  displayPercentages: true,
 }
 
 

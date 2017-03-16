@@ -81,6 +81,7 @@ class Squarify {
         origin: {},
         dimensions: {},
         weight: member[this.weightKey],
+        weightPercent: Number(100 * member[this.weightKey]/this.totalWeight).toFixed(1),
         raw: member
       }
 

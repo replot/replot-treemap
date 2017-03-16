@@ -57,7 +57,30 @@ methods. The colorFunction will receive two arguments, the object
 corresponding to that rectangle and the integer index of the rectangle.
 This enables more complex coloring rules to group data based on some
 feature of the data. In the example below, we change the color based
-on the length of the country's name.
+on the political party of the candidate.
+
+```javascript
+render() {
+  let primary_results = {
+    {candidate: "Barrack Obama", votes: 1236812, party: "Democrat"},
+    {candidate: "Hilary Clinton", votes: 693021, party: "Democrat"},
+    {candidate: "John Kerry", votes: 991315, party: "Republican"},
+  }
+
+  let colorFunction = (data, index) => {
+    if (data.party == 'Republican') {
+      return "#ee3333"
+    } else {
+      return "#3333ee"
+    }
+  }
+
+  return(
+    <TreeMap data={primary_results} titleKey="candidate"
+      weightKey="votes" colorFunction={colorFunction} />
+  )
+}
+```
 
 #### colorKey
 A `colorKey` prop may be specified. This will override the colorPalette method.
@@ -75,6 +98,21 @@ render() {
   return(
     <TreeMap data={populations} titleKey="country"
       weightKey="population" colorKey="color" />
+  )
+}
+```
+
+### Displaying Percentages
+Rectangle percentage values are displayed by default. This behaviour can be
+switched off using the `displayPercentages` boolean prop.
+
+```javascript
+render() {
+  ...
+  
+  return(
+    <TreeMap data={populations} titleKey="country"
+      weightKey="population" colorKey="color" displayPercentages={false} />
   )
 }
 ```
