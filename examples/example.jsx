@@ -7,8 +7,8 @@ class KeyValueRow extends React.Component {
 
   changeHandler(e) {
     this.props.updateData({
-      title: this.props.title,
-      weight: e.target.value
+      country: this.props.country,
+      population: e.target.value
     })
   }
 
@@ -21,9 +21,9 @@ class KeyValueRow extends React.Component {
 
     return(
       <tr key={this.props.title}>
-        <td style={style.cell}>{this.props.title} </td>
+        <td style={style.cell}>{this.props.country} </td>
         <td style={style.cell}>
-          <input type="text" value={parseInt(this.props.weight)}
+          <input type="text" value={parseInt(this.props.population)}
             onChange={this.changeHandler.bind(this)} />
         </td>
       </tr>
@@ -47,7 +47,7 @@ class KeyValueTable extends React.Component {
     for (let dataPoint of this.props.data) {
       rows.push(
         <KeyValueRow key={dataPoint.title}
-          title={dataPoint.title} weight={dataPoint.weight}
+          country={dataPoint.country} population={dataPoint.population}
           updateData={this.props.updateData.bind(this)} />
       )
     }
@@ -72,14 +72,14 @@ class ExampleApp extends React.Component {
     super(props)
     this.state = {
       data: [
-        {weight: 1373, title: "China", color: "#4cab92"},
-        {weight: 1266, title: "India", color: "#ca0004"},
-        {weight: 323, title: "United States", color: "#003953"},
-        {weight: 258, title: "Indonesia", color: "#eccc00"},
-        {weight: 205, title: "Brazil", color: "#9dbd5f"},
-        {weight: 201, title: "Pakistan", color: "#0097bf"},
-        {weight: 186, title: "Nigeria", color: "#005c7a"},
-        {weight: 156, title: "Bangladesh", color: "#fc6000"},
+        {population: 1373, country: "China"},
+        {population: 1266, country: "India"},
+        {population: 323, country: "United States"},
+        {population: 258, country: "Indonesia"},
+        {population: 205, country: "Brazil"},
+        {population: 201, country: "Pakistan"},
+        {population: 186, country: "Nigeria"},
+        {population: 156, country: "Bangladesh"},
       ]
     }
   }
@@ -88,13 +88,13 @@ class ExampleApp extends React.Component {
     let mutatedData = JSON.parse(JSON.stringify(this.state.data))
     let chosenIndex = -1
     for (let index=0; index < mutatedData.length; index++) {
-      if (mutatedData[index].title === mutatedObject.title) {
+      if (mutatedData[index].country === mutatedObject.country) {
         chosenIndex = index
         break
       }
     }
     if (chosenIndex > -1) {
-      mutatedData[chosenIndex].weight = parseInt(mutatedObject.weight)
+      mutatedData[chosenIndex].population = parseInt(mutatedObject.population)
       this.setState({data: mutatedData})
     }
   }
@@ -105,7 +105,8 @@ class ExampleApp extends React.Component {
         <h1 style={{textAlign: "center"}}> Ent: Treemaps for react </h1>
         <KeyValueTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
-          <TreeMap data={this.state.data} />
+          <TreeMap data={this.state.data} weightKey="population"
+            titleKey="country" />
         </div>
       </div>
     )
