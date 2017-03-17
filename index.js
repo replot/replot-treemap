@@ -589,6 +589,10 @@ var TreeRects = function (_React$Component) {
     value: function render() {
       var _this2 = this;
 
+      var percentage = null;
+      if (this.props.displayPercentages) {
+        percentage = this.props.percentage + "%";
+      }
       return _react2.default.createElement(
         _reactMotion.Motion,
         {
@@ -621,9 +625,20 @@ var TreeRects = function (_React$Component) {
                 x: interpolatingStyles.x + interpolatingStyles.width / 2,
                 y: interpolatingStyles.y + interpolatingStyles.height / 2,
                 textAnchor: "middle",
-                fill: (0, _isLight2.default)(_this2.props.fill) ? "#222" : "#eee",
-                fontSize: interpolatingStyles.width / _this2.props.maxTitleLength },
+                fill: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
+                fontSize: _this2.props.textScale * interpolatingStyles.width / 25 },
               _this2.props.title
+            ),
+            _react2.default.createElement(
+              "text",
+              {
+                x: interpolatingStyles.x + interpolatingStyles.width / 2,
+                y: interpolatingStyles.y + interpolatingStyles.height / 2 + 1.25 * _this2.props.textScale * interpolatingStyles.width / 25,
+                textAnchor: "middle",
+                fill: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
+                fillOpacity: 0.75,
+                fontSize: 0.5 * _this2.props.textScale * interpolatingStyles.width / 25 },
+              percentage
             )
           );
         }
@@ -646,16 +661,33 @@ var TreeMap = function (_React$Component2) {
   _createClass(TreeMap, [{
     key: "render",
     value: function render() {
+      var _this4 = this;
+
       var s = new _Squarify2.default(JSON.parse(JSON.stringify(this.props.data)), {
         width: this.props.width,
         height: this.props.height,
-        weightKey: this.props.weightKey,
-        titleKey: this.props.titleKey,
-        colorKey: this.props.colorKey
+        weightKey: this.props.weightKey
       });
       s.layout();
-      console.log(s);
-      var rows = [];
+
+      var colorFunction = null;
+      if (this.props.colorFunction) {
+        console.log("function supplied");
+        colorFunction = this.props.colorFunction;
+      } else if (this.props.colorKey) {
+        console.log("colorKey supplied");
+        colorFunction = function colorFunction(rawDatum) {
+          return rawDatum[_this4.props.colorKey];
+        };
+      } else {
+        console.log("colorPalette mode");
+        colorFunction = function colorFunction(rawDatum, index) {
+          return _this4.props.colorPalette[index % _this4.props.colorPalette.length];
+        };
+      }
+
+      var rects = [];
+      var rectIndex = 0;
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -671,10 +703,16 @@ var TreeMap = function (_React$Component2) {
             for (var _iterator2 = row.data[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var datum = _step2.value;
 
-              rows.push(_react2.default.createElement(TreeRects, { key: datum.index, x: datum.origin.x, y: datum.origin.y,
+              rectIndex += 1;
+              rects.push(_react2.default.createElement(TreeRects, { key: datum.index, x: datum.origin.x, y: datum.origin.y,
                 width: datum.dimensions.x, height: datum.dimensions.y,
-                fill: datum[this.props.colorKey], title: datum[this.props.titleKey],
-                maxTitleLength: s.maxTitleLength
+                fill: colorFunction(datum.raw, rectIndex),
+                title: datum.raw[this.props.titleKey],
+                maxTitleLength: s.maxTitleLength, textDark: this.props.textDark,
+                textLight: this.props.textLight, textScale: this.props.textScale,
+                percentage: datum.weightPercent,
+                displayPercentages: this.props.displayPercentages,
+                percentLight: this.props.percentLight, percentDark: this.props.percentDark
               }));
             }
           } catch (err) {
@@ -709,8 +747,9 @@ var TreeMap = function (_React$Component2) {
 
       return _react2.default.createElement(
         "svg",
-        { width: this.props.width, height: this.props.height },
-        rows
+        { className: "replot replot-treemap",
+          width: this.props.width, height: this.props.height },
+        rects
       );
     }
   }]);
@@ -723,7 +762,13 @@ TreeMap.defaultProps = {
   height: 400,
   titleKey: "title",
   weightKey: "weight",
-  colorKey: "color"
+  colorFunction: null,
+  colorKey: "",
+  colorPalette: ["#4cab92", "#ca0004", "#003953", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"],
+  textDark: "#222",
+  textLight: "#eee",
+  textScale: 3.5,
+  displayPercentages: true
 };
 
 exports.default = TreeMap;
@@ -1981,21 +2026,14 @@ class Squarify {
     this.totalHeight = options.height
     this.totalWidth = options.width
     this.weightKey = options.weightKey
-    this.titleKey = options.titleKey
-    this.colorKey = options.colorKey
     // Computed properties
     this.remainingX = this.totalWidth
     this.remainingY = this.totalHeight
     this.totalArea = this.totalWidth * this.totalHeight
     this.rows = []
-    this.maxTitleLength = 0
     this.totalWeight = 0.0
     for (let member of this.data) {
       this.totalWeight += member[this.weightKey]
-      let titleLength = member[this.titleKey].length
-      if (titleLength > this.maxTitleLength) {
-        this.maxTitleLength = titleLength
-      }
     }
     this.data.sort((a, b) => a[this.weightKey] - b[this.weightKey])
   }
@@ -2062,8 +2100,8 @@ class Squarify {
         origin: {},
         dimensions: {},
         weight: member[this.weightKey],
-        color: member[this.colorKey],
-        title: member[this.titleKey],
+        weightPercent: Number(100 * member[this.weightKey]/this.totalWeight).toFixed(1),
+        raw: member
       }
 
       if (row.type == "vertical") {
