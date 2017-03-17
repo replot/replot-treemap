@@ -11,6 +11,7 @@ class TreeRects extends React.Component {
     if (this.props.displayPercentages) {
       percentage = `${this.props.percentage}%`
     }
+
     return(
       <Motion
         defaultStyle={{
@@ -27,33 +28,43 @@ class TreeRects extends React.Component {
         }}
       >
         {
-          interpolatingStyles =>
-            <g>
-              <rect
-                x={interpolatingStyles.x}
-                y={interpolatingStyles.y}
-                width={interpolatingStyles.width}
-                height={interpolatingStyles.height}
-                fill={this.props.fill} />
-              <text
-                x={interpolatingStyles.x + (interpolatingStyles.width / 2)}
-                y={interpolatingStyles.y + (interpolatingStyles.height / 2)}
-                textAnchor="middle"
-                fill={isLight(this.props.fill) ? this.props.textDark : this.props.textLight}
-                fontSize={this.props.textScale * interpolatingStyles.width/25}>
-                  {this.props.title}
-              </text>
-              <text
-                x={interpolatingStyles.x + (interpolatingStyles.width / 2)}
-                y={interpolatingStyles.y + (interpolatingStyles.height / 2)
-                  + (1.25 * this.props.textScale * interpolatingStyles.width/25)}
-                textAnchor="middle"
-                fill={isLight(this.props.fill) ? this.props.textDark : this.props.textLight}
-                fillOpacity={0.75}
-                fontSize={0.5 * this.props.textScale * interpolatingStyles.width/25}>
-                  {percentage}
-              </text>
-            </g>
+          (interpolatingStyles) => {
+            let titleStyle = {
+              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
+              textAlign: "center",
+              fontSize: `${this.props.titleScale * interpolatingStyles.width/25}px`
+            }
+
+            let percentageStyle = {
+              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
+              textAlign: "center",
+              fontSize: `${this.props.percentageScale * interpolatingStyles.width/25}px`,
+              opacity: 0.75,
+            }
+
+            return (
+              <g>
+                <rect
+                  x={interpolatingStyles.x}
+                  y={interpolatingStyles.y}
+                  width={interpolatingStyles.width}
+                  height={interpolatingStyles.height}
+                  fill={this.props.fill} />
+                <foreignObject
+                  x={interpolatingStyles.x}
+                  y={interpolatingStyles.y}
+                  width={interpolatingStyles.width}
+                  height={interpolatingStyles.height}>
+                  <div style={{width: "100%", height: "100%", display: "table"}}>
+                    <div style={{display: "table-cell", verticalAlign: "middle"}}>
+                      <div style={titleStyle}>{this.props.title}</div>
+                      <div style={percentageStyle}>{percentage}</div>
+                    </div>
+                  </div>
+                </foreignObject>
+              </g>
+            )
+          }
         }
       </Motion>
     )
@@ -101,8 +112,10 @@ class TreeMap extends React.Component {
             fill={colorFunction(datum.raw, rectIndex)}
             title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
-            textLight={this.props.textLight} textScale={this.props.textScale}
+            textLight={this.props.textLight}
+            titleScale={this.props.titleScale}
             percentage={datum.weightPercent}
+            percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
             percentLight={this.props.percentLight} percentDark={this.props.percentDark}
           />
@@ -134,7 +147,8 @@ TreeMap.defaultProps = {
   ],
   textDark: "#222",
   textLight: "#eee",
-  textScale: 3.5,
+  titleScale: 3.5,
+  percentageScale: 2.5,
   displayPercentages: true,
 }
 
