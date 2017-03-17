@@ -593,6 +593,7 @@ var TreeRects = function (_React$Component) {
       if (this.props.displayPercentages) {
         percentage = this.props.percentage + "%";
       }
+
       return _react2.default.createElement(
         _reactMotion.Motion,
         {
@@ -610,6 +611,19 @@ var TreeRects = function (_React$Component) {
           }
         },
         function (interpolatingStyles) {
+          var titleStyle = {
+            color: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
+            textAlign: "center",
+            fontSize: _this2.props.titleScale * interpolatingStyles.width / 25 + "px"
+          };
+
+          var percentageStyle = {
+            color: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
+            textAlign: "center",
+            fontSize: _this2.props.percentageScale * interpolatingStyles.width / 25 + "px",
+            opacity: 0.75
+          };
+
           return _react2.default.createElement(
             "g",
             null,
@@ -620,25 +634,30 @@ var TreeRects = function (_React$Component) {
               height: interpolatingStyles.height,
               fill: _this2.props.fill }),
             _react2.default.createElement(
-              "text",
+              "foreignObject",
               {
-                x: interpolatingStyles.x + interpolatingStyles.width / 2,
-                y: interpolatingStyles.y + interpolatingStyles.height / 2,
-                textAnchor: "middle",
-                fill: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
-                fontSize: _this2.props.textScale * interpolatingStyles.width / 25 },
-              _this2.props.title
-            ),
-            _react2.default.createElement(
-              "text",
-              {
-                x: interpolatingStyles.x + interpolatingStyles.width / 2,
-                y: interpolatingStyles.y + interpolatingStyles.height / 2 + 1.25 * _this2.props.textScale * interpolatingStyles.width / 25,
-                textAnchor: "middle",
-                fill: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
-                fillOpacity: 0.75,
-                fontSize: 0.5 * _this2.props.textScale * interpolatingStyles.width / 25 },
-              percentage
+                x: interpolatingStyles.x,
+                y: interpolatingStyles.y,
+                width: interpolatingStyles.width,
+                height: interpolatingStyles.height },
+              _react2.default.createElement(
+                "div",
+                { style: { width: "100%", height: "100%", display: "table" } },
+                _react2.default.createElement(
+                  "div",
+                  { style: { display: "table-cell", verticalAlign: "middle" } },
+                  _react2.default.createElement(
+                    "div",
+                    { style: titleStyle },
+                    _this2.props.title
+                  ),
+                  _react2.default.createElement(
+                    "div",
+                    { style: percentageStyle },
+                    percentage
+                  )
+                )
+              )
             )
           );
         }
@@ -709,8 +728,10 @@ var TreeMap = function (_React$Component2) {
                 fill: colorFunction(datum.raw, rectIndex),
                 title: datum.raw[this.props.titleKey],
                 maxTitleLength: s.maxTitleLength, textDark: this.props.textDark,
-                textLight: this.props.textLight, textScale: this.props.textScale,
+                textLight: this.props.textLight,
+                titleScale: this.props.titleScale,
                 percentage: datum.weightPercent,
+                percentageScale: this.props.percentageScale,
                 displayPercentages: this.props.displayPercentages,
                 percentLight: this.props.percentLight, percentDark: this.props.percentDark
               }));
@@ -767,7 +788,8 @@ TreeMap.defaultProps = {
   colorPalette: ["#4cab92", "#ca0004", "#003953", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"],
   textDark: "#222",
   textLight: "#eee",
-  textScale: 3.5,
+  titleScale: 3.5,
+  percentageScale: 2.5,
   displayPercentages: true
 };
 
