@@ -691,15 +691,12 @@ var TreeMap = function (_React$Component2) {
 
       var colorFunction = null;
       if (this.props.colorFunction) {
-        console.log("function supplied");
         colorFunction = this.props.colorFunction;
       } else if (this.props.colorKey) {
-        console.log("colorKey supplied");
         colorFunction = function colorFunction(rawDatum) {
           return rawDatum[_this4.props.colorKey];
         };
       } else {
-        console.log("colorPalette mode");
         colorFunction = function colorFunction(rawDatum, index) {
           return _this4.props.colorPalette[index % _this4.props.colorPalette.length];
         };
@@ -2191,12 +2188,10 @@ class Squarify {
     let modifiedData = row.data.concat(this.data[this.data.length - 1])
 
     if (this.squareness(row.data, row.width) <= this.squareness(modifiedData, row.width)) {
-      console.log("extending row")
       this.data.pop()
       row.data = modifiedData
       this.squarify(row)
     } else {
-      console.log("freezing row")
       let frozenRow = this.freezeRow(row)
       let newRow = this.createRow(frozenRow)
       this.squarify(newRow)

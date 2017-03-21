@@ -87,15 +87,12 @@ class TreeMap extends React.Component {
 
     let colorFunction = null
     if (this.props.colorFunction) {
-      console.log("function supplied")
       colorFunction = this.props.colorFunction
     } else if (this.props.colorKey) {
-      console.log("colorKey supplied")
       colorFunction = (rawDatum) => {
         return rawDatum[this.props.colorKey]
       }
     } else {
-      console.log("colorPalette mode")
       colorFunction = (rawDatum, index) => {
         return this.props.colorPalette[index%this.props.colorPalette.length]
       }

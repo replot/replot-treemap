@@ -150,12 +150,10 @@ class Squarify {
     let modifiedData = row.data.concat(this.data[this.data.length - 1])
 
     if (this.squareness(row.data, row.width) <= this.squareness(modifiedData, row.width)) {
-      console.log("extending row")
       this.data.pop()
       row.data = modifiedData
       this.squarify(row)
     } else {
-      console.log("freezing row")
       let frozenRow = this.freezeRow(row)
       let newRow = this.createRow(frozenRow)
       this.squarify(newRow)
