@@ -1,6 +1,6 @@
 {
   "name": "react-ent",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "SVG treemap react component",
   "main": "index.js",
   "directories": {

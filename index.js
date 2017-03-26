@@ -614,13 +614,13 @@ var TreeRects = function (_React$Component) {
           var titleStyle = {
             color: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
             textAlign: "center",
-            fontSize: _this2.props.titleScale * interpolatingStyles.width / 25 + "px"
+            fontSize: Math.sqrt(_this2.props.titleScale * _this2.props.width * _this2.props.height / 200) + "px"
           };
 
           var percentageStyle = {
             color: (0, _isLight2.default)(_this2.props.fill) ? _this2.props.textDark : _this2.props.textLight,
             textAlign: "center",
-            fontSize: _this2.props.percentageScale * interpolatingStyles.width / 25 + "px",
+            fontSize: Math.sqrt(_this2.props.percentageScale * _this2.props.width * _this2.props.height / 200) + "px",
             opacity: 0.75
           };
 
