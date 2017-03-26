@@ -32,13 +32,13 @@ class TreeRects extends React.Component {
             let titleStyle = {
               color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
-              fontSize: `${this.props.titleScale * interpolatingStyles.width/25}px`
+              fontSize: `${Math.sqrt(this.props.titleScale * interpolatingStyles.width * interpolatingStyles.height / 200)}px`
             }
 
             let percentageStyle = {
               color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
-              fontSize: `${this.props.percentageScale * interpolatingStyles.width/25}px`,
+              fontSize: `${Math.sqrt(this.props.percentageScale * interpolatingStyles.width * interpolatingStyles.height / 200)}px`,
               opacity: 0.75,
             }
 
