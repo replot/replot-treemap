@@ -594,15 +594,26 @@ var TreeRects = function (_React$Component) {
         percentage = this.props.percentage + "%";
       }
 
+      var initialStyle = {
+        x: this.props.x,
+        y: this.props.y,
+        width: this.props.width,
+        height: this.props.height
+      };
+
+      if (this.props.initialAnimation) {
+        initialStyle = {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0
+        };
+      }
+
       return _react2.default.createElement(
         _reactMotion.Motion,
         {
-          defaultStyle: {
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0
-          },
+          defaultStyle: initialStyle,
           style: {
             x: (0, _reactMotion.spring)(this.props.x, { stiffness: 120, damping: 26 }),
             y: (0, _reactMotion.spring)(this.props.y, { stiffness: 120, damping: 26 }),
@@ -730,7 +741,8 @@ var TreeMap = function (_React$Component2) {
                 percentage: datum.weightPercent,
                 percentageScale: this.props.percentageScale,
                 displayPercentages: this.props.displayPercentages,
-                percentLight: this.props.percentLight, percentDark: this.props.percentDark
+                percentLight: this.props.percentLight, percentDark: this.props.percentDark,
+                initialAnimation: this.props.initialAnimation
               }));
             }
           } catch (err) {
@@ -787,7 +799,8 @@ TreeMap.defaultProps = {
   textLight: "#eee",
   titleScale: 3.5,
   percentageScale: 2.5,
-  displayPercentages: true
+  displayPercentages: true,
+  initialAnimation: true
 };
 
 exports.default = TreeMap;
