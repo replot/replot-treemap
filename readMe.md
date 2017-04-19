@@ -109,10 +109,24 @@ switched off using the `displayPercentages` boolean prop.
 ```javascript
 render() {
   ...
-  
+
   return(
     <TreeMap data={populations} titleKey="country"
       weightKey="population" colorKey="color" displayPercentages={false} />
+  )
+}
+```
+
+### Initial Animation
+Initial animation is enabled by default, resulting in the treemap growing and translating from the top left corner. This can be disabled using the `initialAnimation` prop.
+
+```javascript
+render() {
+  ...
+
+  return(
+    <TreeMap data={populations} titleKey="country"
+      weightKey="population" colorKey="color" initialAnimation={false} />
   )
 }
 ```

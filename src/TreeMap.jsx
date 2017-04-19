@@ -12,14 +12,25 @@ class TreeRects extends React.Component {
       percentage = `${this.props.percentage}%`
     }
 
+    let initialStyle = {
+      x: this.props.x,
+      y: this.props.y,
+      width: this.props.width,
+      height: this.props.height,
+    }
+
+    if (this.props.initialAnimation) {
+      initialStyle = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      }
+    }
+
     return(
       <Motion
-        defaultStyle={{
-          x: 0,
-          y: 0,
-          width: 0,
-          height: 0,
-        }}
+        defaultStyle={initialStyle}
         style={{
           x: spring(this.props.x, {stiffness: 120, damping: 26}),
           y: spring(this.props.y, {stiffness: 120, damping: 26}),
@@ -115,6 +126,7 @@ class TreeMap extends React.Component {
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
             percentLight={this.props.percentLight} percentDark={this.props.percentDark}
+            initialAnimation={this.props.initialAnimation}
           />
         )
       }
@@ -147,6 +159,7 @@ TreeMap.defaultProps = {
   titleScale: 3.5,
   percentageScale: 2.5,
   displayPercentages: true,
+  initialAnimation: true,
 }
 
 

@@ -102,7 +102,7 @@ class ExampleApp extends React.Component {
   render() {
     return(
       <div className="container">
-        <h1 style={{textAlign: "center"}}> Ent: Treemaps for react </h1>
+        <h1 style={{textAlign: "center"}}> Treemaps for Replot </h1>
         <KeyValueTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMap data={this.state.data} weightKey="population"
