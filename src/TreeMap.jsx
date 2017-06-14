@@ -1,4 +1,5 @@
 import React from "react"
+import ReactDOM from "react-dom"
 import Squarify from "./Squarify.js"
 import isLight from "./isLight.js"
 import {spring, Motion} from "react-motion"
@@ -6,6 +7,18 @@ import {spring, Motion} from "react-motion"
 
 class TreeRects extends React.Component {
 
+  handleClick(e){
+    let name = this.props.title
+    console.log("You have clicked on " + name)
+    let childData = this.props.data.child
+    if (childData != null) {
+      let nestedTree = (
+        <TreeMap data={childData} weightKey="population"
+          titleKey="country" />
+      )
+      ReactDOM.render(nestedTree, document.getElementById('react-app'));
+    }
+  }
 
   render() {
     let percentage = null
@@ -67,7 +80,10 @@ class TreeRects extends React.Component {
                   x={interpolatingStyles.x}
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}>
+                  height={interpolatingStyles.height}
+                  onClick={this.handleClick.bind(this)}
+                  style={{cursor:'pointer'}}
+                  >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
                       <div style={titleStyle}>{this.props.title}</div>
@@ -85,6 +101,20 @@ class TreeRects extends React.Component {
 }
 
 class OtherRect extends React.Component {
+
+  handleClick(e){
+    let name = this.props.title
+    console.log("You have clicked on " + name)
+    let childData = this.props.data.child
+    console.log(childData)
+    if (childData != null) {
+      let nestedTree = (
+        <TreeMap data={childData} weightKey="population"
+          titleKey="country" />
+      )
+      ReactDOM.render(nestedTree, document.getElementById('react-app'));
+    }
+  }
 
   render() {
     let percentage = null
@@ -123,19 +153,16 @@ class OtherRect extends React.Component {
             let titleStyle = {
               color: "#FFFFFF",
               textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 200)}px`,
-              // transform: "rotate(270deg)"
+              fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
+              transform: "rotate(270deg)",
               width: "1px",
-              wordWrap: "break-word",
-              margin: "0 auto"
-              // whiteSpace: "pre",
+              margin: `0px ${this.props.width / 2.5}px ${- this.props.width / 3}px`
             }
 
             let percentageStyle = {
               color: "#FFFFFF",
               textAlign: "center",
               fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
-              // paddingTop: "10px",
               opacity: 0.75,
             }
 
@@ -152,7 +179,10 @@ class OtherRect extends React.Component {
                   x={interpolatingStyles.x}
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}>
+                  height={interpolatingStyles.height}
+                  onClick={this.handleClick.bind(this)}
+                  style={{cursor:'pointer'}}
+                  >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
                       <div style={titleStyle}>{this.props.title}</div>
@@ -181,28 +211,36 @@ class TreeMap extends React.Component {
     weights.sort((a, b) => a - b);
 
     var total = weights.reduce((a, b) => a + b, 0);
-    let threshold = this.props.otherThreshold
+    let threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * total
 
     let totalForOther = 0
-    for (var i = 0; i < weights.length; i++){
-      if (weights[i] < threshold){
-        totalForOther += weights[i]
+    for (var index = 0; index < weights.length; index++){
+      if (weights[index] < threshold){
+        totalForOther += weights[index]
       }
       else {
         break
       }
     }
 
-    if (i > 1) {
+    if (index > 1) {
       let newData = []
+      let childArray = []
       for (let dataPoint of testData){
         if (dataPoint[this.props.weightKey] > threshold){
           newData.push(dataPoint)
+        }
+        else {
+          let child = {}
+          child[this.props.weightKey] = dataPoint[this.props.weightKey]
+          child[this.props.titleKey] = dataPoint[this.props.titleKey]
+          childArray.push(child)
         }
       }
       let other = {}
       other[this.props.weightKey] = totalForOther
       other[this.props.titleKey] = "Other"
+      other.child = childArray
       newData.push(other)
       return [newData, true, total]
     }
@@ -213,28 +251,38 @@ class TreeMap extends React.Component {
   render() {
     let considerOther = this.needOther(this.props.data)
     let dataToUse = considerOther[0]
+
     let otherWidth = 0
+    let scaleWithOther = 1
     let otherRect = null
+
     if (considerOther[1] == true){
-      let other = dataToUse.splice(dataToUse.length-1,1)
-      let otherArea = (other[0][this.props.weightKey] / considerOther[2]) * (this.props.width * this.props.height)
+      let other = dataToUse[dataToUse.length-1]
+      let otherArea = (other[this.props.weightKey] / considerOther[2]) * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
-      otherRect = <OtherRect key="other" x={this.props.width-otherWidth} y={0}
-        width={otherWidth} height={this.props.height}
-        title="Other" titleScale={this.props.titleScale}
-        percentage={(100 * other[0][this.props.weightKey] / considerOther[2]).toFixed(1)}
-        percentageScale={this.props.percentageScale}
-        displayPercentages={this.props.displayPercentages}
-        initialAnimation={this.props.initialAnimation}
-      />
+      scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey])
+      otherRect = (
+        <OtherRect key="other" data={other}
+          x={this.props.width-otherWidth} y={0}
+          width={otherWidth} height={this.props.height}
+          title="Other" titleScale={this.props.titleScale}
+          percentage={(100 * other[this.props.weightKey] / considerOther[2]).toFixed(1)}
+          percentageScale={this.props.percentageScale}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}
+        />
+      )
     }
 
     let s = new Squarify(
-      JSON.parse(JSON.stringify(dataToUse)),
+      JSON.parse(JSON.stringify(
+        considerOther[1] == true ? dataToUse.slice(0,dataToUse.length-1) : dataToUse
+      )),
+      scaleWithOther,
       {
         width: this.props.width-otherWidth,
         height: this.props.height,
-        weightKey: this.props.weightKey,
+        weightKey: this.props.weightKey
       }
     )
     s.layout()
@@ -258,7 +306,8 @@ class TreeMap extends React.Component {
       for (let datum of row.data) {
         rectIndex += 1
         rects.push(
-          <TreeRects key={datum.index} x={datum.origin.x} y= {datum.origin.y}
+          <TreeRects key={datum.index} data={datum.raw}
+            x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
             fill={colorFunction(datum.raw, rectIndex)}
             title={datum.raw[this.props.titleKey]}
@@ -292,12 +341,13 @@ class TreeMap extends React.Component {
 }
 
 
+
 TreeMap.defaultProps = {
   width: 800,
   height: 400,
   titleKey: "title",
   weightKey: "weight",
-  otherThreshold: 0,
+  otherThreshold: .025,
   colorFunction: null,
   colorKey: "",
   colorPalette: [

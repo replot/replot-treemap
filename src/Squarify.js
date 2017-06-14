@@ -2,8 +2,9 @@
 
 class Squarify {
 
-  constructor(data, options) {
+  constructor(data, scale, options) {
     this.data = data
+    this.scale = scale
     this.totalHeight = options.height
     this.totalWidth = options.width
     this.weightKey = options.weightKey
@@ -12,7 +13,7 @@ class Squarify {
     this.remainingY = this.totalHeight
     this.totalArea = this.totalWidth * this.totalHeight
     this.rows = []
-    this.totalWeight = 0.0
+    this.totalWeight = 0
     for (let member of this.data) {
       this.totalWeight += member[this.weightKey]
     }
@@ -81,7 +82,7 @@ class Squarify {
         origin: {},
         dimensions: {},
         weight: member[this.weightKey],
-        weightPercent: Number(100 * member[this.weightKey]/this.totalWeight).toFixed(1),
+        weightPercent: Number((100 * member[this.weightKey]/this.totalWeight)/this.scale).toFixed(1),
         raw: member
       }
 
