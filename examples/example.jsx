@@ -76,14 +76,16 @@ class ExampleApp extends React.Component {
         {population: 1266, country: "India"},
         {population: 323, country: "United States",
           child: [
-          {population: 200, country: "California"},
-          {population: 80, country: "Illinois"},
-          {population: 43, country: "Vermont",
-            child: [
-              {population: 13, country: "Newport"},
-              {population: 30, country: "Montpelier"}
-            ]}
-        ]},
+            {population: 200, country: "California"},
+            {population: 80, country: "Illinois"},
+            {population: 43, country: "Vermont",
+              child: [
+                {population: 13, country: "Newport"},
+                {population: 30, country: "Montpelier"}
+              ]},
+            {population: 5, country: "North Dakota"},
+            {population: 3, country: "South Dakota"},
+          ]},
         {population: 258, country: "Indonesia"},
         {population: 205, country: "Brazil"},
         {population: 201, country: "Pakistan"},

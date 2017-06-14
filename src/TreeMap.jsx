@@ -1,5 +1,4 @@
 import React from "react"
-import ReactDOM from "react-dom"
 import Squarify from "./Squarify.js"
 import isLight from "./isLight.js"
 import {spring, Motion} from "react-motion"
@@ -8,16 +7,18 @@ import {spring, Motion} from "react-motion"
 class TreeRects extends React.Component {
 
   handleClick(e){
-    let name = this.props.title
-    console.log("You have clicked on " + name)
+    // let name = this.props.title
+    // console.log("You have clicked on " + name)
     let childData = this.props.data.child
+    // console.log(childData)
+    let nestedTree = null
     if (childData != null) {
-      let nestedTree = (
+      nestedTree = (
         <TreeMap data={childData} weightKey="population"
           titleKey="country" />
       )
-      ReactDOM.render(nestedTree, document.getElementById('react-app'));
     }
+    this.props.onClick(nestedTree)
   }
 
   render() {
@@ -103,17 +104,18 @@ class TreeRects extends React.Component {
 class OtherRect extends React.Component {
 
   handleClick(e){
-    let name = this.props.title
-    console.log("You have clicked on " + name)
+    // let name = this.props.title
+    // console.log("You have clicked on " + name)
     let childData = this.props.data.child
-    console.log(childData)
+    // console.log(childData)
+    let nestedTree = null
     if (childData != null) {
-      let nestedTree = (
+      nestedTree = (
         <TreeMap data={childData} weightKey="population"
           titleKey="country" />
       )
-      ReactDOM.render(nestedTree, document.getElementById('react-app'));
     }
+    this.props.onClick(nestedTree)
   }
 
   render() {
@@ -203,6 +205,23 @@ class OtherRect extends React.Component {
 
 class TreeMap extends React.Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      childMap: null
+    }
+  }
+
+  onClick(child) {
+    this.setState({
+      childMap: child
+    })
+  }
+
+  getNestPosition() {
+    return this.props.height < this.props.width ? [this.props.height / 8 , this.props.height / 8] : [this.props.width / 8 , this.props.width / 8]
+  }
+
   needOther(testData) {
     var weights = []
     for (let dataPoint of testData) {
@@ -247,7 +266,6 @@ class TreeMap extends React.Component {
     return [testData, false, total]
   }
 
-
   render() {
     let considerOther = this.needOther(this.props.data)
     let dataToUse = considerOther[0]
@@ -270,6 +288,7 @@ class TreeMap extends React.Component {
           percentageScale={this.props.percentageScale}
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
+          onClick={this.onClick.bind(this)}
         />
       )
     }
@@ -319,6 +338,7 @@ class TreeMap extends React.Component {
             displayPercentages={this.props.displayPercentages}
             percentLight={this.props.percentLight} percentDark={this.props.percentDark}
             initialAnimation={this.props.initialAnimation}
+            onClick={this.onClick.bind(this)}
           />
         )
       }
@@ -331,10 +351,17 @@ class TreeMap extends React.Component {
 
 
     return(
-      <svg className="replot replot-treemap"
-        width={this.props.width} height={this.props.height}>
-        {rects}
-      </svg>
+      <div style={{position:"relative"}}>
+        <svg className="replot replot-treemap"
+          width={this.props.width} height={this.props.height}>
+          {rects}
+        </svg>
+        {this.state.childMap != null &&
+          <div style={{position: "absolute", top: `${this.getNestPosition()[0]}px`, left: `${this.getNestPosition()[1]}px`}}>
+            {this.state.childMap}
+          </div>
+        }
+      </div>
     )
   }
 
