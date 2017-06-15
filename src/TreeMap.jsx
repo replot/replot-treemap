@@ -80,7 +80,7 @@ class TreeRects extends React.Component {
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
                   onClick={this.handleClick.bind(this)}
-                  style={{cursor:'pointer'}}
+                  style={this.props.data.child || this.props.active == false ? {cursor:'pointer'} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -358,6 +358,7 @@ class TreeMap extends React.Component {
             initialAnimation={this.props.initialAnimation}
             weightKey={this.props.weightKey}
             titleRank={this.props.titleRank}
+            active={this.state.active}
             onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
           />
         )
