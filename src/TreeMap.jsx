@@ -12,7 +12,8 @@ class TreeRects extends React.Component {
     if (childData != null) {
       nestedMap = (
         <TreeMap data={childData} weightKey={this.props.weightKey}
-          titleKey={this.props.titleRank[1]} titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
+          titleKey={this.props.titleRank[1]}
+          titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
       )
     }
     this.props.onClick(nestedMap)

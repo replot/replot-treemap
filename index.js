@@ -856,6 +856,18 @@ var TreeRects = function (_React$Component) {
   }
 
   _createClass(TreeRects, [{
+    key: "handleClick",
+    value: function handleClick(e) {
+      var childData = this.props.data.child;
+      var nestedMap = null;
+      if (childData != null) {
+        nestedMap = _react2.default.createElement(TreeMap, { data: childData, weightKey: this.props.weightKey,
+          titleKey: this.props.titleRank[1],
+          titleRank: this.props.titleRank.slice(1, this.props.titleRank.length) });
+      }
+      this.props.onClick(nestedMap);
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this2 = this;
@@ -914,14 +926,18 @@ var TreeRects = function (_React$Component) {
               y: interpolatingStyles.y,
               width: interpolatingStyles.width,
               height: interpolatingStyles.height,
-              fill: _this2.props.fill }),
+              fill: _this2.props.fill
+            }),
             _react2.default.createElement(
               "foreignObject",
               {
                 x: interpolatingStyles.x,
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
-                height: interpolatingStyles.height },
+                height: interpolatingStyles.height,
+                onClick: _this2.handleClick.bind(_this2),
+                style: _this2.props.data.child || _this2.props.active == false ? { cursor: 'pointer' } : null
+              },
               _react2.default.createElement(
                 "div",
                 { style: { width: "100%", height: "100%", display: "table" } },
@@ -950,16 +966,167 @@ var TreeRects = function (_React$Component) {
   return TreeRects;
 }(_react2.default.Component);
 
-var TreeMap = function (_React$Component2) {
-  _inherits(TreeMap, _React$Component2);
+var OtherRect = function (_React$Component2) {
+  _inherits(OtherRect, _React$Component2);
 
-  function TreeMap() {
+  function OtherRect() {
+    _classCallCheck(this, OtherRect);
+
+    return _possibleConstructorReturn(this, (OtherRect.__proto__ || Object.getPrototypeOf(OtherRect)).apply(this, arguments));
+  }
+
+  _createClass(OtherRect, [{
+    key: "handleClick",
+    value: function handleClick(e) {
+      var childData = this.props.data.child;
+      var nestedMap = null;
+      if (childData != null) {
+        nestedMap = _react2.default.createElement(TreeMap, { data: childData, weightKey: this.props.weightKey,
+          titleKey: this.props.titleRank[0], titleRank: this.props.titleRank });
+      }
+      this.props.onClick(nestedMap);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this4 = this;
+
+      var percentage = null;
+      if (this.props.displayPercentages) {
+        percentage = this.props.percentage + "%";
+      }
+
+      var initialStyle = {
+        x: this.props.x,
+        y: this.props.y,
+        width: this.props.width,
+        height: this.props.height
+      };
+
+      if (this.props.initialAnimation) {
+        initialStyle = {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0
+        };
+      }
+
+      return _react2.default.createElement(
+        _reactMotion.Motion,
+        {
+          defaultStyle: initialStyle,
+          style: {
+            x: (0, _reactMotion.spring)(this.props.x, { stiffness: 120, damping: 26 }),
+            y: (0, _reactMotion.spring)(this.props.y, { stiffness: 120, damping: 26 }),
+            width: (0, _reactMotion.spring)(this.props.width, { stiffness: 100, damping: 26 }),
+            height: (0, _reactMotion.spring)(this.props.height, { stiffness: 100, damping: 26 })
+          }
+        },
+        function (interpolatingStyles) {
+          var titleStyle = {
+            color: "#FFFFFF",
+            textAlign: "center",
+            fontSize: Math.sqrt(_this4.props.titleScale * _this4.props.width * _this4.props.height / 100) + "px",
+            transform: "rotate(270deg)",
+            width: "1px",
+            margin: "0px " + _this4.props.width / 2.3 + "px " + -_this4.props.width / 3 + "px"
+          };
+
+          var percentageStyle = {
+            color: "#FFFFFF",
+            textAlign: "center",
+            fontSize: Math.sqrt(_this4.props.percentageScale * _this4.props.width * _this4.props.height / 200) + "px",
+            opacity: 0.75
+          };
+
+          return _react2.default.createElement(
+            "g",
+            null,
+            _react2.default.createElement("rect", {
+              x: interpolatingStyles.x,
+              y: interpolatingStyles.y,
+              width: interpolatingStyles.width,
+              height: interpolatingStyles.height,
+              fill: _this4.props.fill
+            }),
+            _react2.default.createElement(
+              "foreignObject",
+              {
+                x: interpolatingStyles.x,
+                y: interpolatingStyles.y,
+                width: interpolatingStyles.width,
+                height: interpolatingStyles.height,
+                onClick: _this4.handleClick.bind(_this4),
+                style: { cursor: 'pointer' }
+              },
+              _react2.default.createElement(
+                "div",
+                { style: { width: "100%", height: "100%", display: "table" } },
+                _react2.default.createElement(
+                  "div",
+                  { style: { display: "table-cell", verticalAlign: "middle" } },
+                  _react2.default.createElement(
+                    "div",
+                    { style: titleStyle },
+                    _this4.props.title
+                  ),
+                  _react2.default.createElement(
+                    "div",
+                    { style: percentageStyle },
+                    percentage
+                  )
+                )
+              )
+            )
+          );
+        }
+      );
+    }
+  }]);
+
+  return OtherRect;
+}(_react2.default.Component);
+
+var TreeMap = function (_React$Component3) {
+  _inherits(TreeMap, _React$Component3);
+
+  function TreeMap(props) {
     _classCallCheck(this, TreeMap);
 
-    return _possibleConstructorReturn(this, (TreeMap.__proto__ || Object.getPrototypeOf(TreeMap)).apply(this, arguments));
+    var _this5 = _possibleConstructorReturn(this, (TreeMap.__proto__ || Object.getPrototypeOf(TreeMap)).call(this, props));
+
+    _this5.state = {
+      nestedMap: null,
+      active: true
+    };
+    return _this5;
   }
 
   _createClass(TreeMap, [{
+    key: "onClick",
+    value: function onClick(nest) {
+      if (nest != null) {
+        this.setState({
+          nestedMap: nest,
+          active: false
+        });
+      }
+    }
+  }, {
+    key: "onBackClick",
+    value: function onBackClick() {
+      this.setState({
+        nestedMap: null,
+        active: true
+      });
+    }
+  }, {
+    key: "getNestPosition",
+    value: function getNestPosition() {
+      return this.props.height < this.props.width ? [this.props.height / 8, this.props.height / 8] : [this.props.width / 8, this.props.width / 8];
+    }
+  }, {
     key: "needOther",
     value: function needOther(testData) {
       var weights = [];
@@ -991,25 +1158,24 @@ var TreeMap = function (_React$Component2) {
       weights.sort(function (a, b) {
         return a - b;
       });
-      console.log(weights);
 
       var total = weights.reduce(function (a, b) {
         return a + b;
       }, 0);
-      console.log(total);
-      var threshold = .02 * total;
+      var threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * total;
 
       var totalForOther = 0;
-      for (var i = 0; i < weights.length; i++) {
-        if (weights[i] < threshold) {
-          totalForOther += weights[i];
+      for (var index = 0; index < weights.length; index++) {
+        if (weights[index] < threshold) {
+          totalForOther += weights[index];
         } else {
           break;
         }
       }
 
-      var newData = [];
-      if (i > 1) {
+      if (index > 1) {
+        var newData = [];
+        var childArray = [];
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
         var _iteratorError2 = undefined;
@@ -1020,6 +1186,11 @@ var TreeMap = function (_React$Component2) {
 
             if (dataPoint[this.props.weightKey] > threshold) {
               newData.push(dataPoint);
+            } else {
+              var child = {};
+              child[this.props.weightKey] = dataPoint[this.props.weightKey];
+              child[this.props.titleKey] = dataPoint[this.props.titleKey];
+              childArray.push(child);
             }
           }
         } catch (err) {
@@ -1040,23 +1211,56 @@ var TreeMap = function (_React$Component2) {
         var other = {};
         other[this.props.weightKey] = totalForOther;
         other[this.props.titleKey] = "Other";
+        other.child = childArray;
         newData.push(other);
-        return newData;
+        return [newData, true, total];
       }
-      return testData;
+      return [testData, false, total];
     }
   }, {
     key: "render",
     value: function render() {
-      var _this4 = this;
+      var _this6 = this;
 
-      var t0 = performance.now();
-      var dataToUse = [];
-      dataToUse = this.needOther(this.props.data);
-      var t1 = performance.now();
-      console.log("Call to needOther took " + (t1 - t0) + " milliseconds.");
-      var s = new _Squarify2.default(JSON.parse(JSON.stringify(dataToUse)), {
-        width: this.props.width,
+      var style = {
+        inactive: "#808080",
+        map: {
+          position: "absolute",
+          top: this.getNestPosition()[0] + "px",
+          left: this.getNestPosition()[1] + "px",
+          boxShadow: "-10px -10px 20px"
+        }
+      };
+
+      var considerOther = this.needOther(this.props.data);
+      var dataToUse = considerOther[0];
+
+      var otherWidth = 0;
+      var scaleWithOther = 1;
+      var otherRect = null;
+
+      if (considerOther[1] == true) {
+        var other = dataToUse[dataToUse.length - 1];
+        var otherArea = other[this.props.weightKey] / considerOther[2] * (this.props.width * this.props.height);
+        otherWidth = otherArea / this.props.height;
+        scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey]);
+        otherRect = _react2.default.createElement(OtherRect, { key: "other", data: other,
+          x: this.props.width - otherWidth, y: 0,
+          width: otherWidth, height: this.props.height,
+          fill: this.state.active ? "#000000" : style.inactive,
+          title: "Other", titleScale: this.props.titleScale,
+          percentage: (100 * other[this.props.weightKey] / considerOther[2]).toFixed(1),
+          percentageScale: this.props.percentageScale,
+          displayPercentages: this.props.displayPercentages,
+          initialAnimation: this.props.initialAnimation,
+          weightKey: this.props.weightKey,
+          titleRank: this.props.titleRank,
+          onClick: this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)
+        });
+      }
+
+      var s = new _Squarify2.default(JSON.parse(JSON.stringify(considerOther[1] == true ? dataToUse.slice(0, dataToUse.length - 1) : dataToUse)), scaleWithOther, {
+        width: this.props.width - otherWidth,
         height: this.props.height,
         weightKey: this.props.weightKey
       });
@@ -1067,11 +1271,11 @@ var TreeMap = function (_React$Component2) {
         colorFunction = this.props.colorFunction;
       } else if (this.props.colorKey) {
         colorFunction = function colorFunction(rawDatum) {
-          return rawDatum[_this4.props.colorKey];
+          return rawDatum[_this6.props.colorKey];
         };
       } else {
         colorFunction = function colorFunction(rawDatum, index) {
-          return _this4.props.colorPalette[index % _this4.props.colorPalette.length];
+          return _this6.props.colorPalette[index % _this6.props.colorPalette.length];
         };
       }
 
@@ -1093,9 +1297,10 @@ var TreeMap = function (_React$Component2) {
               var datum = _step4.value;
 
               rectIndex += 1;
-              rects.push(_react2.default.createElement(TreeRects, { key: datum.index, x: datum.origin.x, y: datum.origin.y,
+              rects.push(_react2.default.createElement(TreeRects, { key: datum.index, data: datum.raw,
+                x: datum.origin.x, y: datum.origin.y,
                 width: datum.dimensions.x, height: datum.dimensions.y,
-                fill: colorFunction(datum.raw, rectIndex),
+                fill: this.state.active ? colorFunction(datum.raw, rectIndex) : style.inactive,
                 title: datum.raw[this.props.titleKey],
                 maxTitleLength: s.maxTitleLength, textDark: this.props.textDark,
                 textLight: this.props.textLight,
@@ -1104,7 +1309,11 @@ var TreeMap = function (_React$Component2) {
                 percentageScale: this.props.percentageScale,
                 displayPercentages: this.props.displayPercentages,
                 percentLight: this.props.percentLight, percentDark: this.props.percentDark,
-                initialAnimation: this.props.initialAnimation
+                initialAnimation: this.props.initialAnimation,
+                weightKey: this.props.weightKey,
+                titleRank: this.props.titleRank,
+                active: this.state.active,
+                onClick: this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)
               }));
             }
           } catch (err) {
@@ -1137,11 +1346,24 @@ var TreeMap = function (_React$Component2) {
         }
       }
 
+      if (considerOther[1] == true) {
+        rects.push(otherRect);
+      }
+
       return _react2.default.createElement(
-        "svg",
-        { className: "replot replot-treemap",
-          width: this.props.width, height: this.props.height },
-        rects
+        "div",
+        { style: { position: "relative" } },
+        _react2.default.createElement(
+          "svg",
+          { className: "replot replot-treemap",
+            width: this.props.width, height: this.props.height },
+          rects
+        ),
+        this.state.nestedMap != null && _react2.default.createElement(
+          "div",
+          { style: style.map },
+          this.state.nestedMap
+        )
       );
     }
   }]);
@@ -1154,9 +1376,11 @@ TreeMap.defaultProps = {
   height: 400,
   titleKey: "title",
   weightKey: "weight",
+  otherThreshold: .025,
   colorFunction: null,
   colorKey: "",
   colorPalette: ["#4cab92", "#ca0004", "#003953", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"],
+  grayscalePalette: ["#080808", "#282828", "#484848", "#686868", "#808080", "#A0A0A0", "#B0B0B0", "#C8C8C8"],
   textDark: "#222",
   textLight: "#eee",
   titleScale: 3.5,
@@ -4019,8 +4243,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 class Squarify {
 
-  constructor(data, options) {
+  constructor(data, scale, options) {
     this.data = data
+    this.scale = scale
     this.totalHeight = options.height
     this.totalWidth = options.width
     this.weightKey = options.weightKey
@@ -4098,7 +4323,7 @@ class Squarify {
         origin: {},
         dimensions: {},
         weight: member[this.weightKey],
-        weightPercent: Number(100 * member[this.weightKey]/this.totalWeight).toFixed(1),
+        weightPercent: Number((100 * member[this.weightKey]/this.totalWeight)/this.scale).toFixed(1),
         raw: member
       }
 
