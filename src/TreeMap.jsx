@@ -7,18 +7,15 @@ import {spring, Motion} from "react-motion"
 class TreeRects extends React.Component {
 
   handleClick(e){
-    // let name = this.props.title
-    // console.log("You have clicked on " + name)
     let childData = this.props.data.child
-    // console.log(childData)
-    let nestedTree = null
+    let nestedMap = null
     if (childData != null) {
-      nestedTree = (
-        <TreeMap data={childData} weightKey="population"
-          titleKey="country" />
+      nestedMap = (
+        <TreeMap data={childData} weightKey={this.props.weightKey}
+          titleKey={this.props.titleRank[1]} titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
       )
     }
-    this.props.onClick(nestedTree)
+    this.props.onClick(nestedMap)
   }
 
   render() {
@@ -104,18 +101,15 @@ class TreeRects extends React.Component {
 class OtherRect extends React.Component {
 
   handleClick(e){
-    // let name = this.props.title
-    // console.log("You have clicked on " + name)
     let childData = this.props.data.child
-    // console.log(childData)
-    let nestedTree = null
+    let nestedMap = null
     if (childData != null) {
-      nestedTree = (
-        <TreeMap data={childData} weightKey="population"
-          titleKey="country" />
+      nestedMap = (
+        <TreeMap data={childData} weightKey={this.props.weightKey}
+          titleKey={this.props.titleRank[0]} titleRank={this.props.titleRank} />
       )
     }
-    this.props.onClick(nestedTree)
+    this.props.onClick(nestedMap)
   }
 
   render() {
@@ -158,7 +152,7 @@ class OtherRect extends React.Component {
               fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
               transform: "rotate(270deg)",
               width: "1px",
-              margin: `0px ${this.props.width / 2.5}px ${- this.props.width / 3}px`
+              margin: `0px ${this.props.width / 2.3}px ${- this.props.width / 3}px`
             }
 
             let percentageStyle = {
@@ -175,7 +169,7 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  fill="#000000"
+                  fill={this.props.fill}
                   />
                 <foreignObject
                   x={interpolatingStyles.x}
@@ -208,13 +202,24 @@ class TreeMap extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      childMap: null
+      nestedMap: null,
+      active: true
     }
   }
 
-  onClick(child) {
+  onClick(nest) {
+    if (nest != null){
+      this.setState({
+        nestedMap: nest,
+        active: false
+      })
+    }
+  }
+
+  onBackClick(){
     this.setState({
-      childMap: child
+      nestedMap: null,
+      active: true
     })
   }
 
@@ -267,6 +272,16 @@ class TreeMap extends React.Component {
   }
 
   render() {
+    const style = {
+      inactive: "#808080",
+      map: {
+        position: "absolute",
+        top: `${this.getNestPosition()[0]}px`,
+        left: `${this.getNestPosition()[1]}px`,
+        boxShadow: "-10px -10px 20px",
+      }
+    }
+
     let considerOther = this.needOther(this.props.data)
     let dataToUse = considerOther[0]
 
@@ -283,12 +298,15 @@ class TreeMap extends React.Component {
         <OtherRect key="other" data={other}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
+          fill={this.state.active ? "#000000" : style.inactive}
           title="Other" titleScale={this.props.titleScale}
           percentage={(100 * other[this.props.weightKey] / considerOther[2]).toFixed(1)}
           percentageScale={this.props.percentageScale}
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
-          onClick={this.onClick.bind(this)}
+          weightKey={this.props.weightKey}
+          titleRank={this.props.titleRank}
+          onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
         />
       )
     }
@@ -328,7 +346,7 @@ class TreeMap extends React.Component {
           <TreeRects key={datum.index} data={datum.raw}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
-            fill={colorFunction(datum.raw, rectIndex)}
+            fill={this.state.active ? colorFunction(datum.raw, rectIndex) : style.inactive}
             title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
             textLight={this.props.textLight}
@@ -338,7 +356,9 @@ class TreeMap extends React.Component {
             displayPercentages={this.props.displayPercentages}
             percentLight={this.props.percentLight} percentDark={this.props.percentDark}
             initialAnimation={this.props.initialAnimation}
-            onClick={this.onClick.bind(this)}
+            weightKey={this.props.weightKey}
+            titleRank={this.props.titleRank}
+            onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
           />
         )
       }
@@ -356,9 +376,9 @@ class TreeMap extends React.Component {
           width={this.props.width} height={this.props.height}>
           {rects}
         </svg>
-        {this.state.childMap != null &&
-          <div style={{position: "absolute", top: `${this.getNestPosition()[0]}px`, left: `${this.getNestPosition()[1]}px`}}>
-            {this.state.childMap}
+        {this.state.nestedMap != null &&
+          <div style={style.map}>
+            {this.state.nestedMap}
           </div>
         }
       </div>
@@ -380,6 +400,10 @@ TreeMap.defaultProps = {
   colorPalette: [
     "#4cab92", "#ca0004", "#003953", "#eccc00",
     "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"
+  ],
+  grayscalePalette: [
+    "#080808", "#282828", "#484848", "#686868",
+    "#808080", "#A0A0A0", "#B0B0B0", "#C8C8C8"
   ],
   textDark: "#222",
   textLight: "#eee",

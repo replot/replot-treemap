@@ -76,15 +76,15 @@ class ExampleApp extends React.Component {
         {population: 1266, country: "India"},
         {population: 323, country: "United States",
           child: [
-            {population: 200, country: "California"},
-            {population: 80, country: "Illinois"},
-            {population: 43, country: "Vermont",
+            {population: 200, state: "California"},
+            {population: 80, state: "Illinois"},
+            {population: 43, state: "Vermont",
               child: [
-                {population: 13, country: "Newport"},
-                {population: 30, country: "Montpelier"}
+                {population: 13, city: "Newport"},
+                {population: 30, city: "Montpelier"}
               ]},
-            {population: 5, country: "North Dakota"},
-            {population: 3, country: "South Dakota"},
+            {population: 5, state: "North Dakota"},
+            {population: 3, state: "South Dakota"},
           ]},
         {population: 258, country: "Indonesia"},
         {population: 205, country: "Brazil"},
@@ -97,7 +97,8 @@ class ExampleApp extends React.Component {
         {population: 40, country: "Redland"},
         {population: 30, country: "Yellowland"},
         {population: 20, country: "Orangeland"}
-      ]
+      ],
+      titleRank: ["country", "state", "city"]
     }
   }
 
@@ -123,7 +124,7 @@ class ExampleApp extends React.Component {
         <KeyValueTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMap data={this.state.data} weightKey="population"
-            titleKey="country" />
+            titleKey="country" titleRank={this.state.titleRank}/>
         </div>
       </div>
     )

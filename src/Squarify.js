@@ -13,7 +13,7 @@ class Squarify {
     this.remainingY = this.totalHeight
     this.totalArea = this.totalWidth * this.totalHeight
     this.rows = []
-    this.totalWeight = 0
+    this.totalWeight = 0.0
     for (let member of this.data) {
       this.totalWeight += member[this.weightKey]
     }
