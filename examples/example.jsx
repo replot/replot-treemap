@@ -23,7 +23,7 @@ class KeyValueRow extends React.Component {
       <tr key={this.props.title}>
         <td style={style.cell}>{this.props.country} </td>
         <td style={style.cell}>
-          <input type="text" value={parseInt(this.props.population)}
+          <input type="text" value={parseInt(this.props.population) || ""}
             onChange={this.changeHandler.bind(this)} />
         </td>
       </tr>
@@ -46,7 +46,7 @@ class KeyValueTable extends React.Component {
     let rows = []
     for (let dataPoint of this.props.data) {
       rows.push(
-        <KeyValueRow key={dataPoint.title}
+        <KeyValueRow key={dataPoint.country}
           country={dataPoint.country} population={dataPoint.population}
           updateData={this.props.updateData.bind(this)} />
       )

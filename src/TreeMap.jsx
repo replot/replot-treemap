@@ -10,7 +10,8 @@ class TreeRects extends React.Component {
     let nestedMap = null
     if (this.props.data.child) {
       nestedMap = (
-        <TreeMap data={this.props.data.child} weightKey={this.props.weightKey}
+        <TreeMap data={this.props.data.child}
+          weightKey={this.props.weightKey}
           titleKey={this.props.titleRank[1]}
           titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
       )
@@ -80,7 +81,8 @@ class TreeRects extends React.Component {
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
                   onClick={this.handleNest.bind(this)}
-                  style={this.props.data.child || this.props.active == false ? {cursor:"pointer"} : null}
+                  style={this.props.data.child || this.props.active == false ?
+                    {cursor:"pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -104,8 +106,10 @@ class OtherRect extends React.Component {
     let nestedMap = null
     if (this.props.data.child) {
       nestedMap = (
-        <TreeMap data={this.props.data.child} weightKey={this.props.weightKey}
-          titleKey={this.props.titleRank[0]} titleRank={this.props.titleRank} />
+        <TreeMap data={this.props.data.child}
+          weightKey={this.props.weightKey}
+          titleKey={this.props.titleRank[0]}
+          titleRank={this.props.titleRank} />
       )
     }
     this.props.handleNest(nestedMap)
@@ -223,30 +227,31 @@ class TreeMap extends React.Component {
   }
 
   getNestPosition() {
-    return this.props.height < this.props.width ? [this.props.height / 8 , this.props.height / 8] : [this.props.width / 8 , this.props.width / 8]
+    return this.props.height < this.props.width ?
+      [this.props.height / 8 , this.props.height / 8] :
+      [this.props.width / 8 , this.props.width / 8]
   }
 
   needOther(testData) {
-    var weights = []
+    let weights = []
     for (let dataPoint of testData) {
       weights.push(dataPoint[this.props.weightKey])
     }
-    weights.sort((a, b) => a - b)
 
-    var total = weights.reduce((a, b) => a + b, 0)
-    let threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * total
+    let total = weights.reduce((a, b) => a + b, 0)
+    let threshold = (this.props.otherThreshold < .025 ?
+      .025 : this.props.otherThreshold) * total
 
     let totalForOther = 0
+    let numOther = 0
     for (var index = 0; index < weights.length; index++){
       if (weights[index] < threshold){
         totalForOther += weights[index]
-      }
-      else {
-        break
+        numOther++
       }
     }
 
-    if (index > 1) {
+    if (numOther > 1) {
       let newData = []
       let childArray = []
       for (let dataPoint of testData){
@@ -291,7 +296,8 @@ class TreeMap extends React.Component {
 
     if (considerOther[1] == true){
       let other = dataToUse[dataToUse.length-1]
-      let otherArea = (other[this.props.weightKey] / considerOther[2]) * (this.props.width * this.props.height)
+      let otherArea = (other[this.props.weightKey] / considerOther[2])
+        * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
       scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey])
       otherRect = (
