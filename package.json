@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "cd examples && webpack index.js bundle.js",
-    "build-umd": "webpack src/index.js umd/react-ent.js"
+    "build-umd": "webpack src/index.js umd/replot-treemap.js"
   },
   "repository": {
     "type": "git",
