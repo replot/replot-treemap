@@ -6,17 +6,16 @@ import {spring, Motion} from "react-motion"
 
 class TreeRects extends React.Component {
 
-  handleClick(e){
-    let childData = this.props.data.child
+  handleNest(){
     let nestedMap = null
-    if (childData != null) {
+    if (this.props.data.child) {
       nestedMap = (
-        <TreeMap data={childData} weightKey={this.props.weightKey}
+        <TreeMap data={this.props.data.child} weightKey={this.props.weightKey}
           titleKey={this.props.titleRank[1]}
           titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
       )
     }
-    this.props.onClick(nestedMap)
+    this.props.handleNest(nestedMap)
   }
 
   render() {
@@ -80,8 +79,8 @@ class TreeRects extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.handleClick.bind(this)}
-                  style={this.props.data.child || this.props.active == false ? {cursor:'pointer'} : null}
+                  onClick={this.handleNest.bind(this)}
+                  style={this.props.data.child || this.props.active == false ? {cursor:"pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -101,16 +100,15 @@ class TreeRects extends React.Component {
 
 class OtherRect extends React.Component {
 
-  handleClick(e){
-    let childData = this.props.data.child
+  handleNest(){
     let nestedMap = null
-    if (childData != null) {
+    if (this.props.data.child) {
       nestedMap = (
-        <TreeMap data={childData} weightKey={this.props.weightKey}
+        <TreeMap data={this.props.data.child} weightKey={this.props.weightKey}
           titleKey={this.props.titleRank[0]} titleRank={this.props.titleRank} />
       )
     }
-    this.props.onClick(nestedMap)
+    this.props.handleNest(nestedMap)
   }
 
   render() {
@@ -177,8 +175,8 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.handleClick.bind(this)}
-                  style={{cursor:'pointer'}}
+                  onClick={this.handleNest.bind(this)}
+                  style={{cursor:"pointer"}}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -208,7 +206,7 @@ class TreeMap extends React.Component {
     }
   }
 
-  onClick(nest) {
+  showNest(nest) {
     if (nest != null){
       this.setState({
         nestedMap: nest,
@@ -217,7 +215,7 @@ class TreeMap extends React.Component {
     }
   }
 
-  onBackClick(){
+  hideNest(){
     this.setState({
       nestedMap: null,
       active: true
@@ -233,9 +231,9 @@ class TreeMap extends React.Component {
     for (let dataPoint of testData) {
       weights.push(dataPoint[this.props.weightKey])
     }
-    weights.sort((a, b) => a - b);
+    weights.sort((a, b) => a - b)
 
-    var total = weights.reduce((a, b) => a + b, 0);
+    var total = weights.reduce((a, b) => a + b, 0)
     let threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * total
 
     let totalForOther = 0
@@ -274,7 +272,8 @@ class TreeMap extends React.Component {
 
   render() {
     const style = {
-      inactive: "#808080",
+      active: "#B8860B",
+      inactive: "#DCDCDC",
       map: {
         position: "absolute",
         top: `${this.getNestPosition()[0]}px`,
@@ -299,7 +298,7 @@ class TreeMap extends React.Component {
         <OtherRect key="other" data={other}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
-          fill={this.state.active ? "#000000" : style.inactive}
+          fill={this.state.active ? style.active : style.inactive}
           title="Other" titleScale={this.props.titleScale}
           percentage={(100 * other[this.props.weightKey] / considerOther[2]).toFixed(1)}
           percentageScale={this.props.percentageScale}
@@ -307,7 +306,7 @@ class TreeMap extends React.Component {
           initialAnimation={this.props.initialAnimation}
           weightKey={this.props.weightKey}
           titleRank={this.props.titleRank}
-          onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
+          handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
         />
       )
     }
@@ -334,7 +333,10 @@ class TreeMap extends React.Component {
       }
     } else {
       colorFunction = (rawDatum, index) => {
-        return this.props.colorPalette[index%this.props.colorPalette.length]
+        if (this.state.active) {
+          return this.props.colorPalette[index%this.props.colorPalette.length]
+        }
+        return this.props.grayscalePalette[index%this.props.grayscalePalette.length]
       }
     }
 
@@ -347,7 +349,7 @@ class TreeMap extends React.Component {
           <TreeRects key={datum.index} data={datum.raw}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
-            fill={this.state.active ? colorFunction(datum.raw, rectIndex) : style.inactive}
+            fill={colorFunction(datum.raw, rectIndex)}
             title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
             textLight={this.props.textLight}
@@ -360,7 +362,7 @@ class TreeMap extends React.Component {
             weightKey={this.props.weightKey}
             titleRank={this.props.titleRank}
             active={this.state.active}
-            onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
+            handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
           />
         )
       }
