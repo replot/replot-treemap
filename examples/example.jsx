@@ -72,7 +72,13 @@ class ExampleApp extends React.Component {
     super(props)
     this.state = {
       data: [
-        {population: 1373, country: "China"},
+        {population: 1373, country: "China",
+          child: [
+            {population: 902, state: "Beijing"},
+            {population: 150, state: "Hebei"},
+            {population: 92, state: "Tianjin"},
+            {population: 201, state: "Shanxi"}
+          ]},
         {population: 1266, country: "India"},
         {population: 323, country: "United States",
           child: [
@@ -96,7 +102,12 @@ class ExampleApp extends React.Component {
         {population: 20, country: "Blueland"},
         {population: 40, country: "Redland"},
         {population: 30, country: "Yellowland"},
-        {population: 20, country: "Orangeland"}
+        {population: 20, country: "Orangeland",
+          child: [
+            {population: 12, state: "First"},
+            {population: 5, state: "Second"},
+            {population: 3, state: "Third"}
+          ]}
       ],
       titleRank: ["country", "state", "city"]
     }

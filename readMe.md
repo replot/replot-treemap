@@ -1,4 +1,4 @@
-# Ent: TreeMaps for react
+# Replot-treemap: TreeMaps for react
 Intelligent and customizable treemap components for your wicked cool projects.
 
 ![Tree!](docs/img/tree-photo.jpg)
@@ -40,6 +40,9 @@ render() {
 - `titleKey` defaults to `"title"`
 - `weightKey` defaults to `"weight"`
 
+### Dimensions
+Dimensions may be specified by passing in `width` and `height` props. The
+unit is pixels, and the treemap defaults to 800 by 400 pixels.
 
 ### Colors
 Colors may be specified through 3 different mechanisms.

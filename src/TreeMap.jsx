@@ -262,6 +262,9 @@ class TreeMap extends React.Component {
           let child = {}
           child[this.props.weightKey] = dataPoint[this.props.weightKey]
           child[this.props.titleKey] = dataPoint[this.props.titleKey]
+          if (dataPoint.child){
+            child.child = dataPoint.child
+          }
           childArray.push(child)
         }
       }
@@ -292,11 +295,11 @@ class TreeMap extends React.Component {
     let scaleWithOther = 1
 
     if (considerOther[1] == true){
-      let other = dataToUse[dataToUse.length-1]
-      let otherArea = (other[this.props.weightKey] / considerOther[2])
-        * (this.props.width * this.props.height)
+      let otherArea = (dataToUse[dataToUse.length-1][this.props.weightKey]
+        / considerOther[2]) * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
-      scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey])
+      scaleWithOther = considerOther[2]
+        / (considerOther[2] - dataToUse[dataToUse.length-1][this.props.weightKey])
     }
 
     let s = new Squarify(
