@@ -150,7 +150,7 @@ class OtherRect extends React.Component {
         {
           (interpolatingStyles) => {
             let titleStyle = {
-              color: "#FFFFFF",
+              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
               fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
               transform: "rotate(270deg)",
@@ -159,7 +159,7 @@ class OtherRect extends React.Component {
             }
 
             let percentageStyle = {
-              color: "#FFFFFF",
+              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
               fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
               opacity: 0.75,
@@ -277,8 +277,6 @@ class TreeMap extends React.Component {
 
   render() {
     const style = {
-      active: "#B8860B",
-      inactive: "#DCDCDC",
       map: {
         position: "absolute",
         top: `${this.getNestPosition()[0]}px`,
@@ -292,7 +290,6 @@ class TreeMap extends React.Component {
 
     let otherWidth = 0
     let scaleWithOther = 1
-    let otherRect = null
 
     if (considerOther[1] == true){
       let other = dataToUse[dataToUse.length-1]
@@ -300,21 +297,6 @@ class TreeMap extends React.Component {
         * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
       scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey])
-      otherRect = (
-        <OtherRect key="other" data={other}
-          x={this.props.width-otherWidth} y={0}
-          width={otherWidth} height={this.props.height}
-          fill={this.state.active ? style.active : style.inactive}
-          title="Other" titleScale={this.props.titleScale}
-          percentage={(100 * other[this.props.weightKey] / considerOther[2]).toFixed(1)}
-          percentageScale={this.props.percentageScale}
-          displayPercentages={this.props.displayPercentages}
-          initialAnimation={this.props.initialAnimation}
-          weightKey={this.props.weightKey}
-          titleRank={this.props.titleRank}
-          handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
-        />
-      )
     }
 
     let s = new Squarify(
@@ -363,7 +345,6 @@ class TreeMap extends React.Component {
             percentage={datum.weightPercent}
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
-            percentLight={this.props.percentLight} percentDark={this.props.percentDark}
             initialAnimation={this.props.initialAnimation}
             weightKey={this.props.weightKey}
             titleRank={this.props.titleRank}
@@ -374,8 +355,23 @@ class TreeMap extends React.Component {
       }
     }
     if (considerOther[1] == true){
+      rectIndex += 1
       rects.push(
-        otherRect
+        <OtherRect key="other" data={dataToUse[dataToUse.length-1]}
+          x={this.props.width-otherWidth} y={0}
+          width={otherWidth} height={this.props.height}
+          fill={colorFunction(dataToUse[dataToUse.length-1],rectIndex)}
+          title="Other" titleScale={this.props.titleScale}
+          textDark={this.props.textDark} textLight={this.props.textLight}
+          titleScale={this.props.titleScale}
+          percentage={(100 * dataToUse[dataToUse.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
+          percentageScale={this.props.percentageScale}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}
+          weightKey={this.props.weightKey}
+          titleRank={this.props.titleRank}
+          handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
+        />
       )
     }
 
