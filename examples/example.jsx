@@ -23,7 +23,7 @@ class KeyValueRow extends React.Component {
       <tr key={this.props.title}>
         <td style={style.cell}>{this.props.country} </td>
         <td style={style.cell}>
-          <input type="text" value={parseInt(this.props.population)}
+          <input type="text" value={parseInt(this.props.population) || ""}
             onChange={this.changeHandler.bind(this)} />
         </td>
       </tr>
@@ -46,7 +46,7 @@ class KeyValueTable extends React.Component {
     let rows = []
     for (let dataPoint of this.props.data) {
       rows.push(
-        <KeyValueRow key={dataPoint.title}
+        <KeyValueRow key={dataPoint.country}
           country={dataPoint.country} population={dataPoint.population}
           updateData={this.props.updateData.bind(this)} />
       )
@@ -72,7 +72,13 @@ class ExampleApp extends React.Component {
     super(props)
     this.state = {
       data: [
-        {population: 1373, country: "China"},
+        {population: 1373, country: "China",
+          child: [
+            {population: 902, state: "Beijing"},
+            {population: 150, state: "Hebei"},
+            {population: 92, state: "Tianjin"},
+            {population: 201, state: "Shanxi"}
+          ]},
         {population: 1266, country: "India"},
         {population: 323, country: "United States",
           child: [
@@ -96,7 +102,12 @@ class ExampleApp extends React.Component {
         {population: 20, country: "Blueland"},
         {population: 40, country: "Redland"},
         {population: 30, country: "Yellowland"},
-        {population: 20, country: "Orangeland"}
+        {population: 20, country: "Orangeland",
+          child: [
+            {population: 12, state: "First"},
+            {population: 5, state: "Second"},
+            {population: 3, state: "Third"}
+          ]}
       ],
       titleRank: ["country", "state", "city"]
     }

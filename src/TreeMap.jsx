@@ -6,17 +6,23 @@ import {spring, Motion} from "react-motion"
 
 class TreeRects extends React.Component {
 
-  handleClick(e){
-    let childData = this.props.data.child
+  handleNest(){
     let nestedMap = null
-    if (childData != null) {
+    if (this.props.data.child) {
       nestedMap = (
-        <TreeMap data={childData} weightKey={this.props.weightKey}
+        <TreeMap data={this.props.data.child}
+          weightKey={this.props.weightKey}
           titleKey={this.props.titleRank[1]}
-          titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
+          titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}
+          width={this.props.parentWidth} height={this.props.parentHeight}
+          otherThreshold={this.props.otherThreshold}
+          colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
+          colorPalette={this.props.colorPalette}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}/>
       )
     }
-    this.props.onClick(nestedMap)
+    this.props.handleNest(nestedMap)
   }
 
   render() {
@@ -80,8 +86,9 @@ class TreeRects extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.handleClick.bind(this)}
-                  style={this.props.data.child || this.props.active == false ? {cursor:'pointer'} : null}
+                  onClick={this.handleNest.bind(this)}
+                  style={this.props.data.child || this.props.active == false ?
+                    {cursor:"pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -101,16 +108,23 @@ class TreeRects extends React.Component {
 
 class OtherRect extends React.Component {
 
-  handleClick(e){
-    let childData = this.props.data.child
+  handleNest(){
     let nestedMap = null
-    if (childData != null) {
+    if (this.props.data.child) {
       nestedMap = (
-        <TreeMap data={childData} weightKey={this.props.weightKey}
-          titleKey={this.props.titleRank[0]} titleRank={this.props.titleRank} />
+        <TreeMap data={this.props.data.child}
+          weightKey={this.props.weightKey}
+          titleKey={this.props.titleRank[0]}
+          titleRank={this.props.titleRank}
+          width={this.props.parentWidth} height={this.props.parentHeight}
+          otherThreshold={this.props.otherThreshold}
+          colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
+          colorPalette={this.props.colorPalette}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}/>
       )
     }
-    this.props.onClick(nestedMap)
+    this.props.handleNest(nestedMap)
   }
 
   render() {
@@ -148,7 +162,7 @@ class OtherRect extends React.Component {
         {
           (interpolatingStyles) => {
             let titleStyle = {
-              color: "#FFFFFF",
+              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
               fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
               transform: "rotate(270deg)",
@@ -157,7 +171,7 @@ class OtherRect extends React.Component {
             }
 
             let percentageStyle = {
-              color: "#FFFFFF",
+              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
               fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
               opacity: 0.75,
@@ -177,8 +191,8 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.handleClick.bind(this)}
-                  style={{cursor:'pointer'}}
+                  onClick={this.handleNest.bind(this)}
+                  style={{cursor:"pointer"}}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -208,7 +222,7 @@ class TreeMap extends React.Component {
     }
   }
 
-  onClick(nest) {
+  showNest(nest) {
     if (nest != null){
       this.setState({
         nestedMap: nest,
@@ -217,7 +231,7 @@ class TreeMap extends React.Component {
     }
   }
 
-  onBackClick(){
+  hideNest(){
     this.setState({
       nestedMap: null,
       active: true
@@ -225,30 +239,31 @@ class TreeMap extends React.Component {
   }
 
   getNestPosition() {
-    return this.props.height < this.props.width ? [this.props.height / 8 , this.props.height / 8] : [this.props.width / 8 , this.props.width / 8]
+    return this.props.height < this.props.width ?
+      [this.props.height / 8 , this.props.height / 8] :
+      [this.props.width / 8 , this.props.width / 8]
   }
 
   needOther(testData) {
-    var weights = []
+    let weights = []
     for (let dataPoint of testData) {
       weights.push(dataPoint[this.props.weightKey])
     }
-    weights.sort((a, b) => a - b);
 
-    var total = weights.reduce((a, b) => a + b, 0);
-    let threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * total
+    let total = weights.reduce((a, b) => a + b, 0)
+    let threshold = (this.props.otherThreshold < .025 ?
+      .025 : this.props.otherThreshold) * total
 
     let totalForOther = 0
+    let numOther = 0
     for (var index = 0; index < weights.length; index++){
       if (weights[index] < threshold){
         totalForOther += weights[index]
-      }
-      else {
-        break
+        numOther++
       }
     }
 
-    if (index > 1) {
+    if (numOther > 1) {
       let newData = []
       let childArray = []
       for (let dataPoint of testData){
@@ -259,6 +274,9 @@ class TreeMap extends React.Component {
           let child = {}
           child[this.props.weightKey] = dataPoint[this.props.weightKey]
           child[this.props.titleKey] = dataPoint[this.props.titleKey]
+          if (dataPoint.child){
+            child.child = dataPoint.child
+          }
           childArray.push(child)
         }
       }
@@ -274,7 +292,6 @@ class TreeMap extends React.Component {
 
   render() {
     const style = {
-      inactive: "#808080",
       map: {
         position: "absolute",
         top: `${this.getNestPosition()[0]}px`,
@@ -288,28 +305,13 @@ class TreeMap extends React.Component {
 
     let otherWidth = 0
     let scaleWithOther = 1
-    let otherRect = null
 
     if (considerOther[1] == true){
-      let other = dataToUse[dataToUse.length-1]
-      let otherArea = (other[this.props.weightKey] / considerOther[2]) * (this.props.width * this.props.height)
+      let otherArea = (dataToUse[dataToUse.length-1][this.props.weightKey]
+        / considerOther[2]) * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
-      scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey])
-      otherRect = (
-        <OtherRect key="other" data={other}
-          x={this.props.width-otherWidth} y={0}
-          width={otherWidth} height={this.props.height}
-          fill={this.state.active ? "#000000" : style.inactive}
-          title="Other" titleScale={this.props.titleScale}
-          percentage={(100 * other[this.props.weightKey] / considerOther[2]).toFixed(1)}
-          percentageScale={this.props.percentageScale}
-          displayPercentages={this.props.displayPercentages}
-          initialAnimation={this.props.initialAnimation}
-          weightKey={this.props.weightKey}
-          titleRank={this.props.titleRank}
-          onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
-        />
-      )
+      scaleWithOther = considerOther[2]
+        / (considerOther[2] - dataToUse[dataToUse.length-1][this.props.weightKey])
     }
 
     let s = new Squarify(
@@ -334,7 +336,10 @@ class TreeMap extends React.Component {
       }
     } else {
       colorFunction = (rawDatum, index) => {
-        return this.props.colorPalette[index%this.props.colorPalette.length]
+        if (this.state.active) {
+          return this.props.colorPalette[index%this.props.colorPalette.length]
+        }
+        return this.props.grayscalePalette[index%this.props.grayscalePalette.length]
       }
     }
 
@@ -347,7 +352,8 @@ class TreeMap extends React.Component {
           <TreeRects key={datum.index} data={datum.raw}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
-            fill={this.state.active ? colorFunction(datum.raw, rectIndex) : style.inactive}
+            parentWidth={this.props.width} parentHeight={this.props.height}
+            fill={colorFunction(datum.raw, rectIndex)}
             title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
             textLight={this.props.textLight}
@@ -355,19 +361,34 @@ class TreeMap extends React.Component {
             percentage={datum.weightPercent}
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
-            percentLight={this.props.percentLight} percentDark={this.props.percentDark}
             initialAnimation={this.props.initialAnimation}
             weightKey={this.props.weightKey}
             titleRank={this.props.titleRank}
             active={this.state.active}
-            onClick={this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)}
+            handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
           />
         )
       }
     }
     if (considerOther[1] == true){
+      rectIndex += 1
       rects.push(
-        otherRect
+        <OtherRect key="other" data={dataToUse[dataToUse.length-1]}
+          x={this.props.width-otherWidth} y={0}
+          width={otherWidth} height={this.props.height}
+          parentWidth={this.props.width} parentHeight={this.props.height}
+          fill={colorFunction(dataToUse[dataToUse.length-1],rectIndex)}
+          title="Other" titleScale={this.props.titleScale}
+          textDark={this.props.textDark} textLight={this.props.textLight}
+          titleScale={this.props.titleScale}
+          percentage={(100 * dataToUse[dataToUse.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
+          percentageScale={this.props.percentageScale}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}
+          weightKey={this.props.weightKey}
+          titleRank={this.props.titleRank}
+          handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
+        />
       )
     }
 

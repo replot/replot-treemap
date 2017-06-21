@@ -1,4 +1,4 @@
-# Ent: TreeMaps for react
+# replot-treemap: TreeMaps for react
 Intelligent and customizable treemap components for your wicked cool projects.
 
 ![Tree!](docs/img/tree-photo.jpg)
@@ -6,17 +6,19 @@ Intelligent and customizable treemap components for your wicked cool projects.
 ## Installation
 Only works with React projects. React must be installed separately.
 ```bash
-npm install react-ent
+npm install replot-treemap
 ```
 
-Then with a module bundler like webpack/browserify that supports CommonJS/ES2015 modules, use as you would anything else.
+Then with a module bundler like webpack/browserify that supports CommonJS/ES2015
+modules, use as you would anything else.
 
 ```javascript
-import TreeMap from 'react-ent'
+import TreeMap from 'replot-treemap'
 ```
 
 ## API
-Ent is designed to create beautiful treemaps right out of the box. The only *required* input is properly formatted data.
+replot-treemap is designed to create beautiful treemaps right out of the box.
+The only *required* input is properly formatted data.
 
 ### Basic Usage
 In the simplest case, just supply data and specify the keys for the titles and weights -:
@@ -40,6 +42,32 @@ render() {
 - `titleKey` defaults to `"title"`
 - `weightKey` defaults to `"weight"`
 
+### Advanced Usage - Nesting
+Replot treemaps are able to display nested structures, as long as the data is
+formatted properly. If nested data is supplied, a `titleRank` prop, which details
+keys at various levels in the form of a Javascript array, is also required.
+
+```javascript
+render() {
+  let populations = {
+    {country: "China", population: 1388232693, child: [
+      {state: "Beijing", population: 902},
+      {state: "Hebei", population: 150}
+    ]},
+    {country: "India", population: 1342512706},
+    {country: "USA", population: 326474013},
+  }
+
+  return(
+    <TreeMap data={populations} titleKey="country"
+      weightKey="population" titleRank={["country", "state"]}/>
+  )
+}
+```
+
+### Dimensions
+Dimensions may be specified by passing in `width` and `height` props. The
+unit is pixels, and the treemap defaults to 800 by 400 pixels.
 
 ### Colors
 Colors may be specified through 3 different mechanisms.
@@ -117,8 +145,26 @@ render() {
 }
 ```
 
+### Clustering Small Rectangles
+Replot treemaps intelligently aggregate smaller rectangles into a rectangle
+classified by "Other". By default, any rectangle that would have an area smaller
+than 2.5% of the total area is clustered. This value can be increased by passing
+in an `otherThreshold` prop, as a decimal.
+
+```javascript
+render() {
+  ...
+
+  return(
+    <TreeMap data={populations} titleKey="country"
+      weightKey="population" otherThreshold={.05} />
+  )
+}
+```
+
 ### Initial Animation
-Initial animation is enabled by default, resulting in the treemap growing and translating from the top left corner. This can be disabled using the `initialAnimation` prop.
+Initial animation is enabled by default, resulting in the treemap growing and
+translating from the top left corner. This can be disabled using the `initialAnimation` prop.
 
 ```javascript
 render() {

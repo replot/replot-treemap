@@ -840,6 +840,8 @@ var _reactMotion = __webpack_require__(28);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -856,16 +858,22 @@ var TreeRects = function (_React$Component) {
   }
 
   _createClass(TreeRects, [{
-    key: "handleClick",
-    value: function handleClick(e) {
-      var childData = this.props.data.child;
+    key: "handleNest",
+    value: function handleNest() {
       var nestedMap = null;
-      if (childData != null) {
-        nestedMap = _react2.default.createElement(TreeMap, { data: childData, weightKey: this.props.weightKey,
+      if (this.props.data.child) {
+        nestedMap = _react2.default.createElement(TreeMap, { data: this.props.data.child,
+          weightKey: this.props.weightKey,
           titleKey: this.props.titleRank[1],
-          titleRank: this.props.titleRank.slice(1, this.props.titleRank.length) });
+          titleRank: this.props.titleRank.slice(1, this.props.titleRank.length),
+          width: this.props.parentWidth, height: this.props.parentHeight,
+          otherThreshold: this.props.otherThreshold,
+          colorFunction: this.props.colorFunction, colorKey: this.props.colorKey,
+          colorPalette: this.props.colorPalette,
+          displayPercentages: this.props.displayPercentages,
+          initialAnimation: this.props.initialAnimation });
       }
-      this.props.onClick(nestedMap);
+      this.props.handleNest(nestedMap);
     }
   }, {
     key: "render",
@@ -935,8 +943,8 @@ var TreeRects = function (_React$Component) {
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
-                onClick: _this2.handleClick.bind(_this2),
-                style: _this2.props.data.child || _this2.props.active == false ? { cursor: 'pointer' } : null
+                onClick: _this2.handleNest.bind(_this2),
+                style: _this2.props.data.child || _this2.props.active == false ? { cursor: "pointer" } : null
               },
               _react2.default.createElement(
                 "div",
@@ -976,15 +984,22 @@ var OtherRect = function (_React$Component2) {
   }
 
   _createClass(OtherRect, [{
-    key: "handleClick",
-    value: function handleClick(e) {
-      var childData = this.props.data.child;
+    key: "handleNest",
+    value: function handleNest() {
       var nestedMap = null;
-      if (childData != null) {
-        nestedMap = _react2.default.createElement(TreeMap, { data: childData, weightKey: this.props.weightKey,
-          titleKey: this.props.titleRank[0], titleRank: this.props.titleRank });
+      if (this.props.data.child) {
+        nestedMap = _react2.default.createElement(TreeMap, { data: this.props.data.child,
+          weightKey: this.props.weightKey,
+          titleKey: this.props.titleRank[0],
+          titleRank: this.props.titleRank,
+          width: this.props.parentWidth, height: this.props.parentHeight,
+          otherThreshold: this.props.otherThreshold,
+          colorFunction: this.props.colorFunction, colorKey: this.props.colorKey,
+          colorPalette: this.props.colorPalette,
+          displayPercentages: this.props.displayPercentages,
+          initialAnimation: this.props.initialAnimation });
       }
-      this.props.onClick(nestedMap);
+      this.props.handleNest(nestedMap);
     }
   }, {
     key: "render",
@@ -1025,7 +1040,7 @@ var OtherRect = function (_React$Component2) {
         },
         function (interpolatingStyles) {
           var titleStyle = {
-            color: "#FFFFFF",
+            color: (0, _isLight2.default)(_this4.props.fill) ? _this4.props.textDark : _this4.props.textLight,
             textAlign: "center",
             fontSize: Math.sqrt(_this4.props.titleScale * _this4.props.width * _this4.props.height / 100) + "px",
             transform: "rotate(270deg)",
@@ -1034,7 +1049,7 @@ var OtherRect = function (_React$Component2) {
           };
 
           var percentageStyle = {
-            color: "#FFFFFF",
+            color: (0, _isLight2.default)(_this4.props.fill) ? _this4.props.textDark : _this4.props.textLight,
             textAlign: "center",
             fontSize: Math.sqrt(_this4.props.percentageScale * _this4.props.width * _this4.props.height / 200) + "px",
             opacity: 0.75
@@ -1057,8 +1072,8 @@ var OtherRect = function (_React$Component2) {
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
-                onClick: _this4.handleClick.bind(_this4),
-                style: { cursor: 'pointer' }
+                onClick: _this4.handleNest.bind(_this4),
+                style: { cursor: "pointer" }
               },
               _react2.default.createElement(
                 "div",
@@ -1104,8 +1119,8 @@ var TreeMap = function (_React$Component3) {
   }
 
   _createClass(TreeMap, [{
-    key: "onClick",
-    value: function onClick(nest) {
+    key: "showNest",
+    value: function showNest(nest) {
       if (nest != null) {
         this.setState({
           nestedMap: nest,
@@ -1114,8 +1129,8 @@ var TreeMap = function (_React$Component3) {
       }
     }
   }, {
-    key: "onBackClick",
-    value: function onBackClick() {
+    key: "hideNest",
+    value: function hideNest() {
       this.setState({
         nestedMap: null,
         active: true
@@ -1155,25 +1170,21 @@ var TreeMap = function (_React$Component3) {
         }
       }
 
-      weights.sort(function (a, b) {
-        return a - b;
-      });
-
       var total = weights.reduce(function (a, b) {
         return a + b;
       }, 0);
       var threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * total;
 
       var totalForOther = 0;
+      var numOther = 0;
       for (var index = 0; index < weights.length; index++) {
         if (weights[index] < threshold) {
           totalForOther += weights[index];
-        } else {
-          break;
+          numOther++;
         }
       }
 
-      if (index > 1) {
+      if (numOther > 1) {
         var newData = [];
         var childArray = [];
         var _iteratorNormalCompletion2 = true;
@@ -1190,6 +1201,9 @@ var TreeMap = function (_React$Component3) {
               var child = {};
               child[this.props.weightKey] = dataPoint[this.props.weightKey];
               child[this.props.titleKey] = dataPoint[this.props.titleKey];
+              if (dataPoint.child) {
+                child.child = dataPoint.child;
+              }
               childArray.push(child);
             }
           }
@@ -1223,7 +1237,6 @@ var TreeMap = function (_React$Component3) {
       var _this6 = this;
 
       var style = {
-        inactive: "#808080",
         map: {
           position: "absolute",
           top: this.getNestPosition()[0] + "px",
@@ -1237,26 +1250,11 @@ var TreeMap = function (_React$Component3) {
 
       var otherWidth = 0;
       var scaleWithOther = 1;
-      var otherRect = null;
 
       if (considerOther[1] == true) {
-        var other = dataToUse[dataToUse.length - 1];
-        var otherArea = other[this.props.weightKey] / considerOther[2] * (this.props.width * this.props.height);
+        var otherArea = dataToUse[dataToUse.length - 1][this.props.weightKey] / considerOther[2] * (this.props.width * this.props.height);
         otherWidth = otherArea / this.props.height;
-        scaleWithOther = considerOther[2] / (considerOther[2] - other[this.props.weightKey]);
-        otherRect = _react2.default.createElement(OtherRect, { key: "other", data: other,
-          x: this.props.width - otherWidth, y: 0,
-          width: otherWidth, height: this.props.height,
-          fill: this.state.active ? "#000000" : style.inactive,
-          title: "Other", titleScale: this.props.titleScale,
-          percentage: (100 * other[this.props.weightKey] / considerOther[2]).toFixed(1),
-          percentageScale: this.props.percentageScale,
-          displayPercentages: this.props.displayPercentages,
-          initialAnimation: this.props.initialAnimation,
-          weightKey: this.props.weightKey,
-          titleRank: this.props.titleRank,
-          onClick: this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)
-        });
+        scaleWithOther = considerOther[2] / (considerOther[2] - dataToUse[dataToUse.length - 1][this.props.weightKey]);
       }
 
       var s = new _Squarify2.default(JSON.parse(JSON.stringify(considerOther[1] == true ? dataToUse.slice(0, dataToUse.length - 1) : dataToUse)), scaleWithOther, {
@@ -1275,7 +1273,10 @@ var TreeMap = function (_React$Component3) {
         };
       } else {
         colorFunction = function colorFunction(rawDatum, index) {
-          return _this6.props.colorPalette[index % _this6.props.colorPalette.length];
+          if (_this6.state.active) {
+            return _this6.props.colorPalette[index % _this6.props.colorPalette.length];
+          }
+          return _this6.props.grayscalePalette[index % _this6.props.grayscalePalette.length];
         };
       }
 
@@ -1300,7 +1301,8 @@ var TreeMap = function (_React$Component3) {
               rects.push(_react2.default.createElement(TreeRects, { key: datum.index, data: datum.raw,
                 x: datum.origin.x, y: datum.origin.y,
                 width: datum.dimensions.x, height: datum.dimensions.y,
-                fill: this.state.active ? colorFunction(datum.raw, rectIndex) : style.inactive,
+                parentWidth: this.props.width, parentHeight: this.props.height,
+                fill: colorFunction(datum.raw, rectIndex),
                 title: datum.raw[this.props.titleKey],
                 maxTitleLength: s.maxTitleLength, textDark: this.props.textDark,
                 textLight: this.props.textLight,
@@ -1308,12 +1310,11 @@ var TreeMap = function (_React$Component3) {
                 percentage: datum.weightPercent,
                 percentageScale: this.props.percentageScale,
                 displayPercentages: this.props.displayPercentages,
-                percentLight: this.props.percentLight, percentDark: this.props.percentDark,
                 initialAnimation: this.props.initialAnimation,
                 weightKey: this.props.weightKey,
                 titleRank: this.props.titleRank,
                 active: this.state.active,
-                onClick: this.state.active ? this.onClick.bind(this) : this.onBackClick.bind(this)
+                handleNest: this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)
               }));
             }
           } catch (err) {
@@ -1347,7 +1348,17 @@ var TreeMap = function (_React$Component3) {
       }
 
       if (considerOther[1] == true) {
-        rects.push(otherRect);
+        var _React$createElement;
+
+        rectIndex += 1;
+        rects.push(_react2.default.createElement(OtherRect, (_React$createElement = { key: "other", data: dataToUse[dataToUse.length - 1],
+          x: this.props.width - otherWidth, y: 0,
+          width: otherWidth, height: this.props.height,
+          parentWidth: this.props.width, parentHeight: this.props.height,
+          fill: colorFunction(dataToUse[dataToUse.length - 1], rectIndex),
+          title: "Other", titleScale: this.props.titleScale,
+          textDark: this.props.textDark, textLight: this.props.textLight
+        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * dataToUse[dataToUse.length - 1][this.props.weightKey] / considerOther[2]).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "weightKey", this.props.weightKey), _defineProperty(_React$createElement, "titleRank", this.props.titleRank), _defineProperty(_React$createElement, "handleNest", this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)), _React$createElement)));
       }
 
       return _react2.default.createElement(

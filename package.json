@@ -9,11 +9,11 @@
   },
   "scripts": {
     "start": "cd examples && webpack index.js bundle.js",
-    "build-umd": "webpack src/index.js umd/react-ent.js"
+    "build-umd": "webpack src/index.js umd/replot-treemap.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MacroConnections/react-ent.git"
+    "url": "git+https://github.com/MacroConnections/replot-treemap.git"
   },
   "keywords": [
     "react",
@@ -28,9 +28,9 @@
     "react": "^0.14.0 || ^15.0.0"
   },
   "bugs": {
-    "url": "https://github.com/MacroConnections/react-ent/issues"
+    "url": "https://github.com/MacroConnections/replot-treemap/issues"
   },
-  "homepage": "https://github.com/MacroConnections/react-ent#readme",
+  "homepage": "https://github.com/MacroConnections/replot-treemap#readme",
   "devDependencies": {
     "babel-core": "^6.23.1",
     "babel-loader": "^6.3.2",
