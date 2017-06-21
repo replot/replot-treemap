@@ -13,7 +13,13 @@ class TreeRects extends React.Component {
         <TreeMap data={this.props.data.child}
           weightKey={this.props.weightKey}
           titleKey={this.props.titleRank[1]}
-          titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}/>
+          titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}
+          width={this.props.parentWidth} height={this.props.parentHeight}
+          otherThreshold={this.props.otherThreshold}
+          colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
+          colorPalette={this.props.colorPalette}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}/>
       )
     }
     this.props.handleNest(nestedMap)
@@ -109,7 +115,13 @@ class OtherRect extends React.Component {
         <TreeMap data={this.props.data.child}
           weightKey={this.props.weightKey}
           titleKey={this.props.titleRank[0]}
-          titleRank={this.props.titleRank} />
+          titleRank={this.props.titleRank}
+          width={this.props.parentWidth} height={this.props.parentHeight}
+          otherThreshold={this.props.otherThreshold}
+          colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
+          colorPalette={this.props.colorPalette}
+          displayPercentages={this.props.displayPercentages}
+          initialAnimation={this.props.initialAnimation}/>
       )
     }
     this.props.handleNest(nestedMap)
@@ -340,6 +352,7 @@ class TreeMap extends React.Component {
           <TreeRects key={datum.index} data={datum.raw}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
+            parentWidth={this.props.width} parentHeight={this.props.height}
             fill={colorFunction(datum.raw, rectIndex)}
             title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
@@ -363,6 +376,7 @@ class TreeMap extends React.Component {
         <OtherRect key="other" data={dataToUse[dataToUse.length-1]}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
+          parentWidth={this.props.width} parentHeight={this.props.height}
           fill={colorFunction(dataToUse[dataToUse.length-1],rectIndex)}
           title="Other" titleScale={this.props.titleScale}
           textDark={this.props.textDark} textLight={this.props.textLight}
