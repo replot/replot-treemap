@@ -12,8 +12,8 @@ class TreeRects extends React.Component {
       nestedMap = (
         <TreeMap data={this.props.data.child}
           weightKey={this.props.weightKey}
-          titleKey={this.props.titleRank[1]}
-          titleRank={this.props.titleRank.slice(1,this.props.titleRank.length)}
+          titleKey={this.props.keyOrder[1]}
+          keyOrder={this.props.keyOrder.slice(1,this.props.keyOrder.length)}
           width={this.props.parentWidth} height={this.props.parentHeight}
           otherThreshold={this.props.otherThreshold}
           colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
@@ -114,8 +114,8 @@ class OtherRect extends React.Component {
       nestedMap = (
         <TreeMap data={this.props.data.child}
           weightKey={this.props.weightKey}
-          titleKey={this.props.titleRank[0]}
-          titleRank={this.props.titleRank}
+          titleKey={this.props.keyOrder[0]}
+          keyOrder={this.props.keyOrder}
           width={this.props.parentWidth} height={this.props.parentHeight}
           otherThreshold={this.props.otherThreshold}
           colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
@@ -244,7 +244,7 @@ class TreeMap extends React.Component {
       [this.props.width / 8 , this.props.width / 8]
   }
 
-  needOther(testData) {
+  needOther(testData) { //Determines if an "other" cluster is necessary, and adjusts the data if so
     let weights = []
     for (let dataPoint of testData) {
       weights.push(dataPoint[this.props.weightKey])
@@ -290,6 +290,49 @@ class TreeMap extends React.Component {
     return [testData, false, total]
   }
 
+  unflattenData(data, ranking){ //Converts the data from flat to our usable form
+    let unflattenedData = []
+    for (let dataPoint of data){
+      if (!unflattenedData.some(function(el) { return el[ranking[0]] === dataPoint[ranking[0]]})){
+        let total = 0
+        let child = []
+        for (let subData of data){
+          if (subData[ranking[0]] == dataPoint[ranking[0]]){
+            total += subData[this.props.weightKey]
+            let dataPiece = {}
+            dataPiece[this.props.weightKey] = subData[this.props.weightKey]
+            for (let i = 1; i <= ranking.length; i++){
+              dataPiece[ranking[i]] = subData[ranking[i]]
+            }
+            child.push(dataPiece)
+          }
+        }
+        if (child.length > 0){
+          let parentPoint = {}
+          parentPoint[this.props.weightKey] = total
+          parentPoint[ranking[0]] = dataPoint[ranking[0]]
+          parentPoint.child = child
+          unflattenedData.push(parentPoint)
+        }
+      }
+    }
+    return unflattenedData
+  }
+
+  hasChildren(data){ //Determines if the data needs to be unflattened
+    for (let dataPoint of data){
+      for (let key in dataPoint){
+        if (key == "child"){
+          return true
+        }
+      }
+      if (Object.keys(dataPoint).length <= 2){
+        return true
+      }
+    }
+    return false
+  }
+
   render() {
     const style = {
       map: {
@@ -300,23 +343,28 @@ class TreeMap extends React.Component {
       }
     }
 
-    let considerOther = this.needOther(this.props.data)
-    let dataToUse = considerOther[0]
+    let formattedData = this.props.data
+    if (this.props.keyOrder.length > 1 && !this.hasChildren(formattedData)){
+      formattedData = this.unflattenData(this.props.data, this.props.keyOrder)
+    }
+
+    let considerOther = this.needOther(formattedData)
+    formattedData = considerOther[0]
 
     let otherWidth = 0
     let scaleWithOther = 1
 
     if (considerOther[1] == true){
-      let otherArea = (dataToUse[dataToUse.length-1][this.props.weightKey]
+      let otherArea = (formattedData[formattedData.length-1][this.props.weightKey]
         / considerOther[2]) * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
       scaleWithOther = considerOther[2]
-        / (considerOther[2] - dataToUse[dataToUse.length-1][this.props.weightKey])
+        / (considerOther[2] - formattedData[formattedData.length-1][this.props.weightKey])
     }
 
     let s = new Squarify(
       JSON.parse(JSON.stringify(
-        considerOther[1] == true ? dataToUse.slice(0,dataToUse.length-1) : dataToUse
+        considerOther[1] == true ? formattedData.slice(0,formattedData.length-1) : formattedData
       )),
       scaleWithOther,
       {
@@ -363,7 +411,7 @@ class TreeMap extends React.Component {
             displayPercentages={this.props.displayPercentages}
             initialAnimation={this.props.initialAnimation}
             weightKey={this.props.weightKey}
-            titleRank={this.props.titleRank}
+            keyOrder={this.props.keyOrder}
             active={this.state.active}
             handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
           />
@@ -373,20 +421,20 @@ class TreeMap extends React.Component {
     if (considerOther[1] == true){
       rectIndex += 1
       rects.push(
-        <OtherRect key="other" data={dataToUse[dataToUse.length-1]}
+        <OtherRect key="other" data={formattedData[formattedData.length-1]}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
           parentWidth={this.props.width} parentHeight={this.props.height}
-          fill={colorFunction(dataToUse[dataToUse.length-1],rectIndex)}
+          fill={colorFunction(formattedData[formattedData.length-1],rectIndex)}
           title="Other" titleScale={this.props.titleScale}
           textDark={this.props.textDark} textLight={this.props.textLight}
           titleScale={this.props.titleScale}
-          percentage={(100 * dataToUse[dataToUse.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
+          percentage={(100 * formattedData[formattedData.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
           percentageScale={this.props.percentageScale}
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
           weightKey={this.props.weightKey}
-          titleRank={this.props.titleRank}
+          keyOrder={this.props.keyOrder}
           handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
         />
       )
@@ -416,6 +464,7 @@ TreeMap.defaultProps = {
   width: 800,
   height: 400,
   titleKey: "title",
+  keyOrder: ["title"],
   weightKey: "weight",
   otherThreshold: .025,
   colorFunction: null,

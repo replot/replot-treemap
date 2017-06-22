@@ -21,15 +21,16 @@ replot-treemap is designed to create beautiful treemaps right out of the box.
 The only *required* input is properly formatted data.
 
 ### Basic Usage
-In the simplest case, just supply data and specify the keys for the titles and weights -:
+In the simplest case, just supply data (as a Javascript array) and specify the
+keys for the titles and weights -:
 
 ```javascript
 render() {
-  let populations = {
+  let populations = [
     {country: "China", population: 1388232693},
     {country: "India", population: 1342512706},
-    {country: "USA", population: 326474013},
-  }
+    {country: "USA", population: 326474013}
+  ]
 
   return(
     <TreeMap data={populations} titleKey="country"
@@ -43,24 +44,58 @@ render() {
 - `weightKey` defaults to `"weight"`
 
 ### Advanced Usage - Nesting
-Replot treemaps are able to display nested structures, as long as the data is
-formatted properly. If nested data is supplied, a `titleRank` prop, which details
-keys at various levels in the form of a Javascript array, is also required.
+Replot treemaps are able to display nested structures, as long as the data is in
+one of two appropriate formats. The two formats are listed below, and it is not
+necessary to specifiy which format the data is in. If nested data is supplied,
+a `keyOrder` prop, which details keys at various levels in the form of a
+Javascript array, starting with the most general first, is also required.
+
+#### Data Input with Children
+Data may be input in which the child data set for each parent is defined as
+a key/value pair in a parent object. Replot-treemap will look for the `child`
+keyword in this case.
 
 ```javascript
 render() {
-  let populations = {
+  let populations = [
     {country: "China", population: 1388232693, child: [
-      {state: "Beijing", population: 902},
-      {state: "Hebei", population: 150}
+      {state: "Beijing", population: 9020123},
+      {state: "Hebei", population: 1508123}
     ]},
     {country: "India", population: 1342512706},
-    {country: "USA", population: 326474013},
-  }
+    {country: "USA", population: 326474013}
+  ]
+  let keys = ["country", "state"]
 
   return(
     <TreeMap data={populations} titleKey="country"
-      weightKey="population" titleRank={["country", "state"]}/>
+      weightKey="population" keyOrder={keys}/>
+  )
+}
+```
+
+#### Flat Data Input
+Flat data may be input, in which the visualization will determine total weights
+for members of the same parent class.
+
+```javascript
+render() {
+  let populations = [
+    {population: 650, country: "China", state: "Beijing", city: "Miyun"},
+    {population: 902, country: "China", state: "Beijing", city: "Tongzhou"},
+    {population: 120, country: "China", state: "Beijing", city: "Yizhuang"},
+    {population: 800, country: "United States", state: "California", city: "San Francisco"},
+    {population: 1002, country: "United States", state: "California", city: "Los Angeles"},
+    {population: 150, country: "United States", state: "Vermont", city: "Newport"},
+    {population: 202, country: "United States", state: "Vermont", city: "Montpelier"},
+    {population: 112, country: "Canada", state: "Ontario", city: "Kingston"},
+    {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
+  ]
+  let keys = ["country", "state", "city"]
+
+  return(
+    <TreeMap data={populations} titleKey="country"
+      weightKey="population" keyOrder={keys}/>
   )
 }
 ```
@@ -89,11 +124,11 @@ on the political party of the candidate.
 
 ```javascript
 render() {
-  let primary_results = {
+  let primary_results = [
     {candidate: "Barrack Obama", votes: 1236812, party: "Democrat"},
     {candidate: "Hilary Clinton", votes: 693021, party: "Democrat"},
     {candidate: "John Kerry", votes: 991315, party: "Republican"},
-  }
+  ]
 
   let colorFunction = (data, index) => {
     if (data.party == 'Republican') {
@@ -117,11 +152,11 @@ area. This gives complete flexibility in specifying colors.
 
 ```javascript
 render() {
-  let populations = {
+  let populations = [
     {country: "China", population: 1388232693, color="#336699"},
     {country: "India", population: 1342512706, color="#336666"},
     {country: "USA", population: 326474013, color="#666699"},
-  }
+  ]
 
   return(
     <TreeMap data={populations} titleKey="country"
