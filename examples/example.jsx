@@ -72,44 +72,17 @@ class ExampleApp extends React.Component {
     super(props)
     this.state = {
       data: [
-        {population: 1373, country: "China",
-          child: [
-            {population: 902, state: "Beijing"},
-            {population: 150, state: "Hebei"},
-            {population: 92, state: "Tianjin"},
-            {population: 201, state: "Shanxi"}
-          ]},
-        {population: 1266, country: "India"},
-        {population: 323, country: "United States",
-          child: [
-            {population: 200, state: "California"},
-            {population: 80, state: "Illinois"},
-            {population: 43, state: "Vermont",
-              child: [
-                {population: 13, city: "Newport"},
-                {population: 30, city: "Montpelier"}
-              ]},
-            {population: 5, state: "North Dakota"},
-            {population: 3, state: "South Dakota"},
-          ]},
-        {population: 258, country: "Indonesia"},
-        {population: 205, country: "Brazil"},
-        {population: 201, country: "Pakistan"},
-        {population: 186, country: "Nigeria"},
-        {population: 156, country: "Bangladesh"},
-        {population: 40, country: "Iceland"},
-        {population: 30, country: "Greenland"},
-        {population: 20, country: "Blueland"},
-        {population: 40, country: "Redland"},
-        {population: 30, country: "Yellowland"},
-        {population: 20, country: "Orangeland",
-          child: [
-            {population: 12, state: "First"},
-            {population: 5, state: "Second"},
-            {population: 3, state: "Third"}
-          ]}
+        {population: 650, country: "China", state: "Beijing", city: "Miyun"},
+        {population: 902, country: "China", state: "Beijing", city: "Tongzhou"},
+        {population: 120, country: "China", state: "Beijing", city: "Yizhuang"},
+        {population: 800, country: "United States", state: "California", city: "San Francisco"},
+        {population: 1002, country: "United States", state: "California", city: "Los Angeles"},
+        {population: 150, country: "United States", state: "Vermont", city: "Newport"},
+        {population: 202, country: "United States", state: "Vermont", city: "Montpelier"},
+        {population: 112, country: "Canada", state: "Ontario", city: "Kingston"},
+        {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
       ],
-      titleRank: ["country", "state", "city"]
+      keyOrder: ["country", "state", "city"]
     }
   }
 
@@ -135,7 +108,7 @@ class ExampleApp extends React.Component {
         <KeyValueTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMap data={this.state.data} weightKey="population"
-            titleKey="country" titleRank={this.state.titleRank}/>
+            titleKey="country" keyOrder={this.state.keyOrder}/>
         </div>
       </div>
     )
