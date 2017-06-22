@@ -864,8 +864,8 @@ var TreeRects = function (_React$Component) {
       if (this.props.data.child) {
         nestedMap = _react2.default.createElement(TreeMap, { data: this.props.data.child,
           weightKey: this.props.weightKey,
-          titleKey: this.props.titleRank[1],
-          titleRank: this.props.titleRank.slice(1, this.props.titleRank.length),
+          titleKey: this.props.keyOrder[1],
+          keyOrder: this.props.keyOrder.slice(1, this.props.keyOrder.length),
           width: this.props.parentWidth, height: this.props.parentHeight,
           otherThreshold: this.props.otherThreshold,
           colorFunction: this.props.colorFunction, colorKey: this.props.colorKey,
@@ -990,8 +990,8 @@ var OtherRect = function (_React$Component2) {
       if (this.props.data.child) {
         nestedMap = _react2.default.createElement(TreeMap, { data: this.props.data.child,
           weightKey: this.props.weightKey,
-          titleKey: this.props.titleRank[0],
-          titleRank: this.props.titleRank,
+          titleKey: this.props.keyOrder[0],
+          keyOrder: this.props.keyOrder,
           width: this.props.parentWidth, height: this.props.parentHeight,
           otherThreshold: this.props.otherThreshold,
           colorFunction: this.props.colorFunction, colorKey: this.props.colorKey,
@@ -1144,6 +1144,7 @@ var TreeMap = function (_React$Component3) {
   }, {
     key: "needOther",
     value: function needOther(testData) {
+      //Determines if an "other" cluster is necessary, and adjusts the data if so
       var weights = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -1232,105 +1233,70 @@ var TreeMap = function (_React$Component3) {
       return [testData, false, total];
     }
   }, {
-    key: "render",
-    value: function render() {
+    key: "unflattenData",
+    value: function unflattenData(data, ranking) {
       var _this6 = this;
 
-      var style = {
-        map: {
-          position: "absolute",
-          top: this.getNestPosition()[0] + "px",
-          left: this.getNestPosition()[1] + "px",
-          boxShadow: "-10px -10px 20px"
-        }
-      };
-
-      var considerOther = this.needOther(this.props.data);
-      var dataToUse = considerOther[0];
-
-      var otherWidth = 0;
-      var scaleWithOther = 1;
-
-      if (considerOther[1] == true) {
-        var otherArea = dataToUse[dataToUse.length - 1][this.props.weightKey] / considerOther[2] * (this.props.width * this.props.height);
-        otherWidth = otherArea / this.props.height;
-        scaleWithOther = considerOther[2] / (considerOther[2] - dataToUse[dataToUse.length - 1][this.props.weightKey]);
-      }
-
-      var s = new _Squarify2.default(JSON.parse(JSON.stringify(considerOther[1] == true ? dataToUse.slice(0, dataToUse.length - 1) : dataToUse)), scaleWithOther, {
-        width: this.props.width - otherWidth,
-        height: this.props.height,
-        weightKey: this.props.weightKey
-      });
-      s.layout();
-
-      var colorFunction = null;
-      if (this.props.colorFunction) {
-        colorFunction = this.props.colorFunction;
-      } else if (this.props.colorKey) {
-        colorFunction = function colorFunction(rawDatum) {
-          return rawDatum[_this6.props.colorKey];
-        };
-      } else {
-        colorFunction = function colorFunction(rawDatum, index) {
-          if (_this6.state.active) {
-            return _this6.props.colorPalette[index % _this6.props.colorPalette.length];
-          }
-          return _this6.props.grayscalePalette[index % _this6.props.grayscalePalette.length];
-        };
-      }
-
-      var rects = [];
-      var rectIndex = 0;
+      //Converts the data from flat to our usable form
+      var unflattenedData = [];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = s.rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var row = _step3.value;
-          var _iteratorNormalCompletion4 = true;
-          var _didIteratorError4 = false;
-          var _iteratorError4 = undefined;
+        var _loop = function _loop() {
+          var dataPoint = _step3.value;
 
-          try {
-            for (var _iterator4 = row.data[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-              var datum = _step4.value;
+          if (!unflattenedData.some(function (el) {
+            return el[ranking[0]] === dataPoint[ranking[0]];
+          })) {
+            var total = 0;
+            var child = [];
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
 
-              rectIndex += 1;
-              rects.push(_react2.default.createElement(TreeRects, { key: datum.index, data: datum.raw,
-                x: datum.origin.x, y: datum.origin.y,
-                width: datum.dimensions.x, height: datum.dimensions.y,
-                parentWidth: this.props.width, parentHeight: this.props.height,
-                fill: colorFunction(datum.raw, rectIndex),
-                title: datum.raw[this.props.titleKey],
-                maxTitleLength: s.maxTitleLength, textDark: this.props.textDark,
-                textLight: this.props.textLight,
-                titleScale: this.props.titleScale,
-                percentage: datum.weightPercent,
-                percentageScale: this.props.percentageScale,
-                displayPercentages: this.props.displayPercentages,
-                initialAnimation: this.props.initialAnimation,
-                weightKey: this.props.weightKey,
-                titleRank: this.props.titleRank,
-                active: this.state.active,
-                handleNest: this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)
-              }));
-            }
-          } catch (err) {
-            _didIteratorError4 = true;
-            _iteratorError4 = err;
-          } finally {
             try {
-              if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                _iterator4.return();
+              for (var _iterator4 = data[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                var subData = _step4.value;
+
+                if (subData[ranking[0]] == dataPoint[ranking[0]]) {
+                  total += subData[_this6.props.weightKey];
+                  var dataPiece = {};
+                  dataPiece[_this6.props.weightKey] = subData[_this6.props.weightKey];
+                  for (var i = 1; i <= ranking.length; i++) {
+                    dataPiece[ranking[i]] = subData[ranking[i]];
+                  }
+                  child.push(dataPiece);
+                }
               }
+            } catch (err) {
+              _didIteratorError4 = true;
+              _iteratorError4 = err;
             } finally {
-              if (_didIteratorError4) {
-                throw _iteratorError4;
+              try {
+                if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                  _iterator4.return();
+                }
+              } finally {
+                if (_didIteratorError4) {
+                  throw _iteratorError4;
+                }
               }
+            }
+
+            if (child.length > 0) {
+              var parentPoint = {};
+              parentPoint[_this6.props.weightKey] = total;
+              parentPoint[ranking[0]] = dataPoint[ranking[0]];
+              parentPoint.child = child;
+              unflattenedData.push(parentPoint);
             }
           }
+        };
+
+        for (var _iterator3 = data[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          _loop();
         }
       } catch (err) {
         _didIteratorError3 = true;
@@ -1347,18 +1313,179 @@ var TreeMap = function (_React$Component3) {
         }
       }
 
+      return unflattenedData;
+    }
+  }, {
+    key: "hasChildren",
+    value: function hasChildren(data) {
+      //Determines if the data needs to be unflattened
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = data[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var _dataPoint2 = _step5.value;
+
+          for (var key in _dataPoint2) {
+            if (key == "child") {
+              return true;
+            }
+          }
+          if (Object.keys(_dataPoint2).length <= 2) {
+            return true;
+          }
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      return false;
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this7 = this;
+
+      var style = {
+        map: {
+          position: "absolute",
+          top: this.getNestPosition()[0] + "px",
+          left: this.getNestPosition()[1] + "px",
+          boxShadow: "-10px -10px 20px"
+        }
+      };
+
+      var formattedData = this.props.data;
+      if (this.props.keyOrder.length > 1 && !this.hasChildren(formattedData)) {
+        formattedData = this.unflattenData(this.props.data, this.props.keyOrder);
+      }
+
+      var considerOther = this.needOther(formattedData);
+      formattedData = considerOther[0];
+
+      var otherWidth = 0;
+      var scaleWithOther = 1;
+
+      if (considerOther[1] == true) {
+        var otherArea = formattedData[formattedData.length - 1][this.props.weightKey] / considerOther[2] * (this.props.width * this.props.height);
+        otherWidth = otherArea / this.props.height;
+        scaleWithOther = considerOther[2] / (considerOther[2] - formattedData[formattedData.length - 1][this.props.weightKey]);
+      }
+
+      var s = new _Squarify2.default(JSON.parse(JSON.stringify(considerOther[1] == true ? formattedData.slice(0, formattedData.length - 1) : formattedData)), scaleWithOther, {
+        width: this.props.width - otherWidth,
+        height: this.props.height,
+        weightKey: this.props.weightKey
+      });
+      s.layout();
+
+      var colorFunction = null;
+      if (this.props.colorFunction) {
+        colorFunction = this.props.colorFunction;
+      } else if (this.props.colorKey) {
+        colorFunction = function colorFunction(rawDatum) {
+          return rawDatum[_this7.props.colorKey];
+        };
+      } else {
+        colorFunction = function colorFunction(rawDatum, index) {
+          if (_this7.state.active) {
+            return _this7.props.colorPalette[index % _this7.props.colorPalette.length];
+          }
+          return _this7.props.grayscalePalette[index % _this7.props.grayscalePalette.length];
+        };
+      }
+
+      var rects = [];
+      var rectIndex = 0;
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = s.rows[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var row = _step6.value;
+          var _iteratorNormalCompletion7 = true;
+          var _didIteratorError7 = false;
+          var _iteratorError7 = undefined;
+
+          try {
+            for (var _iterator7 = row.data[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+              var datum = _step7.value;
+
+              rectIndex += 1;
+              rects.push(_react2.default.createElement(TreeRects, { key: datum.index, data: datum.raw,
+                x: datum.origin.x, y: datum.origin.y,
+                width: datum.dimensions.x, height: datum.dimensions.y,
+                parentWidth: this.props.width, parentHeight: this.props.height,
+                fill: colorFunction(datum.raw, rectIndex),
+                title: datum.raw[this.props.titleKey],
+                maxTitleLength: s.maxTitleLength, textDark: this.props.textDark,
+                textLight: this.props.textLight,
+                titleScale: this.props.titleScale,
+                percentage: datum.weightPercent,
+                percentageScale: this.props.percentageScale,
+                displayPercentages: this.props.displayPercentages,
+                initialAnimation: this.props.initialAnimation,
+                weightKey: this.props.weightKey,
+                keyOrder: this.props.keyOrder,
+                active: this.state.active,
+                handleNest: this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)
+              }));
+            }
+          } catch (err) {
+            _didIteratorError7 = true;
+            _iteratorError7 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                _iterator7.return();
+              }
+            } finally {
+              if (_didIteratorError7) {
+                throw _iteratorError7;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6.return) {
+            _iterator6.return();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+
       if (considerOther[1] == true) {
         var _React$createElement;
 
         rectIndex += 1;
-        rects.push(_react2.default.createElement(OtherRect, (_React$createElement = { key: "other", data: dataToUse[dataToUse.length - 1],
+        rects.push(_react2.default.createElement(OtherRect, (_React$createElement = { key: "other", data: formattedData[formattedData.length - 1],
           x: this.props.width - otherWidth, y: 0,
           width: otherWidth, height: this.props.height,
           parentWidth: this.props.width, parentHeight: this.props.height,
-          fill: colorFunction(dataToUse[dataToUse.length - 1], rectIndex),
+          fill: colorFunction(formattedData[formattedData.length - 1], rectIndex),
           title: "Other", titleScale: this.props.titleScale,
           textDark: this.props.textDark, textLight: this.props.textLight
-        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * dataToUse[dataToUse.length - 1][this.props.weightKey] / considerOther[2]).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "weightKey", this.props.weightKey), _defineProperty(_React$createElement, "titleRank", this.props.titleRank), _defineProperty(_React$createElement, "handleNest", this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)), _React$createElement)));
+        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * formattedData[formattedData.length - 1][this.props.weightKey] / considerOther[2]).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "weightKey", this.props.weightKey), _defineProperty(_React$createElement, "keyOrder", this.props.keyOrder), _defineProperty(_React$createElement, "handleNest", this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)), _React$createElement)));
       }
 
       return _react2.default.createElement(
@@ -1386,6 +1513,7 @@ TreeMap.defaultProps = {
   width: 800,
   height: 400,
   titleKey: "title",
+  keyOrder: ["title"],
   weightKey: "weight",
   otherThreshold: .025,
   colorFunction: null,
