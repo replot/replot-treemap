@@ -106,6 +106,7 @@ class TreeRects extends React.Component {
   }
 }
 
+
 class OtherRect extends React.Component {
 
   handleNest(){
@@ -335,7 +336,7 @@ class TreeMap extends React.Component {
 
   render() {
     const style = {
-      map: {
+      nest: {
         position: "absolute",
         top: `${this.getNestPosition()[0]}px`,
         left: `${this.getNestPosition()[1]}px`,
@@ -440,7 +441,6 @@ class TreeMap extends React.Component {
       )
     }
 
-
     return(
       <div style={{position:"relative"}}>
         <svg className="replot replot-treemap"
@@ -448,7 +448,7 @@ class TreeMap extends React.Component {
           {rects}
         </svg>
         {this.state.nestedMap != null &&
-          <div style={style.map}>
+          <div style={style.nest}>
             {this.state.nestedMap}
           </div>
         }
