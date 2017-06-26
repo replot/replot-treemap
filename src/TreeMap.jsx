@@ -246,6 +246,7 @@ class TreeMap extends React.Component {
   }
 
   needOther(testData) { //Determines if an "other" cluster is necessary, and adjusts the data if so
+    let newData = []
     let weights = []
     for (let dataPoint of testData) {
       weights.push(dataPoint[this.props.weightKey])
@@ -265,13 +266,12 @@ class TreeMap extends React.Component {
     }
 
     if (numOther > 1) {
-      let newData = []
       let childArray = []
       for (let dataPoint of testData){
         if (dataPoint[this.props.weightKey] > threshold){
           newData.push(dataPoint)
         }
-        else {
+        else if (dataPoint[this.props.weightKey] > 0){
           let child = {}
           child[this.props.weightKey] = dataPoint[this.props.weightKey]
           child[this.props.titleKey] = dataPoint[this.props.titleKey]
@@ -288,7 +288,12 @@ class TreeMap extends React.Component {
       newData.push(other)
       return [newData, true, total]
     }
-    return [testData, false, total]
+    for (let dataPoint of testData){
+      if (dataPoint[this.props.weightKey] > 0){
+        newData.push(dataPoint)
+      }
+    }
+    return [newData, false, total]
   }
 
   unflattenData(data, ranking){ //Converts the data from flat to our usable form
