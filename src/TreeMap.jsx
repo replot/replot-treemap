@@ -340,7 +340,7 @@ class TreeMap extends React.Component {
         position: "absolute",
         top: `${this.getNestPosition()[0]}px`,
         left: `${this.getNestPosition()[1]}px`,
-        boxShadow: "-10px -10px 20px",
+        boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)",
       }
     }
 
@@ -457,7 +457,6 @@ class TreeMap extends React.Component {
   }
 
 }
-
 
 
 TreeMap.defaultProps = {
