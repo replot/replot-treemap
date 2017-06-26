@@ -474,7 +474,7 @@ TreeMap.defaultProps = {
   colorFunction: null,
   colorKey: "",
   colorPalette: [
-    "#4cab92", "#ca0004", "#003953", "#eccc00",
+    "#4cab92", "#ca0004", "#8e44ad", "#eccc00",
     "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"
   ],
   grayscalePalette: [
