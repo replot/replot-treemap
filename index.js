@@ -1359,11 +1359,11 @@ var TreeMap = function (_React$Component3) {
       var _this7 = this;
 
       var style = {
-        map: {
+        nest: {
           position: "absolute",
           top: this.getNestPosition()[0] + "px",
           left: this.getNestPosition()[1] + "px",
-          boxShadow: "-10px -10px 20px"
+          boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)"
         }
       };
 
@@ -1499,7 +1499,7 @@ var TreeMap = function (_React$Component3) {
         ),
         this.state.nestedMap != null && _react2.default.createElement(
           "div",
-          { style: style.map },
+          { style: style.nest },
           this.state.nestedMap
         )
       );
