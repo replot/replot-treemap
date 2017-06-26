@@ -3,12 +3,12 @@ import ReactDOM from "react-dom"
 import TreeMap from "../src/index.jsx"
 
 
-class KeyValueRow extends React.Component {
+class TreeDataRow extends React.Component {
 
   changeHandler(e) {
     this.props.updateData({
-      country: this.props.country,
-      population: e.target.value
+      city: this.props.city,
+      population: e.target.value || "0"
     })
   }
 
@@ -16,14 +16,18 @@ class KeyValueRow extends React.Component {
     const style = {
       cell: {
         minWidth: "100px",
+        color: "black",
+        fontSize: "0.8rem"
       }
     }
 
     return(
       <tr key={this.props.title}>
-        <td style={style.cell}>{this.props.country} </td>
+        <td style={style.cell}> {this.props.country} </td>
+        <td style={style.cell}> {this.props.state} </td>
+        <td style={style.cell}> {this.props.city} </td>
         <td style={style.cell}>
-          <input type="text" value={parseInt(this.props.population) || ""}
+          <input type="text" value={parseInt(this.props.population)}
             onChange={this.changeHandler.bind(this)} />
         </td>
       </tr>
@@ -32,22 +36,38 @@ class KeyValueRow extends React.Component {
 }
 
 
-class KeyValueTable extends React.Component {
+class TreeDataTable extends React.Component {
 
   render() {
     const style = {
       container: {
         width:"30%",
         display:"inline-block",
-        verticalAlign: "top",
-        padding: "20px",
+        verticalAlign:"top",
+        padding:"20px 40px",
+        color:"black"
+      },
+      cell: {
+        minWidth: "100px",
+        color: "black",
+        fontSize: "1.2rem",
+        borderBottom: "thin solid #ffffff"
       }
     }
     let rows = []
+    rows.push(
+      <tr key="labels">
+        <td style={style.cell}> Country </td>
+        <td style={style.cell}> State </td>
+        <td style={style.cell}> City </td>
+        <td style={style.cell}> Population </td>
+      </tr>
+    )
     for (let dataPoint of this.props.data) {
       rows.push(
-        <KeyValueRow key={dataPoint.country}
-          country={dataPoint.country} population={dataPoint.population}
+        <TreeDataRow key={dataPoint.title} country={dataPoint.country}
+          state={dataPoint.state} city={dataPoint.city}
+          population={dataPoint.population}
           updateData={this.props.updateData.bind(this)} />
       )
     }
@@ -90,7 +110,7 @@ class ExampleApp extends React.Component {
     let mutatedData = JSON.parse(JSON.stringify(this.state.data))
     let chosenIndex = -1
     for (let index=0; index < mutatedData.length; index++) {
-      if (mutatedData[index].country === mutatedObject.country) {
+      if (mutatedData[index].city === mutatedObject.city) {
         chosenIndex = index
         break
       }
@@ -105,7 +125,7 @@ class ExampleApp extends React.Component {
     return(
       <div className="container">
         <h1 style={{textAlign: "center"}}> Treemaps for Replot </h1>
-        <KeyValueTable data={this.state.data} updateData={this.updateData.bind(this)} />
+        <TreeDataTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMap data={this.state.data} weightKey="population"
             titleKey="country" keyOrder={this.state.keyOrder}/>
