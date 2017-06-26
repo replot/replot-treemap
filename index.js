@@ -1545,7 +1545,7 @@ TreeMap.defaultProps = {
   otherThreshold: .025,
   colorFunction: null,
   colorKey: "",
-  colorPalette: ["#4cab92", "#ca0004", "#003953", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"],
+  colorPalette: ["#4cab92", "#ca0004", "#8e44ad", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"],
   grayscalePalette: ["#080808", "#282828", "#484848", "#686868", "#808080", "#A0A0A0", "#B0B0B0", "#C8C8C8"],
   textDark: "#222",
   textLight: "#eee",
