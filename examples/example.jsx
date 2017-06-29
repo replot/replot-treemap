@@ -1,6 +1,6 @@
 import React from "react"
 import ReactDOM from "react-dom"
-import TreeMap from "../src/index.jsx"
+import TreeMapManager from "../src/index.jsx"
 
 
 class TreeDataRow extends React.Component {
@@ -127,7 +127,7 @@ class ExampleApp extends React.Component {
         <h1 style={{textAlign: "center"}}> Treemaps for Replot </h1>
         <TreeDataTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
-          <TreeMap data={this.state.data} weightKey="population"
+          <TreeMapManager data={this.state.data} weightKey="population"
             titleKey="country" keyOrder={this.state.keyOrder}/>
         </div>
       </div>
