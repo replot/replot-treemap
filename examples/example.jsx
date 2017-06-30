@@ -103,6 +103,11 @@ class ExampleApp extends React.Component {
         {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
       ],
       keyOrder: ["country", "state", "city"]
+      // data: [
+      //   {country: "China", population: 1388232693},
+      //   {country: "India", population: 1342512706},
+      //   {country: "USA", population: 326474013}
+      // ]
     }
   }
 

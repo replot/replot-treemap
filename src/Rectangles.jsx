@@ -70,8 +70,7 @@ class TreeRects extends React.Component {
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
                   onClick={this.handleNest.bind(this)}
-                  style={this.props.data.child || this.props.active == false ?
-                    {cursor:"pointer"} : null}
+                  style={this.props.canNest ? {cursor: "pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
@@ -91,6 +90,10 @@ class TreeRects extends React.Component {
 
 
 class OtherRect extends React.Component {
+
+  handleNest() {
+    this.props.handleNest(this.props.titleKey, this.props.title)
+  }
 
   render() {
     let percentage = null
@@ -156,7 +159,8 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  style={{cursor:"pointer"}}
+                  onClick={this.handleNest.bind(this)}
+                  style={{cursor: "pointer"}}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
