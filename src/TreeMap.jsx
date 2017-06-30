@@ -197,7 +197,7 @@ class TreeMap extends React.Component {
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
             initialAnimation={this.props.initialAnimation}
-            canNest={this.props.titleKey!=this.props.keyOrder[this.props.keyOrder.length-1]}
+            clickable={this.props.titleKey!=this.props.keyOrder[this.props.keyOrder.length-1]||!this.props.active}
             handleNest={this.props.handleNest}
           />
         )

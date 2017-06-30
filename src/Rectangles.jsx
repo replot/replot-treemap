@@ -70,7 +70,7 @@ class TreeRects extends React.Component {
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
                   onClick={this.handleNest.bind(this)}
-                  style={this.props.canNest ? {cursor: "pointer"} : null}
+                  style={this.props.clickable ? {cursor: "pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>
