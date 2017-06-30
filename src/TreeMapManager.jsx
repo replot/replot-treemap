@@ -11,76 +11,81 @@ class TreeMapManager extends React.Component {
     }
     for (let i = 0; i < this.props.keyOrder.length; i++){
       let map = {}
-      map.key = this.props.keyOrder[i]
-      if (i == 0){
-        map.visible = true
-        map.active = true
-      } else {
-        map.visible = false
-        map.active = false
-      }
+      map.key = (i == 0 ? this.props.titleKey : this.props.keyOrder[i])
+      map.visible = (i == 0 ? true : false)
       map.chosenValue = null
       this.state.order.push(map)
     }
-    this.state.order.push({key: "other", active: false, chosenValue: null})
   }
 
   handleNest(level, chosenRect) {
-    var newOrder = this.state.order.slice()
-    for (var index = 0; index < newOrder.length; index++){
-      if (newOrder[index].key == level){
-        break
-      }
-    }
-    if (newOrder[index].active == true) {
-      newOrder[index].active = false
+    let newOrder = this.state.order.slice()
+    let index = newOrder.findIndex(function(x) {return x.key === level})
+    if (chosenRect == "Other"){
       newOrder[index].chosenValue = chosenRect
-      newOrder[index + 1].visible = true
-      newOrder[index + 1].active = true
+      let newOtherMap = {}
+      newOtherMap.key = "other"
+      newOtherMap.visible = true
+      newOtherMap.chosenValue = null
+      newOrder.splice(index+1, 0, newOtherMap)
+    }
+    else if (!newOrder[index].chosenValue && this.props.keyOrder.length != 1 && newOrder[index].key != this.props.keyOrder[this.props.keyOrder.length-1]) { //clicking on an active map to go forward
+      newOrder[index].chosenValue = chosenRect
+      if (newOrder[index + 1]) {
+        newOrder[index + 1].visible = true
+      }
     }
     else { //clicking on an inactive TreeMap to go back
-      newOrder[index].active = true
       newOrder[index].chosenValue = null
       for (let j = index + 1; j < newOrder.length; j++){
-        newOrder[j].visible = false
-        newOrder[j].active = false
-        newOrder[j].chosenValue = null
+        if (newOrder[j].key == "other"){
+          newOrder.splice(j,1)
+          j--
+        }
+        else{
+          newOrder[j].visible = false
+          newOrder[j].chosenValue = null
+        }
       }
     }
-    console.log(newOrder)
     this.setState({
       order: newOrder
     })
   }
 
+  getNestPosition() {
+    return this.props.height < this.props.width ?
+      {x: this.props.height / 8 , y: this.props.height / 8} :
+      {x: this.props.width / 8 , y: this.props.width / 8}
+  }
+
   render() {
     let treeMaps = []
-    // const style = {
-    //   nest: {
-    //     position: "absolute",
-    //     top: `${this.getNestPosition()[0]}px`,
-    //     left: `${this.getNestPosition()[1]}px`,
-    //     boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)",
-    //   }
-    // }
 
-    for (let map of this.state.order){
+    for (let i = 0; i < this.state.order.length; i++){
       treeMaps.push(
-        <TreeMap data={this.props.data} weightKey={this.props.weightKey}
-          titleKey={map.key} active={map.active} visible={map.visible}
-          handleNest={this.handleNest.bind(this)} />
+        <div key={this.state.order[i].key} style={i==0 ? null : {position: "absolute", top: `${i*this.getNestPosition().y}px`, left: `${i*this.getNestPosition().x}px`, boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)",}}>
+          <TreeMap data={this.props.data} weightKey={this.props.weightKey}
+            titleKey={this.state.order[i].key} parent={i-1 >= 0 ? this.state.order[i-1].chosenValue : null} keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder} active={this.state.order[i].chosenValue == null}
+            visible={this.state.order[i].visible} handleNest={this.handleNest.bind(this)} />
+        </div>
       )
     }
 
-    // treeMaps = <TreeMap data={this.props.data} weightKey={this.props.weightKey} active={this.state.order[0].active}
-    //   titleKey={this.props.keyOrder[0]} visible={this.state.order[0].visible} keyOrder={this.props.keyOrder} handleNest={this.handleNest.bind(this)}/>
-
     return (
-      <div>
+      <div style={{height: `${this.props.height + (this.state.order.length-1)*(this.props.height/8)}px`, position: "relative"}}>
         {treeMaps}
       </div>
     )
   }
+}
+
+TreeMapManager.defaultProps = {
+  width: 800,
+  height: 400,
+  titleKey: "title",
+  keyOrder: ["title"],
+  weightKey: "weight"
 }
 
 export default TreeMapManager

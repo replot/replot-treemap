@@ -5,12 +5,6 @@ import {TreeRects, OtherRect} from "./Rectangles.jsx"
 
 class TreeMap extends React.Component {
 
-  getNestPosition() {
-    return this.props.height < this.props.width ?
-      [this.props.height / 8 , this.props.height / 8] :
-      [this.props.width / 8 , this.props.width / 8]
-  }
-
   needOther(testData) { //Determines if an "other" cluster is necessary, and adjusts the data if so
     let newData = []
     let weights = []
@@ -32,25 +26,14 @@ class TreeMap extends React.Component {
     }
 
     if (numOther > 1) {
-      let childArray = []
       for (let dataPoint of testData){
         if (dataPoint[this.props.weightKey] > threshold){
           newData.push(dataPoint)
-        }
-        else if (dataPoint[this.props.weightKey] > 0){
-          let child = {}
-          child[this.props.weightKey] = dataPoint[this.props.weightKey]
-          child[this.props.titleKey] = dataPoint[this.props.titleKey]
-          if (dataPoint.child){
-            child.child = dataPoint.child
-          }
-          childArray.push(child)
         }
       }
       let other = {}
       other[this.props.weightKey] = totalForOther
       other[this.props.titleKey] = "Other"
-      other.child = childArray
       newData.push(other)
       return [newData, true, total]
     }
@@ -62,55 +45,96 @@ class TreeMap extends React.Component {
     return [newData, false, total]
   }
 
-  unflattenData(data, ranking){ //Converts the data from flat to our usable form
-    let unflattenedData = []
-    for (let dataPoint of data){
-      if (!unflattenedData.some(function(el) { return el[ranking[0]] === dataPoint[ranking[0]]})){
-        let total = 0
-        let child = []
-        for (let subData of data){
-          if (subData[ranking[0]] == dataPoint[ranking[0]]){
-            total += subData[this.props.weightKey]
-            let dataPiece = {}
-            dataPiece[this.props.weightKey] = subData[this.props.weightKey]
-            for (let i = 1; i <= ranking.length; i++){
-              dataPiece[ranking[i]] = subData[ranking[i]]
-            }
-            child.push(dataPiece)
-          }
-        }
-        if (child.length > 0){
-          let parentPoint = {}
-          parentPoint[this.props.weightKey] = total
-          parentPoint[ranking[0]] = dataPoint[ranking[0]]
-          parentPoint.child = child
-          unflattenedData.push(parentPoint)
-        }
-      }
-    }
-    return unflattenedData
-  }
+  // unflattenData(data, ranking){ //Converts the data from flat to our usable form
+  //   let unflattenedData = []
+  //   for (let dataPoint of data){
+  //     if (!unflattenedData.some(function(el) { return el[ranking[0]] === dataPoint[ranking[0]]})){
+  //       let total = 0
+  //       let child = []
+  //       for (let subData of data){
+  //         if (subData[ranking[0]] == dataPoint[ranking[0]]){
+  //           total += subData[this.props.weightKey]
+  //           let dataPiece = {}
+  //           dataPiece[this.props.weightKey] = subData[this.props.weightKey]
+  //           for (let i = 1; i <= ranking.length; i++){
+  //             dataPiece[ranking[i]] = subData[ranking[i]]
+  //           }
+  //           child.push(dataPiece)
+  //         }
+  //       }
+  //       if (child.length > 0){
+  //         let parentPoint = {}
+  //         parentPoint[this.props.weightKey] = total
+  //         parentPoint[ranking[0]] = dataPoint[ranking[0]]
+  //         parentPoint.child = child
+  //         unflattenedData.push(parentPoint)
+  //       }
+  //     }
+  //   }
+  //   return unflattenedData
+  // }
+  //
+  // hasChildren(data){ //Determines if the data needs to be unflattened
+  //   for (let dataPoint of data){
+  //     for (let key in dataPoint){
+  //       if (key == "child"){
+  //         return true
+  //       }
+  //     }
+  //     if (Object.keys(dataPoint).length <= 2){
+  //       return true
+  //     }
+  //   }
+  //   return false
+  // }
 
-  hasChildren(data){ //Determines if the data needs to be unflattened
-    for (let dataPoint of data){
-      for (let key in dataPoint){
-        if (key == "child"){
-          return true
+  pickData(data, title) {
+    let relevantData = []
+    if (!this.props.parent) {
+      for (let dataPoint of data){
+        if (!relevantData.some(function(el) { return el[title] === dataPoint[title]})){
+          let total = 0
+          for (let subData of data){
+            if (subData[title] === dataPoint[title]){
+              total += subData[this.props.weightKey]
+            }
+          }
+          let newPoint = {}
+          newPoint[this.props.weightKey] = total
+          newPoint[title] = dataPoint[title]
+          relevantData.push(newPoint)
         }
       }
-      if (Object.keys(dataPoint).length <= 2){
-        return true
+    }
+    else {
+      let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(title) - 1]
+      for (let dataPoint of data){
+        if (dataPoint[parentTitleKey] == this.props. parent && !relevantData.some(function(el) { return el[title] === dataPoint[title]})){
+          let total = 0
+          for (let subData of data){
+            if (subData[title] === dataPoint[title]){
+              total += subData[this.props.weightKey]
+            }
+          }
+          let newPoint = {}
+          newPoint[this.props.weightKey] = total
+          newPoint[title] = dataPoint[title]
+          relevantData.push(newPoint)
+        }
       }
     }
-    return false
+    return relevantData
   }
 
   render() {
 
-    let formattedData = this.props.data
-    if (this.props.keyOrder.length > 1 && !this.hasChildren(formattedData)){
-      formattedData = this.unflattenData(this.props.data, this.props.keyOrder)
+    if (!this.props.visible) {
+      return (
+        <div style={{display: "none"}} />
+      )
     }
+
+    let formattedData = this.pickData(this.props.data, this.props.titleKey)
 
     let considerOther = this.needOther(formattedData)
     formattedData = considerOther[0]
@@ -164,9 +188,8 @@ class TreeMap extends React.Component {
           <TreeRects key={datum.index} data={datum.raw}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
-            parentWidth={this.props.width} parentHeight={this.props.height}
             fill={colorFunction(datum.raw, rectIndex)}
-            title={datum.raw[this.props.titleKey]}
+            titleKey={this.props.titleKey} title={datum.raw[this.props.titleKey]}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
             textLight={this.props.textLight}
             titleScale={this.props.titleScale}
@@ -174,9 +197,7 @@ class TreeMap extends React.Component {
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
             initialAnimation={this.props.initialAnimation}
-            titleKey={this.props.titleKey}
-            weightKey={this.props.weightKey}
-            keyOrder={this.props.keyOrder}
+            canNest={this.props.titleKey!=this.props.keyOrder[this.props.keyOrder.length-1]}
             handleNest={this.props.handleNest}
           />
         )
@@ -188,30 +209,24 @@ class TreeMap extends React.Component {
         <OtherRect key="other" data={formattedData[formattedData.length-1]}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
-          parentWidth={this.props.width} parentHeight={this.props.height}
           fill={colorFunction(formattedData[formattedData.length-1],rectIndex)}
-          title="Other" titleScale={this.props.titleScale}
+          titleKey={this.props.titleKey} title="Other" titleScale={this.props.titleScale}
           textDark={this.props.textDark} textLight={this.props.textLight}
           titleScale={this.props.titleScale}
           percentage={(100 * formattedData[formattedData.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
           percentageScale={this.props.percentageScale}
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
-          titleKey={this.props.titleKey}
-          weightKey={this.props.weightKey}
-          keyOrder={this.props.keyOrder}
           handleNest={this.props.handleNest}
         />
       )
     }
 
     return(
-      <div style={{position:"relative"}}>
-        <svg className="replot replot-treemap"
-          width={this.props.width} height={this.props.height}>
-          {rects}
-        </svg>
-      </div>
+      <svg className="replot replot-treemap"
+        width={this.props.width} height={this.props.height}>
+        {rects}
+      </svg>
     )
   }
 
