@@ -1,243 +1,9 @@
 import React from "react"
 import Squarify from "./Squarify.js"
-import isLight from "./isLight.js"
-import {spring, Motion} from "react-motion"
-
-
-class TreeRects extends React.Component {
-
-  handleNest(){
-    let nestedMap = null
-    if (this.props.data.child) {
-      nestedMap = (
-        <TreeMap data={this.props.data.child}
-          weightKey={this.props.weightKey}
-          titleKey={this.props.keyOrder[1]}
-          keyOrder={this.props.keyOrder.slice(1,this.props.keyOrder.length)}
-          width={this.props.parentWidth} height={this.props.parentHeight}
-          otherThreshold={this.props.otherThreshold}
-          colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
-          colorPalette={this.props.colorPalette}
-          displayPercentages={this.props.displayPercentages}
-          initialAnimation={this.props.initialAnimation}/>
-      )
-    }
-    this.props.handleNest(nestedMap)
-  }
-
-  render() {
-    let percentage = null
-    if (this.props.displayPercentages) {
-      percentage = `${this.props.percentage}%`
-    }
-
-    let initialStyle = {
-      x: this.props.x,
-      y: this.props.y,
-      width: this.props.width,
-      height: this.props.height,
-    }
-
-    if (this.props.initialAnimation) {
-      initialStyle = {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      }
-    }
-
-    return(
-      <Motion
-        defaultStyle={initialStyle}
-        style={{
-          x: spring(this.props.x, {stiffness: 120, damping: 26}),
-          y: spring(this.props.y, {stiffness: 120, damping: 26}),
-          width: spring(this.props.width, {stiffness: 100, damping: 26}),
-          height: spring(this.props.height, {stiffness: 100, damping: 26}),
-        }}
-      >
-        {
-          (interpolatingStyles) => {
-            let titleStyle = {
-              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
-              textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 200)}px`
-            }
-
-            let percentageStyle = {
-              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
-              textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
-              opacity: 0.75,
-            }
-
-            return (
-              <g>
-                <rect
-                  x={interpolatingStyles.x}
-                  y={interpolatingStyles.y}
-                  width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}
-                  fill={this.props.fill}
-                  />
-                <foreignObject
-                  x={interpolatingStyles.x}
-                  y={interpolatingStyles.y}
-                  width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}
-                  onClick={this.handleNest.bind(this)}
-                  style={this.props.data.child || this.props.active == false ?
-                    {cursor:"pointer"} : null}
-                  >
-                  <div style={{width: "100%", height: "100%", display: "table"}}>
-                    <div style={{display: "table-cell", verticalAlign: "middle"}}>
-                      <div style={titleStyle}>{this.props.title}</div>
-                      <div style={percentageStyle}>{percentage}</div>
-                    </div>
-                  </div>
-                </foreignObject>
-              </g>
-            )
-          }
-        }
-      </Motion>
-    )
-  }
-}
-
-
-class OtherRect extends React.Component {
-
-  handleNest(){
-    let nestedMap = null
-    if (this.props.data.child) {
-      nestedMap = (
-        <TreeMap data={this.props.data.child}
-          weightKey={this.props.weightKey}
-          titleKey={this.props.keyOrder[0]}
-          keyOrder={this.props.keyOrder}
-          width={this.props.parentWidth} height={this.props.parentHeight}
-          otherThreshold={this.props.otherThreshold}
-          colorFunction={this.props.colorFunction} colorKey={this.props.colorKey}
-          colorPalette={this.props.colorPalette}
-          displayPercentages={this.props.displayPercentages}
-          initialAnimation={this.props.initialAnimation}/>
-      )
-    }
-    this.props.handleNest(nestedMap)
-  }
-
-  render() {
-    let percentage = null
-    if (this.props.displayPercentages) {
-      percentage = `${this.props.percentage}%`
-    }
-
-    let initialStyle = {
-      x: this.props.x,
-      y: this.props.y,
-      width: this.props.width,
-      height: this.props.height,
-    }
-
-    if (this.props.initialAnimation) {
-      initialStyle = {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      }
-    }
-
-    return(
-      <Motion
-        defaultStyle={initialStyle}
-        style={{
-          x: spring(this.props.x, {stiffness: 120, damping: 26}),
-          y: spring(this.props.y, {stiffness: 120, damping: 26}),
-          width: spring(this.props.width, {stiffness: 100, damping: 26}),
-          height: spring(this.props.height, {stiffness: 100, damping: 26}),
-        }}
-      >
-        {
-          (interpolatingStyles) => {
-            let titleStyle = {
-              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
-              textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
-              transform: "rotate(270deg)",
-              width: "1px",
-              margin: `0px ${this.props.width / 2.3}px ${- this.props.width / 3}px`
-            }
-
-            let percentageStyle = {
-              color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
-              textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
-              opacity: 0.75,
-            }
-
-            return (
-              <g>
-                <rect
-                  x={interpolatingStyles.x}
-                  y={interpolatingStyles.y}
-                  width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}
-                  fill={this.props.fill}
-                  />
-                <foreignObject
-                  x={interpolatingStyles.x}
-                  y={interpolatingStyles.y}
-                  width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}
-                  onClick={this.handleNest.bind(this)}
-                  style={{cursor:"pointer"}}
-                  >
-                  <div style={{width: "100%", height: "100%", display: "table"}}>
-                    <div style={{display: "table-cell", verticalAlign: "middle"}}>
-                      <div style={titleStyle}>{this.props.title}</div>
-                      <div style={percentageStyle}>{percentage}</div>
-                    </div>
-                  </div>
-                </foreignObject>
-              </g>
-            )
-          }
-        }
-      </Motion>
-    )
-  }
-
-}
+import {TreeRects, OtherRect} from "./Rectangles.jsx"
 
 
 class TreeMap extends React.Component {
-
-  constructor(props) {
-    super(props)
-    this.state = {
-      nestedMap: null,
-      active: true
-    }
-  }
-
-  showNest(nest) {
-    if (nest != null){
-      this.setState({
-        nestedMap: nest,
-        active: false
-      })
-    }
-  }
-
-  hideNest(){
-    this.setState({
-      nestedMap: null,
-      active: true
-    })
-  }
 
   getNestPosition() {
     return this.props.height < this.props.width ?
@@ -340,14 +106,6 @@ class TreeMap extends React.Component {
   }
 
   render() {
-    const style = {
-      nest: {
-        position: "absolute",
-        top: `${this.getNestPosition()[0]}px`,
-        left: `${this.getNestPosition()[1]}px`,
-        boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)",
-      }
-    }
 
     let formattedData = this.props.data
     if (this.props.keyOrder.length > 1 && !this.hasChildren(formattedData)){
@@ -390,7 +148,7 @@ class TreeMap extends React.Component {
       }
     } else {
       colorFunction = (rawDatum, index) => {
-        if (this.state.active) {
+        if (this.props.active) {
           return this.props.colorPalette[index%this.props.colorPalette.length]
         }
         return this.props.grayscalePalette[index%this.props.grayscalePalette.length]
@@ -416,10 +174,10 @@ class TreeMap extends React.Component {
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
             initialAnimation={this.props.initialAnimation}
+            titleKey={this.props.titleKey}
             weightKey={this.props.weightKey}
             keyOrder={this.props.keyOrder}
-            active={this.state.active}
-            handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
+            handleNest={this.props.handleNest}
           />
         )
       }
@@ -439,9 +197,10 @@ class TreeMap extends React.Component {
           percentageScale={this.props.percentageScale}
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
+          titleKey={this.props.titleKey}
           weightKey={this.props.weightKey}
           keyOrder={this.props.keyOrder}
-          handleNest={this.state.active ? this.showNest.bind(this) : this.hideNest.bind(this)}
+          handleNest={this.props.handleNest}
         />
       )
     }
@@ -452,11 +211,6 @@ class TreeMap extends React.Component {
           width={this.props.width} height={this.props.height}>
           {rects}
         </svg>
-        {this.state.nestedMap != null &&
-          <div style={style.nest}>
-            {this.state.nestedMap}
-          </div>
-        }
       </div>
     )
   }
