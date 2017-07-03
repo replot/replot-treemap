@@ -4,9 +4,6 @@ import {spring, Motion} from "react-motion"
 
 class TreeRects extends React.Component {
 
-  handleNest() {
-    this.props.handleNest(this.props.titleKey, this.props.title)
-  }
 
   render() {
     let percentage = null
@@ -69,7 +66,9 @@ class TreeRects extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.handleNest.bind(this)}
+                  onClick={this.props.handleNest.bind(this, this.props.level, this.props.titleKey, this.props.title)}
+                  onMouseOver={this.props.activateTooltip.bind(this, this.props.title, this.props.data[this.props.weightKey])}
+                  onMouseOut={this.props.deactivateTooltip}
                   style={this.props.clickable ? {cursor: "pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
@@ -90,10 +89,6 @@ class TreeRects extends React.Component {
 
 
 class OtherRect extends React.Component {
-
-  handleNest() {
-    this.props.handleNest(this.props.titleKey, this.props.title)
-  }
 
   render() {
     let percentage = null
@@ -159,7 +154,9 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.handleNest.bind(this)}
+                  onClick={this.props.handleNest.bind(this, this.props.level, this.props.titleKey, this.props.title)}
+                  onMouseOver={this.props.activateTooltip.bind(this, this.props.title, this.props.data[this.props.weightKey])}
+                  onMouseOut={this.props.deactivateTooltip}
                   style={{cursor: "pointer"}}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>

@@ -96,9 +96,10 @@ class ExampleApp extends React.Component {
         {population: 902, country: "China", state: "Beijing", city: "Tongzhou"},
         {population: 120, country: "China", state: "Beijing", city: "Yizhuang"},
         {population: 800, country: "United States", state: "California", city: "San Francisco"},
-        {population: 1002, country: "United States", state: "California", city: "Los Angeles"},
+        {population: 10020, country: "United States", state: "California", city: "Los Angeles"},
         {population: 150, country: "United States", state: "Vermont", city: "Newport"},
-        {population: 202, country: "United States", state: "Vermont", city: "Montpelier"},
+        {population: 20, country: "United States", state: "Vermont", city: "Montpelier"},
+        {population: 202, country: "United States", state: "Illinois", city: "Chicago"},
         {population: 112, country: "Canada", state: "Ontario", city: "Kingston"},
         {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
       ],
@@ -107,6 +108,14 @@ class ExampleApp extends React.Component {
       //   {country: "China", population: 1388232693},
       //   {country: "India", population: 1342512706},
       //   {country: "USA", population: 326474013}
+      // ]
+      // data: [
+      //   {country: "China", population: 10000},
+      //   {country: "Russia", population: 10000},
+      //   {country: "India", population: 100},
+      //   {country: "USA", population: 100},
+      //   {country: "Iceland", population: 2},
+      //   {country: "Greenland", population: 2}
       // ]
     }
   }
@@ -133,7 +142,8 @@ class ExampleApp extends React.Component {
         <TreeDataTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMapManager data={this.state.data} weightKey="population"
-            titleKey="country" keyOrder={this.state.keyOrder}/>
+            titleKey="country" keyOrder={this.state.keyOrder}
+            tooltip={false} tooltipColor="light" />
         </div>
       </div>
     )
