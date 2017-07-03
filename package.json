@@ -43,6 +43,7 @@
     "webpack": "^2.2.1"
   },
   "dependencies": {
+    "prop-types": "^15.5.10",
     "react-motion": "^0.4.7"
   }
 }

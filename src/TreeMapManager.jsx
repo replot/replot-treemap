@@ -1,4 +1,5 @@
 import React from "react"
+import PropTypes from "prop-types"
 import TreeMap from "./TreeMap.jsx"
 import Tooltip from "../docs/index.jsx" //This import location will change eventually
 
@@ -115,17 +116,23 @@ class TreeMapManager extends React.Component {
       treeMaps.push(
         <div key={this.state.mapList[i].key}
           style={i==0 ? null : {position: "absolute", top: `${i*this.getNestPosition().y}px`, left: `${i*this.getNestPosition().x}px`, boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)"}}>
-          <TreeMap data={this.props.data} weightKey={this.props.weightKey}
+          <TreeMap width={this.props.width} height={this.props.height}
+            data={this.props.data} weightKey={this.props.weightKey}
             titleKey={this.chooseTitleKey(i)}
             parent={i-1 >= 0 ? this.state.mapList[i-1].chosenValue : null}
             otherParent={i-2 >= 0 ? this.state.mapList[i-2].chosenValue : null}
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
-            level={i}
+            level={i} otherThreshold={this.props.otherThreshold}
             active={this.state.mapList[i].chosenValue == null}
             visible={this.state.mapList[i].visible}
             handleNest={this.handleNest.bind(this)}
             activateTooltip={this.activateTooltip.bind(this)}
-            deactivateTooltip={this.deactivateTooltip.bind(this)}/>
+            deactivateTooltip={this.deactivateTooltip.bind(this)}
+            colorFunction={this.state.colorFunction}
+            colorKey={this.props.colorKey}
+            colorPalette={this.props.colorPalette}
+            displayPercentages={this.props.displayPercentages}
+            initialAnimation={this.props.initialAnimation}/>
         </div>
       )
     }
@@ -153,7 +160,30 @@ TreeMapManager.defaultProps = {
   height: 400,
   titleKey: "title",
   keyOrder: ["title"],
-  weightKey: "weight"
+  weightKey: "weight",
+  colorFunction: null,
+  colorKey: "",
+  colorPalette: [
+    "#4cab92", "#ca0004", "#8e44ad", "#eccc00",
+    "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"
+  ],
+  otherThreshold: .025,
+  displayPercentages: true,
+  initialAnimation: true,
+}
+
+TreeMapManager.propTypes = {
+  data: PropTypes.array.isRequired,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  titleKey: PropTypes.string,
+  keyOrder: PropTypes.array,
+  colorFunction: PropTypes.func,
+  colorKey: PropTypes.string,
+  colorPalette: PropTypes.array,
+  otherThreshold: PropTypes.number,
+  displayPercentages: PropTypes.bool,
+  initialAnimation: PropTypes.bool
 }
 
 export default TreeMapManager
