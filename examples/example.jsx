@@ -65,7 +65,7 @@ class TreeDataTable extends React.Component {
     )
     for (let dataPoint of this.props.data) {
       rows.push(
-        <TreeDataRow key={dataPoint.title} country={dataPoint.country}
+        <TreeDataRow key={dataPoint.country} country={dataPoint.country}
           state={dataPoint.state} city={dataPoint.city}
           population={dataPoint.population}
           updateData={this.props.updateData.bind(this)} />
@@ -91,32 +91,32 @@ class ExampleApp extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      data: [
-        {population: 650, country: "China", state: "Beijing", city: "Miyun"},
-        {population: 902, country: "China", state: "Beijing", city: "Tongzhou"},
-        {population: 120, country: "China", state: "Beijing", city: "Yizhuang"},
-        {population: 800, country: "United States", state: "California", city: "San Francisco"},
-        {population: 10020, country: "United States", state: "California", city: "Los Angeles"},
-        {population: 150, country: "United States", state: "Vermont", city: "Newport"},
-        {population: 20, country: "United States", state: "Vermont", city: "Montpelier"},
-        {population: 202, country: "United States", state: "Illinois", city: "Chicago"},
-        {population: 112, country: "Canada", state: "Ontario", city: "Kingston"},
-        {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
-      ],
-      keyOrder: ["country", "state", "city"]
+      // data: [
+      //   {population: 650, country: "China", state: "Beijing", city: "Miyun"},
+      //   {population: 902, country: "China", state: "Beijing", city: "Tongzhou"},
+      //   {population: 120, country: "China", state: "Beijing", city: "Yizhuang"},
+      //   {population: 800, country: "United States", state: "California", city: "San Francisco"},
+      //   {population: 10020, country: "United States", state: "California", city: "Los Angeles"},
+      //   {population: 150, country: "United States", state: "Vermont", city: "Newport"},
+      //   {population: 20, country: "United States", state: "Vermont", city: "Montpelier"},
+      //   {population: 202, country: "United States", state: "Illinois", city: "Chicago"},
+      //   {population: 112, country: "Canada", state: "Ontario", city: "Kingston"},
+      //   {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
+      // ],
+      // keyOrder: ["country", "state", "city"]
       // data: [
       //   {country: "China", population: 1388232693},
       //   {country: "India", population: 1342512706},
       //   {country: "USA", population: 326474013}
       // ]
-      // data: [
-      //   {country: "China", population: 10000},
-      //   {country: "Russia", population: 10000},
-      //   {country: "India", population: 100},
-      //   {country: "USA", population: 100},
-      //   {country: "Iceland", population: 2},
-      //   {country: "Greenland", population: 2}
-      // ]
+      data: [
+        {country: "China", population: 9000},
+        {country: "Russia", population: 10000},
+        {country: "India", population: 83},
+        {country: "USA", population: 100},
+        {country: "Iceland", population: 2},
+        {country: "Greenland", population: 1}
+      ]
     }
   }
 

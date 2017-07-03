@@ -92,15 +92,31 @@ class TreeMapManager extends React.Component {
       {x: this.props.width / 8 , y: this.props.width / 8}
   }
 
+  chooseTitleKey(index){
+    for (let i = index; i >=0 ; i--){
+      if (!this.state.mapList[i].key.includes("other")){
+        return this.state.mapList[i].key
+      }
+    }
+  }
+
+  chooseParentifOther(index){
+    for (let i = index - 2; i >=0 ; i--){
+      if (!this.state.mapList[i].chosenValue.includes("Other")){
+        return this.state.mapList[i].chosenValue
+      }
+    }
+  }
+
   render() {
     let treeMaps = []
 
     for (let i = 0; i < this.state.mapList.length; i++){
       treeMaps.push(
         <div key={this.state.mapList[i].key}
-          style={i==0 ? null : {position: "absolute", top: `${i*this.getNestPosition().y}px`, left: `${i*this.getNestPosition().x}px`, boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)",}}>
+          style={i==0 ? null : {position: "absolute", top: `${i*this.getNestPosition().y}px`, left: `${i*this.getNestPosition().x}px`, boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)"}}>
           <TreeMap data={this.props.data} weightKey={this.props.weightKey}
-            titleKey={this.state.mapList[i].key.includes("other") ? this.state.mapList[i-1].key : this.state.mapList[i].key}
+            titleKey={this.chooseTitleKey(i)}
             parent={i-1 >= 0 ? this.state.mapList[i-1].chosenValue : null}
             otherParent={i-2 >= 0 ? this.state.mapList[i-2].chosenValue : null}
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
@@ -115,7 +131,7 @@ class TreeMapManager extends React.Component {
     }
 
     return (
-      <div onMouseMove={this.updateMousePos.bind(this)}>
+      <div onMouseMove={this.props.tooltip ? this.updateMousePos.bind(this) : null}>
         {this.props.tooltip &&
           <Tooltip
             x={this.state.mouseX} y={this.state.mouseY}
