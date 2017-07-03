@@ -38,87 +38,102 @@ class TreeMap extends React.Component {
       return [newData, true, total]
     }
     for (let dataPoint of testData){
-      if (dataPoint[this.props.weightKey] > 0){
+      if (dataPoint[this.props.weightKey] > 0){ //Don't consider data points with negative or 0 value
         newData.push(dataPoint)
       }
     }
     return [newData, false, total]
   }
 
-  // unflattenData(data, ranking){ //Converts the data from flat to our usable form
-  //   let unflattenedData = []
-  //   for (let dataPoint of data){
-  //     if (!unflattenedData.some(function(el) { return el[ranking[0]] === dataPoint[ranking[0]]})){
-  //       let total = 0
-  //       let child = []
-  //       for (let subData of data){
-  //         if (subData[ranking[0]] == dataPoint[ranking[0]]){
-  //           total += subData[this.props.weightKey]
-  //           let dataPiece = {}
-  //           dataPiece[this.props.weightKey] = subData[this.props.weightKey]
-  //           for (let i = 1; i <= ranking.length; i++){
-  //             dataPiece[ranking[i]] = subData[ranking[i]]
-  //           }
-  //           child.push(dataPiece)
-  //         }
-  //       }
-  //       if (child.length > 0){
-  //         let parentPoint = {}
-  //         parentPoint[this.props.weightKey] = total
-  //         parentPoint[ranking[0]] = dataPoint[ranking[0]]
-  //         parentPoint.child = child
-  //         unflattenedData.push(parentPoint)
-  //       }
-  //     }
-  //   }
-  //   return unflattenedData
-  // }
-  //
-  // hasChildren(data){ //Determines if the data needs to be unflattened
-  //   for (let dataPoint of data){
-  //     for (let key in dataPoint){
-  //       if (key == "child"){
-  //         return true
-  //       }
-  //     }
-  //     if (Object.keys(dataPoint).length <= 2){
-  //       return true
-  //     }
-  //   }
-  //   return false
-  // }
-
-  pickData(data, title) {
+  pickData(data, titleKey) {
     let relevantData = []
-    if (!this.props.parent) {
+    if (!this.props.parent) { //data for the foundation treemap
       for (let dataPoint of data){
-        if (!relevantData.some(function(el) { return el[title] === dataPoint[title]})){
+        if (!relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
           let total = 0
           for (let subData of data){
-            if (subData[title] === dataPoint[title]){
+            if (subData[titleKey] === dataPoint[titleKey]){
               total += subData[this.props.weightKey]
             }
           }
           let newPoint = {}
           newPoint[this.props.weightKey] = total
-          newPoint[title] = dataPoint[title]
+          newPoint[titleKey] = dataPoint[titleKey]
           relevantData.push(newPoint)
         }
       }
     }
-    else {
-      let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(title) - 1]
+    else if (this.props.parent == "Other"){ //Data for a treemap from "other"
+      if (this.props.otherParent){ //Case in which "other" does not start from foundation treemap
+        let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(titleKey) - 1]
+
+        let weights = []
+        for (let dataPoint of data) {
+          if (dataPoint[parentTitleKey] == this.props.otherParent){
+            weights.push(dataPoint[this.props.weightKey])
+          }
+        }
+
+        let total = weights.reduce((a, b) => a + b, 0)
+        let threshold = (this.props.otherThreshold < .025 ?
+          .025 : this.props.otherThreshold) * total
+
+        for (let dataPoint of data){
+          if (dataPoint[parentTitleKey] == this.props.otherParent && !relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
+            let total = 0
+            for (let subData of data){
+              if (subData[titleKey] === dataPoint[titleKey]){
+                total += subData[this.props.weightKey]
+              }
+            }
+            if (total <= threshold) {
+              let newPoint = {}
+              newPoint[this.props.weightKey] = total
+              newPoint[titleKey] = dataPoint[titleKey]
+              relevantData.push(newPoint)
+            }
+          }
+        }
+      } else { //Case in which "other" starts from foundation treemap
+        let weights = []
+        for (let dataPoint of data) {
+          weights.push(dataPoint[this.props.weightKey])
+        }
+
+        let total = weights.reduce((a, b) => a + b, 0)
+        let threshold = (this.props.otherThreshold < .025 ?
+          .025 : this.props.otherThreshold) * total
+        for (let dataPoint of data){
+          if (!relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
+            let total = 0
+            for (let subData of data){
+              if (subData[titleKey] === dataPoint[titleKey]){
+                total += subData[this.props.weightKey]
+              }
+            }
+            if (total <= threshold) {
+              let newPoint = {}
+              newPoint[this.props.weightKey] = total
+              newPoint[titleKey] = dataPoint[titleKey]
+              relevantData.push(newPoint)
+            }
+          }
+        }
+      }
+    }
+    else { //Data for any treemap that is not foundation and does not come from "other"
+      let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(titleKey) - 1]
       for (let dataPoint of data){
-        if (dataPoint[parentTitleKey] == this.props. parent && !relevantData.some(function(el) { return el[title] === dataPoint[title]})){
+        if (dataPoint[parentTitleKey] == this.props.parent && !relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
           let total = 0
           for (let subData of data){
-            if (subData[title] === dataPoint[title]){
+            if (subData[titleKey] === dataPoint[titleKey]){
               total += subData[this.props.weightKey]
             }
           }
           let newPoint = {}
           newPoint[this.props.weightKey] = total
-          newPoint[title] = dataPoint[title]
+          newPoint[titleKey] = dataPoint[titleKey]
           relevantData.push(newPoint)
         }
       }
@@ -135,7 +150,6 @@ class TreeMap extends React.Component {
     }
 
     let formattedData = this.pickData(this.props.data, this.props.titleKey)
-
     let considerOther = this.needOther(formattedData)
     formattedData = considerOther[0]
 
@@ -190,6 +204,8 @@ class TreeMap extends React.Component {
             width={datum.dimensions.x} height={datum.dimensions.y}
             fill={colorFunction(datum.raw, rectIndex)}
             titleKey={this.props.titleKey} title={datum.raw[this.props.titleKey]}
+            level={this.props.level}
+            weightKey={this.props.weightKey}
             maxTitleLength={s.maxTitleLength} textDark={this.props.textDark}
             textLight={this.props.textLight}
             titleScale={this.props.titleScale}
@@ -199,6 +215,8 @@ class TreeMap extends React.Component {
             initialAnimation={this.props.initialAnimation}
             clickable={this.props.titleKey!=this.props.keyOrder[this.props.keyOrder.length-1]||!this.props.active}
             handleNest={this.props.handleNest}
+            activateTooltip={this.props.activateTooltip}
+            deactivateTooltip={this.props.deactivateTooltip}
           />
         )
       }
@@ -210,7 +228,9 @@ class TreeMap extends React.Component {
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
           fill={colorFunction(formattedData[formattedData.length-1],rectIndex)}
-          titleKey={this.props.titleKey} title="Other" titleScale={this.props.titleScale}
+          titleKey={this.props.titleKey} title="Other"
+          titleScale={this.props.titleScale} level={this.props.level}
+          weightKey={this.props.weightKey}
           textDark={this.props.textDark} textLight={this.props.textLight}
           titleScale={this.props.titleScale}
           percentage={(100 * formattedData[formattedData.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
@@ -218,6 +238,8 @@ class TreeMap extends React.Component {
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
           handleNest={this.props.handleNest}
+          activateTooltip={this.props.activateTooltip}
+          deactivateTooltip={this.props.deactivateTooltip}
         />
       )
     }
