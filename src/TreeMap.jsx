@@ -256,18 +256,6 @@ class TreeMap extends React.Component {
 
 
 TreeMap.defaultProps = {
-  width: 800,
-  height: 400,
-  titleKey: "title",
-  keyOrder: ["title"],
-  weightKey: "weight",
-  otherThreshold: .025,
-  colorFunction: null,
-  colorKey: "",
-  colorPalette: [
-    "#4cab92", "#ca0004", "#8e44ad", "#eccc00",
-    "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"
-  ],
   grayscalePalette: [
     "#080808", "#282828", "#484848", "#686868",
     "#808080", "#A0A0A0", "#B0B0B0", "#C8C8C8"
@@ -276,8 +264,6 @@ TreeMap.defaultProps = {
   textLight: "#eee",
   titleScale: 3.5,
   percentageScale: 2.5,
-  displayPercentages: true,
-  initialAnimation: true,
 }
 
 
