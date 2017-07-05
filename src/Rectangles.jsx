@@ -52,6 +52,13 @@ class TreeRects extends React.Component {
               opacity: 0.75,
             }
 
+            if (Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 200) * 4 > this.props.width){
+              titleStyle.transform = "rotate(270deg)"
+              titleStyle.width = "1px"
+              titleStyle.margin = `${this.props.width * 1.3}px ${this.props.width / 2.25}px ${- this.props.width / 3}px`
+              percentageStyle.margin = `${this.props.width / 6}px 0 0 0`
+            }
+
             return (
               <g>
                 <rect
@@ -130,7 +137,7 @@ class OtherRect extends React.Component {
               fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
               transform: "rotate(270deg)",
               width: "1px",
-              margin: `0px ${this.props.width / 2.3}px ${- this.props.width / 3}px`
+              margin: `0px ${this.props.width / 2.25}px ${- this.props.width / 3}px`
             }
 
             let percentageStyle = {
