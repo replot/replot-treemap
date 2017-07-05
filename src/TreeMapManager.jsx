@@ -17,7 +17,7 @@ class TreeMapManager extends React.Component {
     }
     for (let i = 0; i < this.props.keyOrder.length; i++){
       let map = {}
-      map.key = (i == 0 ? this.props.titleKey : this.props.keyOrder[i])
+      map.key = (this.props.keyOrder.length == 1 && i == 0 ? this.props.titleKey : this.props.keyOrder[i])
       map.visible = (i == 0 ? true : false)
       map.chosenValue = null
       this.state.mapList.push(map)
@@ -50,31 +50,29 @@ class TreeMapManager extends React.Component {
     this.setState({ mouseX: e.pageX, mouseY: e.pageY - 12 })
   }
 
-  handleNest(level, titleKey, chosenRect) {
+  handleNest(level, chosenRect) {
     let newMapList = this.state.mapList.slice()
     let index = level
-    if (chosenRect == "Other"){
+    if (chosenRect == "Other"){ //clicking on an active map, specifically the "other" rect
       newMapList[index].chosenValue = chosenRect
       let newOtherMap = {}
-      newOtherMap.key = "other" + (level + 1)
+      newOtherMap.key = "other" + (level+1)
       newOtherMap.visible = true
       newOtherMap.chosenValue = null
       newMapList.splice(index+1, 0, newOtherMap)
     }
-    else if (!newMapList[index].chosenValue && this.props.keyOrder.length != 1
-      && newMapList[index].key != this.props.keyOrder[this.props.keyOrder.length-1]
-      && index != (newMapList.length-1)) { //clicking on an active map to go forward
+    else if (!newMapList[index].chosenValue && index != (newMapList.length-1)) {
+      //clicking on an active map to go forward, not "other" rect and not last level
       newMapList[index].chosenValue = chosenRect
-      if (newMapList[index + 1]) {
-        newMapList[index + 1].visible = true
+      if (newMapList[index+1]) {
+        newMapList[index+1].visible = true
       }
     }
     else { //clicking on an inactive TreeMap to go back
       newMapList[index].chosenValue = null
-      for (let j = index + 1; j < newMapList.length; j++){
+      for (let j = newMapList.length-1; j > index; j--){
         if (newMapList[j].key.includes("other")){
           newMapList.splice(j,1)
-          j--
         }
         else{
           newMapList[j].visible = false
@@ -103,10 +101,26 @@ class TreeMapManager extends React.Component {
 
   chooseParentifOther(index){
     for (let i = index - 2; i >=0 ; i--){
-      if (!this.state.mapList[i].chosenValue.includes("Other")){
+      if (this.state.mapList[i].chosenValue != null && !this.state.mapList[i].chosenValue.includes("Other")){
         return this.state.mapList[i].chosenValue
       }
     }
+  }
+
+  otherDepth(index){ //used when "other" comes from "other"
+    let depth = 0
+    if (!this.state.mapList[index].key.includes("other")){
+      return 0
+    }
+    for (let i = index-1; i>=0; i--){
+      if (this.state.mapList[i].key.includes("other")){
+        depth++
+      }
+      else {
+        break
+      }
+    }
+    return depth
   }
 
   render() {
@@ -115,14 +129,18 @@ class TreeMapManager extends React.Component {
     for (let i = 0; i < this.state.mapList.length; i++){
       treeMaps.push(
         <div key={this.state.mapList[i].key}
-          style={i==0 ? null : {position: "absolute", top: `${i*this.getNestPosition().y}px`, left: `${i*this.getNestPosition().x}px`, boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)"}}>
+          style={i==0 ? null :
+          {position: "absolute", top: `${i*this.getNestPosition().y}px`,
+            left: `${i*this.getNestPosition().x}px`,
+            boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)"}}>
           <TreeMap width={this.props.width} height={this.props.height}
             data={this.props.data} weightKey={this.props.weightKey}
             titleKey={this.chooseTitleKey(i)}
             parent={i-1 >= 0 ? this.state.mapList[i-1].chosenValue : null}
-            otherParent={i-2 >= 0 ? this.state.mapList[i-2].chosenValue : null}
+            otherParent={this.chooseParentifOther(i)}
+            otherDepth={this.otherDepth(i)}
+            otherThreshold={this.props.otherThreshold} level={i}
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
-            level={i} otherThreshold={this.props.otherThreshold}
             active={this.state.mapList[i].chosenValue == null}
             visible={this.state.mapList[i].visible}
             handleNest={this.handleNest.bind(this)}
@@ -170,6 +188,8 @@ TreeMapManager.defaultProps = {
   otherThreshold: .025,
   displayPercentages: true,
   initialAnimation: true,
+  tooltip: false,
+  tooltipColor: "dark"
 }
 
 TreeMapManager.propTypes = {
@@ -183,7 +203,9 @@ TreeMapManager.propTypes = {
   colorPalette: PropTypes.array,
   otherThreshold: PropTypes.number,
   displayPercentages: PropTypes.bool,
-  initialAnimation: PropTypes.bool
+  initialAnimation: PropTypes.bool,
+  tooltip: PropTypes.bool,
+  tooltipColor: PropTypes.string
 }
 
 export default TreeMapManager
