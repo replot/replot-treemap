@@ -44,39 +44,13 @@ render() {
 - `weightKey` defaults to `"weight"`
 
 ### Advanced Usage - Nesting
-Replot treemaps are able to display nested structures, as long as the data is in
-one of two appropriate formats. The two formats are listed below, and it is not
-necessary to specifiy which format the data is in. If nested data is supplied,
-a `keyOrder` prop, which details keys at various levels in the form of a
-Javascript array, starting with the most general first, is also required.
+Replot treemaps are able to display nested data, as long as the structure of the
+data is an proper flat format. If flat nested data is supplied, a `keyOrder`
+prop, which details titleKeys at various levels in the form of a Javascript
+array, starting with the most general first, is also required. In this
+case, the `titleKey` prop is no longer required.
 
-#### Data Input with Children
-Data may be input in which the child data set for each parent is defined as
-a key/value pair in a parent object. Replot-treemap will look for the `child`
-keyword in this case.
-
-```javascript
-render() {
-  let populations = [
-    {country: "China", population: 1388232693, child: [
-      {state: "Beijing", population: 9020123},
-      {state: "Hebei", population: 1508123}
-    ]},
-    {country: "India", population: 1342512706},
-    {country: "USA", population: 326474013}
-  ]
-  let keys = ["country", "state"]
-
-  return(
-    <TreeMap data={populations} titleKey="country"
-      weightKey="population" keyOrder={keys}/>
-  )
-}
-```
-
-#### Flat Data Input
-Flat data may be input, in which the visualization will determine total weights
-for members of the same parent class.
+Nested data input would look as follows:
 
 ```javascript
 render() {
@@ -193,6 +167,24 @@ render() {
   return(
     <TreeMap data={populations} titleKey="country"
       weightKey="population" otherThreshold={.05} />
+  )
+}
+```
+
+###Tooltip
+Treemaps are capable of utilizing a tooltip to display more specific information
+about any data element. By default, the tooltip is off, but can be activated by
+passing in a `tooltip` prop (no value needed). The tooltip features two different
+color schemes, dark and light, which can be specified by a
+`tooltipColor` prop, with a value of "dark" or "light".
+
+```javascript
+render() {
+  ...
+
+  return(
+    <TreeMap data={populations} titleKey="country"
+      tooltip tooltipColor="light" />
   )
 }
 ```

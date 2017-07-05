@@ -47,38 +47,36 @@ class TreeMap extends React.Component {
 
   pickData(data, titleKey) {
     let relevantData = []
-    if (!this.props.parent) { //data for the foundation treemap
-      for (let dataPoint of data){
-        if (!relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
-          let total = 0
-          for (let subData of data){
-            if (subData[titleKey] === dataPoint[titleKey]){
-              total += subData[this.props.weightKey]
-            }
-          }
-          let newPoint = {}
-          newPoint[this.props.weightKey] = total
-          newPoint[titleKey] = dataPoint[titleKey]
-          relevantData.push(newPoint)
+    if (this.props.parent == "Other"){ //Data for a treemap from "other"
+      let parentTitleKey = null
+      if (this.props.otherParent) {
+        parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(titleKey) - 1]
+      }
+
+      let weights = []
+      for (let dataPoint of data) {
+        if (dataPoint[parentTitleKey] == this.props.otherParent){
+          weights.push(dataPoint[this.props.weightKey])
         }
       }
-    }
-    else if (this.props.parent == "Other"){ //Data for a treemap from "other"
-      if (this.props.otherParent){ //Case in which "other" does not start from foundation treemap
-        let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(titleKey) - 1]
 
-        let weights = []
-        for (let dataPoint of data) {
-          if (dataPoint[parentTitleKey] == this.props.otherParent){
-            weights.push(dataPoint[this.props.weightKey])
-          }
+      let total = weights.reduce((a, b) => a + b, 0)
+      let threshold = (this.props.otherThreshold < .025 ?
+        .025 : this.props.otherThreshold) * total
+
+      if (this.props.otherDepth > 0){
+        for (let i = 0; i < this.props.otherDepth; i++){
+          weights = weights.filter(function(weight){
+            return (weight < threshold)
+          })
+          total = weights.reduce((a, b) => a + b, 0)
+          threshold = (this.props.otherThreshold < .025 ?
+            .025 : this.props.otherThreshold) * total
         }
+      }
 
-        let total = weights.reduce((a, b) => a + b, 0)
-        let threshold = (this.props.otherThreshold < .025 ?
-          .025 : this.props.otherThreshold) * total
-
-        for (let dataPoint of data){
+      for (let dataPoint of data){
+        if (parentTitleKey) { //Case in which the "other" rect is on the foundation treemap
           if (dataPoint[parentTitleKey] == this.props.otherParent && !relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
             let total = 0
             for (let subData of data){
@@ -93,17 +91,7 @@ class TreeMap extends React.Component {
               relevantData.push(newPoint)
             }
           }
-        }
-      } else { //Case in which "other" starts from foundation treemap
-        let weights = []
-        for (let dataPoint of data) {
-          weights.push(dataPoint[this.props.weightKey])
-        }
-
-        let total = weights.reduce((a, b) => a + b, 0)
-        let threshold = (this.props.otherThreshold < .025 ?
-          .025 : this.props.otherThreshold) * total
-        for (let dataPoint of data){
+        } else { //Case in which the "other" rect does not come from the foundation
           if (!relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
             let total = 0
             for (let subData of data){
@@ -119,25 +107,46 @@ class TreeMap extends React.Component {
             }
           }
         }
+
       }
     }
-    else { //Data for any treemap that is not foundation and does not come from "other"
-      let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(titleKey) - 1]
+    else { //Data for any treemap that does not come from "other"
+      let parentTitleKey = null
+      if (this.props.parent) {
+        parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(titleKey) - 1]
+      }
+
       for (let dataPoint of data){
-        if (dataPoint[parentTitleKey] == this.props.parent && !relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
-          let total = 0
-          for (let subData of data){
-            if (subData[titleKey] === dataPoint[titleKey]){
-              total += subData[this.props.weightKey]
+        if (parentTitleKey) { //Data for any treemap that is not the foundation treemap
+          if (dataPoint[parentTitleKey] == this.props.parent && !relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
+            let total = 0
+            for (let subData of data){
+              if (subData[titleKey] === dataPoint[titleKey]){
+                total += subData[this.props.weightKey]
+              }
             }
+            let newPoint = {}
+            newPoint[this.props.weightKey] = total
+            newPoint[titleKey] = dataPoint[titleKey]
+            relevantData.push(newPoint)
           }
-          let newPoint = {}
-          newPoint[this.props.weightKey] = total
-          newPoint[titleKey] = dataPoint[titleKey]
-          relevantData.push(newPoint)
+        } else {//Data for the foundation treemap
+          if (!relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
+            let total = 0
+            for (let subData of data){
+              if (subData[titleKey] === dataPoint[titleKey]){
+                total += subData[this.props.weightKey]
+              }
+            }
+            let newPoint = {}
+            newPoint[this.props.weightKey] = total
+            newPoint[titleKey] = dataPoint[titleKey]
+            relevantData.push(newPoint)
+          }
         }
       }
     }
+
     return relevantData
   }
 
