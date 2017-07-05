@@ -1383,6 +1383,13 @@ var TreeRects = function (_React$Component) {
             opacity: 0.75
           };
 
+          if (Math.sqrt(_this2.props.titleScale * _this2.props.width * _this2.props.height / 200) * 4 > _this2.props.width) {
+            titleStyle.transform = "rotate(270deg)";
+            titleStyle.width = "1px";
+            titleStyle.margin = _this2.props.width * 1.3 + "px " + _this2.props.width / 2.25 + "px " + -_this2.props.width / 3 + "px";
+            percentageStyle.margin = _this2.props.width / 6 + "px 0 0 0";
+          }
+
           return _react2.default.createElement(
             "g",
             null,
@@ -1486,7 +1493,7 @@ var OtherRect = function (_React$Component2) {
             fontSize: Math.sqrt(_this4.props.titleScale * _this4.props.width * _this4.props.height / 100) + "px",
             transform: "rotate(270deg)",
             width: "1px",
-            margin: "0px " + _this4.props.width / 2.3 + "px " + -_this4.props.width / 3 + "px"
+            margin: "0px " + _this4.props.width / 2.25 + "px " + -_this4.props.width / 3 + "px"
           };
 
           var percentageStyle = {
