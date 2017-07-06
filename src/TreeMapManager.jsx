@@ -1,7 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
 import TreeMap from "./TreeMap.jsx"
-import Tooltip from "../docs/index.jsx" //This import location will change eventually
+import Tooltip from "replot-core"
 
 
 class TreeMapManager extends React.Component {
@@ -10,7 +10,7 @@ class TreeMapManager extends React.Component {
     super(props)
     this.state = {
       mapList: [],
-      tooltipContents: "test",
+      tooltipContents: null,
       mouseOver: false,
       mouseX: null,
       mouseY: null
@@ -25,14 +25,21 @@ class TreeMapManager extends React.Component {
   }
 
   activateTooltip(title, weight) {
+    let newContents
+    if (this.props.tooltipContents){
+      newContents = this.props.tooltipContents(title, this.props.data)
+    }
+    else {
+      newContents = (
+        <div>
+          <h1>{title}</h1>
+          <p>{this.props.weightKey}: {weight}</p>
+        </div>
+      )
+    }
     this.setState(
       {
-        tooltipContents: (
-          <div>
-            <h1>{title}</h1>
-            <p>{this.props.weightKey}: {weight}</p>
-          </div>
-        ),
+        tooltipContents: newContents,
         mouseOver: true,
       }
     )

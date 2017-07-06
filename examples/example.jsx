@@ -145,6 +145,23 @@ class ExampleApp extends React.Component {
     }
   }
 
+  fillTooltip(title, data) {
+    let cities = ""
+    for (let dataPoint of data){
+      if (dataPoint.country === title){
+        cities = cities + dataPoint.city + ", "
+      }
+    }
+    return (
+      <div>
+        <h1>{title}</h1>
+        {cities.length > 0 &&
+          <div>The cities in this country are: {cities}</div>
+        }
+      </div>
+    )
+  }
+
   render() {
     return(
       <div className="container">
@@ -152,7 +169,8 @@ class ExampleApp extends React.Component {
         <TreeDataTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMapManager data={this.state.data} weightKey="population"
-            keyOrder={this.state.keyOrder} />
+            keyOrder={this.state.keyOrder} tooltip
+            tooltipContents={this.fillTooltip.bind(this)}/>
         </div>
       </div>
     )
