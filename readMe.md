@@ -13,7 +13,7 @@ Then with a module bundler like webpack/browserify that supports CommonJS/ES2015
 modules, use as you would anything else.
 
 ```javascript
-import TreeMap from 'replot-treemap'
+import TreeMapManager from 'replot-treemap'
 ```
 
 ## API
@@ -33,7 +33,7 @@ render() {
   ]
 
   return(
-    <TreeMap data={populations} titleKey="country"
+    <TreeMapManager data={populations} titleKey="country"
       weightKey="population" />
   )
 }
@@ -68,8 +68,8 @@ render() {
   let keys = ["country", "state", "city"]
 
   return(
-    <TreeMap data={populations} titleKey="country"
-      weightKey="population" keyOrder={keys}/>
+    <TreeMapManager data={populations} weightKey="population"
+      keyOrder={keys}/>
   )
 }
 ```
@@ -113,7 +113,7 @@ render() {
   }
 
   return(
-    <TreeMap data={primary_results} titleKey="candidate"
+    <TreeMapManager data={primary_results} titleKey="candidate"
       weightKey="votes" colorFunction={colorFunction} />
   )
 }
@@ -133,23 +133,8 @@ render() {
   ]
 
   return(
-    <TreeMap data={populations} titleKey="country"
+    <TreeMapManager data={populations} titleKey="country"
       weightKey="population" colorKey="color" />
-  )
-}
-```
-
-### Displaying Percentages
-Rectangle percentage values are displayed by default. This behaviour can be
-switched off using the `displayPercentages` boolean prop.
-
-```javascript
-render() {
-  ...
-
-  return(
-    <TreeMap data={populations} titleKey="country"
-      weightKey="population" colorKey="color" displayPercentages={false} />
   )
 }
 ```
@@ -165,7 +150,7 @@ render() {
   ...
 
   return(
-    <TreeMap data={populations} titleKey="country"
+    <TreeMapManager data={populations} titleKey="country"
       weightKey="population" otherThreshold={.05} />
   )
 }
@@ -183,8 +168,50 @@ render() {
   ...
 
   return(
-    <TreeMap data={populations} titleKey="country"
+    <TreeMapManager data={populations} titleKey="country"
       tooltip tooltipColor="light" />
+  )
+}
+```
+
+####Customizing Tooltip contents
+By default, the tooltip will simply diplay the title of a square as well as its
+weight. The user can customize exactly what is displayed inside the tooltip by
+passing in a `tooltipContents` prop in the form of a Javascript function.
+The treemap will provide the square title you are hovering over, as well as the
+data behind the treemap. The function should return JSX, which can utilize the
+provided values.
+
+```javascript
+fillTooltip(title, data){
+  return (
+    <div>{title}</div>
+  )
+}
+
+render() {
+  ...
+
+  return(
+    <TreeMapManager data={populations}
+      titleKey="country" weightKey="population"
+      tooltip tooltipContents=this.fillTooltip.bind(this) />
+  )
+}
+```
+
+
+### Displaying Percentages
+Rectangle percentage values are displayed by default. This behaviour can be
+switched off using the `displayPercentages` boolean prop.
+
+```javascript
+render() {
+  ...
+
+  return(
+    <TreeMapManager data={populations} titleKey="country"
+      weightKey="population" colorKey="color" displayPercentages={false} />
   )
 }
 ```
