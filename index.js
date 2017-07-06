@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 20);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -362,11 +362,11 @@ if (process.env.NODE_ENV !== 'production') {
   // By explicitly using `prop-types` you are opting into new development behavior.
   // http://fb.me/prop-types-in-prod
   var throwOnDirectAccess = true;
-  module.exports = __webpack_require__(26)(isValidElement, throwOnDirectAccess);
+  module.exports = __webpack_require__(24)(isValidElement, throwOnDirectAccess);
 } else {
   // By explicitly using `prop-types` you are opting into new production behavior.
   // http://fb.me/prop-types-in-prod
-  module.exports = __webpack_require__(25)();
+  module.exports = __webpack_require__(23)();
 }
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
@@ -416,7 +416,7 @@ module.exports = exports['default'];
 
 
 var React = __webpack_require__(1);
-var factory = __webpack_require__(21);
+var factory = __webpack_require__(19);
 
 // Hack to grab NoopUpdateQueue from isomorphic React
 var ReactNoopUpdateQueue = new React.Component().updater;
@@ -609,7 +609,7 @@ module.exports = ReactPropTypesSecret;
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {var now = __webpack_require__(27)
+/* WEBPACK VAR INJECTION */(function(global) {var now = __webpack_require__(25)
   , root = typeof window === 'undefined' ? global : window
   , vendors = ['moz', 'webkit']
   , suffix = 'AnimationFrame'
@@ -682,7 +682,7 @@ module.exports.polyfill = function() {
   root.cancelAnimationFrame = caf
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(35)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(34)))
 
 /***/ }),
 /* 11 */
@@ -832,13 +832,13 @@ var _propTypes = __webpack_require__(3);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _TreeMap = __webpack_require__(19);
+var _TreeMap = __webpack_require__(17);
 
 var _TreeMap2 = _interopRequireDefault(_TreeMap);
 
-var _index = __webpack_require__(17);
+var _replotCore = __webpack_require__(33);
 
-var _index2 = _interopRequireDefault(_index);
+var _replotCore2 = _interopRequireDefault(_replotCore);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -847,9 +847,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-//This import location will change eventually
-
 
 var TreeMapManager = function (_React$Component) {
   _inherits(TreeMapManager, _React$Component);
@@ -861,7 +858,7 @@ var TreeMapManager = function (_React$Component) {
 
     _this.state = {
       mapList: [],
-      tooltipContents: "test",
+      tooltipContents: null,
       mouseOver: false,
       mouseX: null,
       mouseY: null
@@ -879,8 +876,11 @@ var TreeMapManager = function (_React$Component) {
   _createClass(TreeMapManager, [{
     key: "activateTooltip",
     value: function activateTooltip(title, weight) {
-      this.setState({
-        tooltipContents: _react2.default.createElement(
+      var newContents = void 0;
+      if (this.props.tooltipContents) {
+        newContents = this.props.tooltipContents(title, this.props.data);
+      } else {
+        newContents = _react2.default.createElement(
           "div",
           null,
           _react2.default.createElement(
@@ -895,7 +895,10 @@ var TreeMapManager = function (_React$Component) {
             ": ",
             weight
           )
-        ),
+        );
+      }
+      this.setState({
+        tooltipContents: newContents,
         mouseOver: true
       });
     }
@@ -1022,7 +1025,7 @@ var TreeMapManager = function (_React$Component) {
       return _react2.default.createElement(
         "div",
         { onMouseMove: this.props.tooltip ? this.updateMousePos.bind(this) : null },
-        this.props.tooltip && _react2.default.createElement(_index2.default, {
+        this.props.tooltip && _react2.default.createElement(_replotCore2.default, {
           x: this.state.mouseX, y: this.state.mouseY,
           active: this.state.mouseOver,
           colorScheme: this.props.tooltipColor,
@@ -1069,7 +1072,8 @@ TreeMapManager.propTypes = {
   displayPercentages: _propTypes2.default.bool,
   initialAnimation: _propTypes2.default.bool,
   tooltip: _propTypes2.default.bool,
-  tooltipColor: _propTypes2.default.string
+  tooltipColor: _propTypes2.default.string,
+  TooltipContents: _propTypes2.default.func
 };
 
 exports.default = TreeMapManager;
@@ -1081,239 +1085,17 @@ exports.default = TreeMapManager;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Tooltip = function (_React$Component) {
-  _inherits(Tooltip, _React$Component);
-
-  function Tooltip(props) {
-    _classCallCheck(this, Tooltip);
-
-    var _this = _possibleConstructorReturn(this, (Tooltip.__proto__ || Object.getPrototypeOf(Tooltip)).call(this, props));
-
-    _this.state = {
-      height: 0
-    };
-    return _this;
-  }
-
-  _createClass(Tooltip, [{
-    key: "updateHeight",
-    value: function updateHeight(node) {
-      if (node && node.offsetHeight !== this.state.height) {
-        this.setState({ height: node.offsetHeight });
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-
-      if (!this.props.active) {
-        return null;
-      }
-
-      var width = 200;
-      var leftMax = window.innerWidth - width;
-
-      var coloring = {};
-      switch (this.props.colorScheme) {
-        case "light":
-          coloring.backgroundColor = "#ffffff";
-          coloring.borderColor = "#DCDCDC";
-          coloring.fontColor = "#000000";
-          break;
-        case "dark":
-          coloring.backgroundColor = "#181818";
-          coloring.borderColor = "#585858";
-          coloring.fontColor = "#ffffff";
-          break;
-        default:
-          coloring.backgroundColor = this.props.backgroundColor;
-          coloring.borderColor = this.props.borderColor;
-          coloring.fontColor = this.props.fontColor;
-          break;
-      }
-
-      var style = {
-        outer: {
-          zIndex: "1",
-          position: "absolute"
-        },
-        inner: {
-          display: "inline-block",
-          position: "absolute",
-          width: width,
-          textAlign: "center",
-          padding: this.props.padding,
-          backgroundColor: coloring.backgroundColor,
-          border: "1px solid",
-          borderColor: coloring.borderColor,
-          boxShadow: "0 0 5px rgba(0, 0, 0, 0.25)",
-          color: coloring.fontColor
-        },
-        svgWrapper: {
-          display: "inline-block",
-          position: "absolute"
-        },
-        triangle: {
-          fill: coloring.borderColor,
-          stroke: coloring.borderColor,
-          strokeWidth: "1"
-        }
-      };
-
-      var svgHeight = void 0;
-      var svgWidth = void 0;
-      var svgStyle = void 0;
-      var transform = void 0;
-
-      if (this.props.align === "top" || this.props.align === "bottom") {
-        style.outer.width = width;
-        style.outer.height = this.state.height + 5;
-        style.outer.left = Math.min(leftMax, Math.max(0, this.props.x - width / 2));
-        style.svgWrapper.width = width;
-        style.svgWrapper.height = 5;
-        style.svgWrapper.textAlign = "center";
-        svgHeight = 5;
-        svgWidth = 10;
-      } else {
-        /* this.props.align === "right" or "left" */
-        style.outer.width = width + 5;
-        style.outer.height = this.state.height;
-        style.outer.top = this.props.y - this.state.height / 2;
-        style.inner.top = 0;
-        style.svgWrapper.width = 5;
-        style.svgWrapper.height = this.state.height;
-        svgHeight = 10;
-        svgWidth = 5;
-        svgStyle = {
-          position: "absolute",
-          top: this.state.height / 2 - 5
-        };
-      }
-
-      switch (this.props.align) {
-        case "top":
-          style.outer.bottom = window.innerHeight - this.props.y;
-          style.inner.top = 0;
-          style.svgWrapper.bottom = 0;
-          break;
-        case "bottom":
-          style.outer.top = this.props.y;
-          style.inner.bottom = 0;
-          style.svgWrapper.top = 0;
-          transform = "rotate(180,5,5) translate(0,5)";
-          break;
-        case "right":
-          style.outer.left = Math.min(leftMax, Math.max(0, this.props.x));
-          style.inner.right = 0;
-          style.svgWrapper.left = 0;
-          transform = "rotate(90,5,5) translate(0,5)";
-          break;
-        case "left":
-          style.outer.left = Math.min(leftMax, Math.max(0, this.props.x - width));
-          style.inner.left = 0;
-          style.svgWrapper.right = 0;
-          transform = "rotate(270,5,5)";
-          break;
-        default:
-          console.log("invalid align argument");
-          return null;
-      }
-
-      return _react2.default.createElement(
-        "div",
-        { style: style.outer },
-        _react2.default.createElement(
-          "div",
-          { ref: function ref(node) {
-              return _this2.updateHeight(node);
-            }, style: style.inner },
-          this.props.contents
-        ),
-        _react2.default.createElement(
-          "div",
-          { style: style.svgWrapper },
-          _react2.default.createElement(
-            "svg",
-            { height: svgHeight, width: svgWidth, style: svgStyle },
-            _react2.default.createElement("polygon", { points: "0,0 5,5 10,0", style: style.triangle,
-              transform: transform })
-          )
-        )
-      );
-    }
-  }]);
-
-  return Tooltip;
-}(_react2.default.Component);
-
-Tooltip.defaultProps = {
-  width: 200,
-  padding: 10,
-  backgroundColor: "#181818",
-  fontColor: "#ffffff",
-  borderColor: "#585858",
-  active: true,
-  align: "top"
-};
-
-exports.default = Tooltip;
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Tooltip = __webpack_require__(16);
-
-var _Tooltip2 = _interopRequireDefault(_Tooltip);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = _Tooltip2.default;
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(1);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _isLight = __webpack_require__(37);
+var _isLight = __webpack_require__(36);
 
 var _isLight2 = _interopRequireDefault(_isLight);
 
-var _reactMotion = __webpack_require__(32);
+var _reactMotion = __webpack_require__(30);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1559,7 +1341,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 19 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1575,11 +1357,11 @@ var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _Squarify = __webpack_require__(36);
+var _Squarify = __webpack_require__(35);
 
 var _Squarify2 = _interopRequireDefault(_Squarify);
 
-var _Rectangles = __webpack_require__(18);
+var _Rectangles = __webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2143,7 +1925,7 @@ TreeMap.defaultProps = {
 exports.default = TreeMap;
 
 /***/ }),
-/* 20 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2162,7 +1944,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = _TreeMapManager2.default;
 
 /***/ }),
-/* 21 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2178,9 +1960,9 @@ exports.default = _TreeMapManager2.default;
 
 
 
-var _assign = __webpack_require__(23);
+var _assign = __webpack_require__(21);
 
-var emptyObject = __webpack_require__(22);
+var emptyObject = __webpack_require__(20);
 var _invariant = __webpack_require__(2);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -2894,7 +2676,7 @@ module.exports = factory;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 22 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2920,7 +2702,7 @@ module.exports = emptyObject;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 23 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3017,7 +2799,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 24 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3086,7 +2868,7 @@ module.exports = checkPropTypes;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 25 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3152,7 +2934,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 26 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3172,7 +2954,7 @@ var invariant = __webpack_require__(2);
 var warning = __webpack_require__(7);
 
 var ReactPropTypesSecret = __webpack_require__(9);
-var checkPropTypes = __webpack_require__(24);
+var checkPropTypes = __webpack_require__(22);
 
 module.exports = function(isValidElement, throwOnDirectAccess) {
   /* global Symbol */
@@ -3672,7 +3454,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 27 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {// Generated by CoffeeScript 1.12.2
@@ -3715,7 +3497,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 28 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3968,7 +3750,7 @@ exports['default'] = Motion;
 module.exports = exports['default'];
 
 /***/ }),
-/* 29 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4242,7 +4024,7 @@ exports['default'] = StaggeredMotion;
 module.exports = exports['default'];
 
 /***/ }),
-/* 30 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4266,7 +4048,7 @@ var _stepper3 = __webpack_require__(13);
 
 var _stepper4 = _interopRequireDefault(_stepper3);
 
-var _mergeDiff = __webpack_require__(31);
+var _mergeDiff = __webpack_require__(29);
 
 var _mergeDiff2 = _interopRequireDefault(_mergeDiff);
 
@@ -4750,7 +4532,7 @@ module.exports = exports['default'];
 // that you've unmounted but that's still animating. This is where it lives
 
 /***/ }),
-/* 31 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4864,7 +4646,7 @@ module.exports = exports['default'];
 // to loop through and find a key's index each time), but I no longer care
 
 /***/ }),
-/* 32 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4874,19 +4656,19 @@ exports.__esModule = true;
 
 function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
-var _Motion = __webpack_require__(28);
+var _Motion = __webpack_require__(26);
 
 exports.Motion = _interopRequire(_Motion);
 
-var _StaggeredMotion = __webpack_require__(29);
+var _StaggeredMotion = __webpack_require__(27);
 
 exports.StaggeredMotion = _interopRequire(_StaggeredMotion);
 
-var _TransitionMotion = __webpack_require__(30);
+var _TransitionMotion = __webpack_require__(28);
 
 exports.TransitionMotion = _interopRequire(_TransitionMotion);
 
-var _spring = __webpack_require__(34);
+var _spring = __webpack_require__(32);
 
 exports.spring = _interopRequire(_spring);
 
@@ -4900,12 +4682,12 @@ exports.stripStyle = _interopRequire(_stripStyle);
 
 // deprecated, dummy warning function
 
-var _reorderKeys = __webpack_require__(33);
+var _reorderKeys = __webpack_require__(31);
 
 exports.reorderKeys = _interopRequire(_reorderKeys);
 
 /***/ }),
-/* 33 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4929,7 +4711,7 @@ module.exports = exports['default'];
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 34 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4958,7 +4740,321 @@ function spring(val, config) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 35 */
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(true)
+		module.exports = factory(__webpack_require__(1));
+	else if(typeof define === 'function' && define.amd)
+		define(["react"], factory);
+	else if(typeof exports === 'object')
+		exports["Core"] = factory(require("react"));
+	else
+		root["Core"] = factory(root["React"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(2);
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Tooltip = function (_React$Component) {
+  _inherits(Tooltip, _React$Component);
+
+  function Tooltip(props) {
+    _classCallCheck(this, Tooltip);
+
+    var _this = _possibleConstructorReturn(this, (Tooltip.__proto__ || Object.getPrototypeOf(Tooltip)).call(this, props));
+
+    _this.state = {
+      height: 0
+    };
+    return _this;
+  }
+
+  _createClass(Tooltip, [{
+    key: "updateHeight",
+    value: function updateHeight(node) {
+      if (node && node.offsetHeight !== this.state.height) {
+        this.setState({ height: node.offsetHeight });
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      if (!this.props.active) {
+        return null;
+      }
+
+      var width = 200;
+      var leftMax = window.innerWidth - width;
+
+      var coloring = {};
+      switch (this.props.colorScheme) {
+        case "light":
+          coloring.backgroundColor = "#ffffff";
+          coloring.borderColor = "#DCDCDC";
+          coloring.fontColor = "#000000";
+          break;
+        case "dark":
+          coloring.backgroundColor = "#181818";
+          coloring.borderColor = "#585858";
+          coloring.fontColor = "#ffffff";
+          break;
+        default:
+          coloring.backgroundColor = this.props.backgroundColor;
+          coloring.borderColor = this.props.borderColor;
+          coloring.fontColor = this.props.fontColor;
+          break;
+      }
+
+      var style = {
+        outer: {
+          zIndex: "1",
+          position: "absolute"
+        },
+        inner: {
+          display: "inline-block",
+          position: "absolute",
+          width: width,
+          textAlign: "center",
+          padding: this.props.padding,
+          backgroundColor: coloring.backgroundColor,
+          border: "1px solid",
+          borderColor: coloring.borderColor,
+          boxShadow: "0 0 5px rgba(0, 0, 0, 0.25)",
+          color: coloring.fontColor
+        },
+        svgWrapper: {
+          display: "inline-block",
+          position: "absolute"
+        },
+        triangle: {
+          fill: coloring.borderColor,
+          stroke: coloring.borderColor,
+          strokeWidth: "1"
+        }
+      };
+
+      var svgHeight = void 0;
+      var svgWidth = void 0;
+      var svgStyle = void 0;
+      var transform = void 0;
+
+      if (this.props.align === "top" || this.props.align === "bottom") {
+        style.outer.width = width;
+        style.outer.height = this.state.height + 5;
+        style.outer.left = Math.min(leftMax, Math.max(0, this.props.x - width / 2));
+        style.svgWrapper.width = width;
+        style.svgWrapper.height = 5;
+        style.svgWrapper.textAlign = "center";
+        svgHeight = 5;
+        svgWidth = 10;
+      } else {
+        /* this.props.align === "right" or "left" */
+        style.outer.width = width + 5;
+        style.outer.height = this.state.height;
+        style.outer.top = this.props.y - this.state.height / 2;
+        style.inner.top = 0;
+        style.svgWrapper.width = 5;
+        style.svgWrapper.height = this.state.height;
+        svgHeight = 10;
+        svgWidth = 5;
+        svgStyle = {
+          position: "absolute",
+          top: this.state.height / 2 - 5
+        };
+      }
+
+      switch (this.props.align) {
+        case "top":
+          style.outer.bottom = window.innerHeight - this.props.y;
+          style.inner.top = 0;
+          style.svgWrapper.bottom = 0;
+          break;
+        case "bottom":
+          style.outer.top = this.props.y;
+          style.inner.bottom = 0;
+          style.svgWrapper.top = 0;
+          transform = "rotate(180,5,5) translate(0,5)";
+          break;
+        case "right":
+          style.outer.left = Math.min(leftMax, Math.max(0, this.props.x));
+          style.inner.right = 0;
+          style.svgWrapper.left = 0;
+          transform = "rotate(90,5,5) translate(0,5)";
+          break;
+        case "left":
+          style.outer.left = Math.min(leftMax, Math.max(0, this.props.x - width));
+          style.inner.left = 0;
+          style.svgWrapper.right = 0;
+          transform = "rotate(270,5,5)";
+          break;
+        default:
+          console.log("invalid align argument");
+          return null;
+      }
+
+      return _react2.default.createElement(
+        "div",
+        { style: style.outer },
+        _react2.default.createElement(
+          "div",
+          { ref: function ref(node) {
+              return _this2.updateHeight(node);
+            }, style: style.inner },
+          this.props.contents
+        ),
+        _react2.default.createElement(
+          "div",
+          { style: style.svgWrapper },
+          _react2.default.createElement(
+            "svg",
+            { height: svgHeight, width: svgWidth, style: svgStyle },
+            _react2.default.createElement("polygon", { points: "0,0 5,5 10,0", style: style.triangle,
+              transform: transform })
+          )
+        )
+      );
+    }
+  }]);
+
+  return Tooltip;
+}(_react2.default.Component);
+
+Tooltip.defaultProps = {
+  width: 200,
+  padding: 10,
+  backgroundColor: "#181818",
+  fontColor: "#ffffff",
+  borderColor: "#585858",
+  active: true,
+  align: "top"
+};
+
+exports.default = Tooltip;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Tooltip = __webpack_require__(0);
+
+var _Tooltip2 = _interopRequireDefault(_Tooltip);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _Tooltip2.default;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
+
+/***/ })
+/******/ ]);
+});
+
+/***/ }),
+/* 34 */
 /***/ (function(module, exports) {
 
 var g;
@@ -4985,7 +5081,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5164,7 +5260,7 @@ class Squarify {
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
