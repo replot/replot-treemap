@@ -212,7 +212,7 @@ TreeMapManager.propTypes = {
   displayPercentages: PropTypes.bool,
   initialAnimation: PropTypes.bool,
   tooltip: PropTypes.bool,
-  tooltipColor: PropTypes.string.
+  tooltipColor: PropTypes.string,
   TooltipContents: PropTypes.func
 }
 
