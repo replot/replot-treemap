@@ -76,8 +76,11 @@ class TreeMap extends React.Component {
       }
 
       for (let dataPoint of data){
-        if (parentTitleKey) { //Case in which the "other" rect is on the foundation treemap
-          if (dataPoint[parentTitleKey] == this.props.otherParent && !relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
+        if (parentTitleKey) { //Case in which the "other" rect is not on the foundation treemap
+          if (dataPoint[parentTitleKey] == this.props.otherParent
+            && !relevantData.some(function(el) {
+              return el[titleKey] === dataPoint[titleKey]
+            })) {
             let total = 0
             for (let subData of data){
               if (subData[titleKey] === dataPoint[titleKey]){
@@ -91,8 +94,10 @@ class TreeMap extends React.Component {
               relevantData.push(newPoint)
             }
           }
-        } else { //Case in which the "other" rect does not come from the foundation
-          if (!relevantData.some(function(el) { return el[titleKey] === dataPoint[titleKey]})){
+        } else { //Case in which the "other" rect comes from the foundation treemap
+          if (!relevantData.some(function(el) {
+            return el[titleKey] === dataPoint[titleKey]
+          })) {
             let total = 0
             for (let subData of data){
               if (subData[titleKey] === dataPoint[titleKey]){
@@ -148,6 +153,54 @@ class TreeMap extends React.Component {
     }
 
     return relevantData
+  }
+
+  dataForHover(hoverKey, hoverValue, weight){
+    let hoverData = []
+    if (hoverValue === "Other") {
+      let threshold = (this.props.otherThreshold < .025 ?
+        .025 : this.props.otherThreshold) * weight
+
+
+      let parentTitleKey = null
+      if (this.props.parent){
+        parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(hoverKey) - 1]
+      }
+
+      for (let dataPoint of this.props.data){
+        if (parentTitleKey){
+          if (dataPoint[parentTitleKey] == this.props.parent) {
+            let total = 0
+            for (let subData of this.props.data){
+              if (subData[hoverKey] === dataPoint[hoverKey]){
+                total += subData[this.props.weightKey]
+              }
+            }
+            if (total <= threshold) {
+              hoverData.push(dataPoint)
+            }
+          }
+        } else {
+          let total = 0
+          for (let subData of this.props.data){
+            if (subData[hoverKey] === dataPoint[hoverKey]){
+              total += subData[this.props.weightKey]
+            }
+          }
+          if (total <= threshold) {
+            hoverData.push(dataPoint)
+          }
+        }
+      }
+    }
+    else {
+      for (let dataPoint of this.props.data){
+        if (dataPoint[hoverKey] === hoverValue){
+          hoverData.push(dataPoint)
+        }
+      }
+    }
+    return hoverData
   }
 
   render() {
@@ -208,7 +261,8 @@ class TreeMap extends React.Component {
       for (let datum of row.data) {
         rectIndex += 1
         rects.push(
-          <TreeRects key={datum.index} data={datum.raw}
+          <TreeRects key={datum.index} data={datum.raw} allData={this.props.data}
+            hoverData={this.dataForHover(this.props.titleKey, datum.raw[this.props.titleKey])}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
             fill={colorFunction(datum.raw, rectIndex)}
@@ -222,7 +276,8 @@ class TreeMap extends React.Component {
             percentageScale={this.props.percentageScale}
             displayPercentages={this.props.displayPercentages}
             initialAnimation={this.props.initialAnimation}
-            clickable={this.props.titleKey!=this.props.keyOrder[this.props.keyOrder.length-1]||!this.props.active}
+            clickable={this.props.titleKey!=this.props.keyOrder[this.props.keyOrder.length-1]
+              || !this.props.active}
             handleNest={this.props.handleNest}
             activateTooltip={this.props.activateTooltip}
             deactivateTooltip={this.props.deactivateTooltip}
@@ -234,9 +289,11 @@ class TreeMap extends React.Component {
       rectIndex += 1
       rects.push(
         <OtherRect key="other" data={formattedData[formattedData.length-1]}
+          hoverData={this.dataForHover(this.props.titleKey, "Other", considerOther[2])}
+          allData={this.props.data}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
-          fill={colorFunction(formattedData[formattedData.length-1],rectIndex)}
+          fill={colorFunction(formattedData[formattedData.length-1], rectIndex)}
           titleKey={this.props.titleKey} title="Other"
           titleScale={this.props.titleScale} level={this.props.level}
           weightKey={this.props.weightKey}
