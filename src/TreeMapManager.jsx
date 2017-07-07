@@ -24,16 +24,15 @@ class TreeMapManager extends React.Component {
     }
   }
 
-  activateTooltip(title, weight) {
+  activateTooltip(hoverKey, hoverValue, hoverData, allData) {
     let newContents
     if (this.props.tooltipContents){
-      newContents = this.props.tooltipContents(title, this.props.data)
+      newContents = this.props.tooltipContents(hoverKey, hoverValue, hoverData, allData)
     }
     else {
       newContents = (
         <div>
-          <h1>{title}</h1>
-          <p>{this.props.weightKey}: {weight}</p>
+          <h1>{hoverValue}</h1>
         </div>
       )
     }

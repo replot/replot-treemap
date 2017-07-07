@@ -175,17 +175,18 @@ render() {
 ```
 
 ####Customizing Tooltip contents
-By default, the tooltip will simply diplay the title of a square as well as its
-weight. The user can customize exactly what is displayed inside the tooltip by
+By default, the tooltip will simply display the title of a square.
+The user can customize exactly what is displayed inside the tooltip by
 passing in a `tooltipContents` prop in the form of a Javascript function.
-The treemap will provide the square title you are hovering over, as well as the
-data behind the treemap. The function should return JSX, which can utilize the
-provided values.
+The user can expect to receive the key and value of the square you are hovering over
+(e.g. key="country" and value="USA"), an array of data related to that specific
+square, and all data for the treemap. The function should return JSX,
+which can utilize the provided values.
 
 ```javascript
-fillTooltip(title, data){
+fillTooltip(key, value, squareData, allData){
   return (
-    <div>{title}</div>
+    <div>You are hovering on the {key}: {value}</div>
   )
 }
 
