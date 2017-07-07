@@ -875,10 +875,10 @@ var TreeMapManager = function (_React$Component) {
 
   _createClass(TreeMapManager, [{
     key: "activateTooltip",
-    value: function activateTooltip(title, weight) {
+    value: function activateTooltip(hoverKey, hoverValue, hoverData, allData) {
       var newContents = void 0;
       if (this.props.tooltipContents) {
-        newContents = this.props.tooltipContents(title, this.props.data);
+        newContents = this.props.tooltipContents(hoverKey, hoverValue, hoverData, allData);
       } else {
         newContents = _react2.default.createElement(
           "div",
@@ -886,14 +886,7 @@ var TreeMapManager = function (_React$Component) {
           _react2.default.createElement(
             "h1",
             null,
-            title
-          ),
-          _react2.default.createElement(
-            "p",
-            null,
-            this.props.weightKey,
-            ": ",
-            weight
+            hoverValue
           )
         );
       }
@@ -1190,7 +1183,7 @@ var TreeRects = function (_React$Component) {
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
                 onClick: _this2.props.handleNest.bind(_this2, _this2.props.level, _this2.props.title),
-                onMouseOver: _this2.props.activateTooltip.bind(_this2, _this2.props.title, _this2.props.data[_this2.props.weightKey]),
+                onMouseOver: _this2.props.activateTooltip.bind(_this2, _this2.props.titleKey, _this2.props.title, _this2.props.hoverData, _this2.props.allData),
                 onMouseOut: _this2.props.deactivateTooltip,
                 style: _this2.props.clickable ? { cursor: "pointer" } : null
               },
@@ -1303,7 +1296,7 @@ var OtherRect = function (_React$Component2) {
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
                 onClick: _this4.props.handleNest.bind(_this4, _this4.props.level, _this4.props.title),
-                onMouseOver: _this4.props.activateTooltip.bind(_this4, _this4.props.title, _this4.props.data[_this4.props.weightKey]),
+                onMouseOver: _this4.props.activateTooltip.bind(_this4, _this4.props.titleKey, _this4.props.title, _this4.props.hoverData, _this4.props.allData),
                 onMouseOut: _this4.props.deactivateTooltip,
                 style: { cursor: "pointer" }
               },
@@ -1559,7 +1552,7 @@ var TreeMap = function (_React$Component) {
               var dataPoint = _step5.value;
 
               if (parentTitleKey) {
-                //Case in which the "other" rect is on the foundation treemap
+                //Case in which the "other" rect is not on the foundation treemap
                 if (dataPoint[parentTitleKey] == _this2.props.otherParent && !relevantData.some(function (el) {
                   return el[titleKey] === dataPoint[titleKey];
                 })) {
@@ -1599,7 +1592,7 @@ var TreeMap = function (_React$Component) {
                   }
                 }
               } else {
-                //Case in which the "other" rect does not come from the foundation
+                //Case in which the "other" rect comes from the foundation treemap
                 if (!relevantData.some(function (el) {
                   return el[titleKey] === dataPoint[titleKey];
                 })) {
@@ -1775,6 +1768,138 @@ var TreeMap = function (_React$Component) {
       return relevantData;
     }
   }, {
+    key: "dataForHover",
+    value: function dataForHover(hoverKey, hoverValue, weight) {
+      var hoverData = [];
+      if (hoverValue === "Other") {
+        var threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * weight;
+
+        var parentTitleKey = null;
+        if (this.props.parent) {
+          parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(hoverKey) - 1];
+        }
+
+        var _iteratorNormalCompletion11 = true;
+        var _didIteratorError11 = false;
+        var _iteratorError11 = undefined;
+
+        try {
+          for (var _iterator11 = this.props.data[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+            var _dataPoint3 = _step11.value;
+
+            if (parentTitleKey) {
+              if (_dataPoint3[parentTitleKey] == this.props.parent) {
+                var total = 0;
+                var _iteratorNormalCompletion12 = true;
+                var _didIteratorError12 = false;
+                var _iteratorError12 = undefined;
+
+                try {
+                  for (var _iterator12 = this.props.data[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+                    var subData = _step12.value;
+
+                    if (subData[hoverKey] === _dataPoint3[hoverKey]) {
+                      total += subData[this.props.weightKey];
+                    }
+                  }
+                } catch (err) {
+                  _didIteratorError12 = true;
+                  _iteratorError12 = err;
+                } finally {
+                  try {
+                    if (!_iteratorNormalCompletion12 && _iterator12.return) {
+                      _iterator12.return();
+                    }
+                  } finally {
+                    if (_didIteratorError12) {
+                      throw _iteratorError12;
+                    }
+                  }
+                }
+
+                if (total <= threshold) {
+                  hoverData.push(_dataPoint3);
+                }
+              }
+            } else {
+              var _total4 = 0;
+              var _iteratorNormalCompletion13 = true;
+              var _didIteratorError13 = false;
+              var _iteratorError13 = undefined;
+
+              try {
+                for (var _iterator13 = this.props.data[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+                  var _subData3 = _step13.value;
+
+                  if (_subData3[hoverKey] === _dataPoint3[hoverKey]) {
+                    _total4 += _subData3[this.props.weightKey];
+                  }
+                }
+              } catch (err) {
+                _didIteratorError13 = true;
+                _iteratorError13 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion13 && _iterator13.return) {
+                    _iterator13.return();
+                  }
+                } finally {
+                  if (_didIteratorError13) {
+                    throw _iteratorError13;
+                  }
+                }
+              }
+
+              if (_total4 <= threshold) {
+                hoverData.push(_dataPoint3);
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError11 = true;
+          _iteratorError11 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion11 && _iterator11.return) {
+              _iterator11.return();
+            }
+          } finally {
+            if (_didIteratorError11) {
+              throw _iteratorError11;
+            }
+          }
+        }
+      } else {
+        var _iteratorNormalCompletion14 = true;
+        var _didIteratorError14 = false;
+        var _iteratorError14 = undefined;
+
+        try {
+          for (var _iterator14 = this.props.data[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+            var _dataPoint4 = _step14.value;
+
+            if (_dataPoint4[hoverKey] === hoverValue) {
+              hoverData.push(_dataPoint4);
+            }
+          }
+        } catch (err) {
+          _didIteratorError14 = true;
+          _iteratorError14 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion14 && _iterator14.return) {
+              _iterator14.return();
+            }
+          } finally {
+            if (_didIteratorError14) {
+              throw _iteratorError14;
+            }
+          }
+        }
+      }
+      return hoverData;
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this3 = this;
@@ -1821,23 +1946,24 @@ var TreeMap = function (_React$Component) {
 
       var rects = [];
       var rectIndex = 0;
-      var _iteratorNormalCompletion11 = true;
-      var _didIteratorError11 = false;
-      var _iteratorError11 = undefined;
+      var _iteratorNormalCompletion15 = true;
+      var _didIteratorError15 = false;
+      var _iteratorError15 = undefined;
 
       try {
-        for (var _iterator11 = s.rows[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-          var row = _step11.value;
-          var _iteratorNormalCompletion12 = true;
-          var _didIteratorError12 = false;
-          var _iteratorError12 = undefined;
+        for (var _iterator15 = s.rows[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+          var row = _step15.value;
+          var _iteratorNormalCompletion16 = true;
+          var _didIteratorError16 = false;
+          var _iteratorError16 = undefined;
 
           try {
-            for (var _iterator12 = row.data[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-              var datum = _step12.value;
+            for (var _iterator16 = row.data[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+              var datum = _step16.value;
 
               rectIndex += 1;
-              rects.push(_react2.default.createElement(_Rectangles.TreeRects, { key: datum.index, data: datum.raw,
+              rects.push(_react2.default.createElement(_Rectangles.TreeRects, { key: datum.index, data: datum.raw, allData: this.props.data,
+                hoverData: this.dataForHover(this.props.titleKey, datum.raw[this.props.titleKey]),
                 x: datum.origin.x, y: datum.origin.y,
                 width: datum.dimensions.x, height: datum.dimensions.y,
                 fill: colorFunction(datum.raw, rectIndex),
@@ -1858,31 +1984,31 @@ var TreeMap = function (_React$Component) {
               }));
             }
           } catch (err) {
-            _didIteratorError12 = true;
-            _iteratorError12 = err;
+            _didIteratorError16 = true;
+            _iteratorError16 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion12 && _iterator12.return) {
-                _iterator12.return();
+              if (!_iteratorNormalCompletion16 && _iterator16.return) {
+                _iterator16.return();
               }
             } finally {
-              if (_didIteratorError12) {
-                throw _iteratorError12;
+              if (_didIteratorError16) {
+                throw _iteratorError16;
               }
             }
           }
         }
       } catch (err) {
-        _didIteratorError11 = true;
-        _iteratorError11 = err;
+        _didIteratorError15 = true;
+        _iteratorError15 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion11 && _iterator11.return) {
-            _iterator11.return();
+          if (!_iteratorNormalCompletion15 && _iterator15.return) {
+            _iterator15.return();
           }
         } finally {
-          if (_didIteratorError11) {
-            throw _iteratorError11;
+          if (_didIteratorError15) {
+            throw _iteratorError15;
           }
         }
       }
@@ -1892,6 +2018,8 @@ var TreeMap = function (_React$Component) {
 
         rectIndex += 1;
         rects.push(_react2.default.createElement(_Rectangles.OtherRect, (_React$createElement = { key: "other", data: formattedData[formattedData.length - 1],
+          hoverData: this.dataForHover(this.props.titleKey, "Other", considerOther[2]),
+          allData: this.props.data,
           x: this.props.width - otherWidth, y: 0,
           width: otherWidth, height: this.props.height,
           fill: colorFunction(formattedData[formattedData.length - 1], rectIndex),
