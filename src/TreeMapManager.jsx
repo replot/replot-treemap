@@ -1,8 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
 import TreeMap from "./TreeMap.jsx"
-import Tooltip from "replot-core"
-import Resize from "../../replot-core/src/Resize.jsx"
+import {Tooltip, Resize} from "replot-core"
 
 
 class TreeMapManager extends React.Component {
