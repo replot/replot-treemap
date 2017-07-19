@@ -1,3 +1,3 @@
-import TreeMapManager from "./TreeMapManager.jsx"
+import TreeMap from "./TreeMapManager.jsx"
 
-export default TreeMapManager
+export default TreeMap

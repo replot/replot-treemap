@@ -2,6 +2,7 @@ import React from "react"
 import PropTypes from "prop-types"
 import TreeMap from "./TreeMap.jsx"
 import Tooltip from "replot-core"
+import Resize from "../../replot-core/src/Resize.jsx"
 
 
 class TreeMapManager extends React.Component {
@@ -177,7 +178,23 @@ class TreeMapManager extends React.Component {
       </div>
     )
   }
+
 }
+
+class TreeMapManagerResponsive extends React.Component {
+
+  render() {
+    let child = React.cloneElement(<TreeMapManager data={this.props.data}/>, this.props)
+
+    return (
+      <Resize>
+        {child}
+      </Resize>
+    )
+  }
+}
+
+
 
 TreeMapManager.defaultProps = {
   width: 800,
@@ -200,7 +217,7 @@ TreeMapManager.defaultProps = {
 
 TreeMapManager.propTypes = {
   data: PropTypes.array.isRequired,
-  width: PropTypes.number,
+  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   height: PropTypes.number,
   titleKey: PropTypes.string,
   keyOrder: PropTypes.array,
@@ -215,4 +232,4 @@ TreeMapManager.propTypes = {
   TooltipContents: PropTypes.func
 }
 
-export default TreeMapManager
+export default TreeMapManagerResponsive
