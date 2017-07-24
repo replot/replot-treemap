@@ -20,8 +20,10 @@ class TreeMapManager extends React.Component {
       map.key = (this.props.keyOrder.length == 1 && i == 0 ? this.props.titleKey : this.props.keyOrder[i])
       map.visible = (i == 0 ? true : false)
       map.chosenValue = null
+      map.shadowLevel = 0
       this.state.mapList.push(map)
     }
+    this.timeouts = []
   }
 
   activateTooltip(hoverKey, hoverValue, hoverData, allData) {
@@ -36,39 +38,45 @@ class TreeMapManager extends React.Component {
         </div>
       )
     }
-    this.setState(
-      {
-        tooltipContents: newContents,
-        mouseOver: true,
-      }
-    )
+    this.setState({
+      tooltipContents: newContents,
+      mouseOver: true,
+    })
   }
 
   deactivateTooltip() {
-    this.setState(
-      {
-        mouseOver: false
-      }
-    )
+    this.setState({
+      mouseOver: false
+    })
   }
 
   updateMousePos(e) {
-    this.setState({ mouseX: e.pageX, mouseY: e.pageY - 12 })
+    this.setState({
+      mouseX: e.pageX,
+      mouseY: e.pageY - 12
+    })
   }
 
-  handleNest(level, chosenRect) {
+  handleClick(level, chosenRect) {
     let newMapList = this.state.mapList.slice()
     let index = level
     if (chosenRect == "Other"){ //clicking on an active map, specifically the "other" rect
-      newMapList[index].chosenValue = chosenRect
       let newOtherMap = {}
       newOtherMap.key = "other" + (level+1)
       newOtherMap.visible = true
       newOtherMap.chosenValue = null
+      newOtherMap.shadowLevel = 0
       newMapList.splice(index+1, 0, newOtherMap)
+      if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
+        this.interpolateShadow(newMapList, level + 1)
+      }
+      newMapList[index].chosenValue = chosenRect
     }
     else if (!newMapList[index].chosenValue && index != (newMapList.length-1)) {
       //clicking on an active map to go forward, not "other" rect and not last level
+      if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
+        this.interpolateShadow(newMapList, level + 1)
+      }
       newMapList[index].chosenValue = chosenRect
       if (newMapList[index+1]) {
         newMapList[index+1].visible = true
@@ -83,6 +91,10 @@ class TreeMapManager extends React.Component {
         else{
           newMapList[j].visible = false
           newMapList[j].chosenValue = null
+          newMapList[j].shadowLevel = 0
+          for (let i = 0; i < this.timeouts.length; i++) {
+            clearTimeout(this.timeouts[i])
+          }
         }
       }
     }
@@ -91,10 +103,25 @@ class TreeMapManager extends React.Component {
     })
   }
 
+  interpolateShadow(newMapList, index){
+    for (let i = 1; i <= 10; i++){
+      this.timeouts.push(
+        setTimeout(() => {
+          newMapList[index].shadowLevel = i
+          this.setState({mapList: newMapList})
+        }, 750 + (i*50))
+      )
+    }
+  }
+
+  getShadow(level) {
+    return `-10px -10px 10px rgba(0, 0, 0, ${level*.07})`
+  }
+
   getNestPosition() {
     return this.props.height < this.props.width ?
-      {x: this.props.height / 8 , y: this.props.height / 8} :
-      {x: this.props.width / 8 , y: this.props.width / 8}
+      this.props.height / 8 :
+      this.props.width / 8
   }
 
   chooseTitleKey(index){
@@ -130,15 +157,15 @@ class TreeMapManager extends React.Component {
   }
 
   render() {
-    let treeMaps = []
 
+    let treeMaps = []
     for (let i = 0; i < this.state.mapList.length; i++){
       treeMaps.push(
         <div key={this.state.mapList[i].key}
           style={i==0 ? null :
-          {position: "absolute", top: `${i*this.getNestPosition().y}px`,
-            left: `${i*this.getNestPosition().x}px`,
-            boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)"}}>
+          {position: "absolute", top: `${i*this.getNestPosition()}px`,
+            left: `${i*this.getNestPosition()}px`,
+            boxShadow: `${this.getShadow(this.state.mapList[i].shadowLevel)}`}}>
           <TreeMap width={this.props.width} height={this.props.height}
             data={this.props.data} weightKey={this.props.weightKey}
             titleKey={this.chooseTitleKey(i)}
@@ -149,14 +176,14 @@ class TreeMapManager extends React.Component {
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
             active={this.state.mapList[i].chosenValue == null}
             visible={this.state.mapList[i].visible}
-            handleNest={this.handleNest.bind(this)}
+            handleClick={this.handleClick.bind(this)}
             activateTooltip={this.activateTooltip.bind(this)}
             deactivateTooltip={this.deactivateTooltip.bind(this)}
             colorFunction={this.state.colorFunction}
             colorKey={this.props.colorKey}
             colorPalette={this.props.colorPalette}
             displayPercentages={this.props.displayPercentages}
-            initialAnimation={this.props.initialAnimation}/>
+            initialAnimation={this.props.initialAnimation} />
         </div>
       )
     }
@@ -171,7 +198,9 @@ class TreeMapManager extends React.Component {
             contents={this.state.tooltipContents}
           />
         }
-        <div style={{height: `${this.props.height + (this.state.mapList.length-1)*(this.props.height/8)}px`, position: "relative"}}>
+        <div style={{height: `${this.props.height + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
+          width: `${this.props.width + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
+          position: "relative"}}>
           {treeMaps}
         </div>
       </div>
@@ -183,20 +212,20 @@ class TreeMapManager extends React.Component {
 class TreeMapManagerResponsive extends React.Component {
 
   render() {
-    let child = React.cloneElement(<TreeMapManager data={this.props.data}/>, this.props)
 
     return (
-      <Resize>
-        {child}
+      <Resize width={this.props.width}>
+        <TreeMapManager {...this.props} />
       </Resize>
     )
   }
 }
 
-
+TreeMapManagerResponsive.defaultProps = {
+  width: 800
+}
 
 TreeMapManager.defaultProps = {
-  width: 800,
   height: 400,
   titleKey: "title",
   keyOrder: ["title"],

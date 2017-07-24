@@ -2,8 +2,8 @@ import React from "react"
 import isLight from "./isLight.js"
 import {spring, Motion} from "react-motion"
 
-class TreeRects extends React.Component {
 
+class TreeRects extends React.Component {
 
   render() {
     let percentage = null
@@ -73,7 +73,7 @@ class TreeRects extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.props.handleNest.bind(this,
+                  onClick={this.props.handleClick.bind(this,
                     this.props.level, this.props.title)}
                   onMouseOver={this.props.activateTooltip.bind(this,
                     this.props.titleKey, this.props.title,
@@ -164,7 +164,7 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  onClick={this.props.handleNest.bind(this,
+                  onClick={this.props.handleClick.bind(this,
                     this.props.level, this.props.title)}
                   onMouseOver={this.props.activateTooltip.bind(this,
                     this.props.titleKey, this.props.title,
@@ -189,7 +189,4 @@ class OtherRect extends React.Component {
 
 }
 
-module.exports = {
-  TreeRects,
-  OtherRect
-}
+export {TreeRects, OtherRect}
