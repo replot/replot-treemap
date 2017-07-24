@@ -866,8 +866,10 @@ var TreeMapManager = function (_React$Component) {
       map.key = _this.props.keyOrder.length == 1 && i == 0 ? _this.props.titleKey : _this.props.keyOrder[i];
       map.visible = i == 0 ? true : false;
       map.chosenValue = null;
+      map.shadowLevel = 0;
       _this.state.mapList.push(map);
     }
+    _this.timeouts = [];
     return _this;
   }
 
@@ -903,23 +905,33 @@ var TreeMapManager = function (_React$Component) {
   }, {
     key: "updateMousePos",
     value: function updateMousePos(e) {
-      this.setState({ mouseX: e.pageX, mouseY: e.pageY - 12 });
+      this.setState({
+        mouseX: e.pageX,
+        mouseY: e.pageY - 12
+      });
     }
   }, {
-    key: "handleNest",
-    value: function handleNest(level, chosenRect) {
+    key: "handleClick",
+    value: function handleClick(level, chosenRect) {
       var newMapList = this.state.mapList.slice();
       var index = level;
       if (chosenRect == "Other") {
         //clicking on an active map, specifically the "other" rect
-        newMapList[index].chosenValue = chosenRect;
         var newOtherMap = {};
         newOtherMap.key = "other" + (level + 1);
         newOtherMap.visible = true;
         newOtherMap.chosenValue = null;
+        newOtherMap.shadowLevel = 0;
         newMapList.splice(index + 1, 0, newOtherMap);
+        if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
+          this.interpolateShadow(newMapList, level + 1);
+        }
+        newMapList[index].chosenValue = chosenRect;
       } else if (!newMapList[index].chosenValue && index != newMapList.length - 1) {
         //clicking on an active map to go forward, not "other" rect and not last level
+        if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
+          this.interpolateShadow(newMapList, level + 1);
+        }
         newMapList[index].chosenValue = chosenRect;
         if (newMapList[index + 1]) {
           newMapList[index + 1].visible = true;
@@ -933,6 +945,10 @@ var TreeMapManager = function (_React$Component) {
           } else {
             newMapList[j].visible = false;
             newMapList[j].chosenValue = null;
+            newMapList[j].shadowLevel = 0;
+            for (var i = 0; i < this.timeouts.length; i++) {
+              clearTimeout(this.timeouts[i]);
+            }
           }
         }
       }
@@ -941,9 +957,30 @@ var TreeMapManager = function (_React$Component) {
       });
     }
   }, {
+    key: "interpolateShadow",
+    value: function interpolateShadow(newMapList, index) {
+      var _this2 = this;
+
+      var _loop = function _loop(i) {
+        _this2.timeouts.push(setTimeout(function () {
+          newMapList[index].shadowLevel = i;
+          _this2.setState({ mapList: newMapList });
+        }, 750 + i * 50));
+      };
+
+      for (var i = 1; i <= 10; i++) {
+        _loop(i);
+      }
+    }
+  }, {
+    key: "getShadow",
+    value: function getShadow(level) {
+      return "-10px -10px 10px rgba(0, 0, 0, " + level * .07 + ")";
+    }
+  }, {
     key: "getNestPosition",
     value: function getNestPosition() {
-      return this.props.height < this.props.width ? { x: this.props.height / 8, y: this.props.height / 8 } : { x: this.props.width / 8, y: this.props.width / 8 };
+      return this.props.height < this.props.width ? this.props.height / 8 : this.props.width / 8;
     }
   }, {
     key: "chooseTitleKey",
@@ -983,15 +1020,15 @@ var TreeMapManager = function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var treeMaps = [];
 
+      var treeMaps = [];
       for (var i = 0; i < this.state.mapList.length; i++) {
         treeMaps.push(_react2.default.createElement(
           "div",
           { key: this.state.mapList[i].key,
-            style: i == 0 ? null : { position: "absolute", top: i * this.getNestPosition().y + "px",
-              left: i * this.getNestPosition().x + "px",
-              boxShadow: "-10px -10px 10px rgba(0, 0, 0, 0.25)" } },
+            style: i == 0 ? null : { position: "absolute", top: i * this.getNestPosition() + "px",
+              left: i * this.getNestPosition() + "px",
+              boxShadow: "" + this.getShadow(this.state.mapList[i].shadowLevel) } },
           _react2.default.createElement(_TreeMap2.default, { width: this.props.width, height: this.props.height,
             data: this.props.data, weightKey: this.props.weightKey,
             titleKey: this.chooseTitleKey(i),
@@ -1002,7 +1039,7 @@ var TreeMapManager = function (_React$Component) {
             keyOrder: this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder,
             active: this.state.mapList[i].chosenValue == null,
             visible: this.state.mapList[i].visible,
-            handleNest: this.handleNest.bind(this),
+            handleClick: this.handleClick.bind(this),
             activateTooltip: this.activateTooltip.bind(this),
             deactivateTooltip: this.deactivateTooltip.bind(this),
             colorFunction: this.state.colorFunction,
@@ -1024,7 +1061,9 @@ var TreeMapManager = function (_React$Component) {
         }),
         _react2.default.createElement(
           "div",
-          { style: { height: this.props.height + (this.state.mapList.length - 1) * (this.props.height / 8) + "px", position: "relative" } },
+          { style: { height: this.props.height + (this.state.mapList.length - 1) * this.getNestPosition() + "px",
+              width: this.props.width + (this.state.mapList.length - 1) * this.getNestPosition() + "px",
+              position: "relative" } },
           treeMaps
         )
       );
@@ -1046,12 +1085,11 @@ var TreeMapManagerResponsive = function (_React$Component2) {
   _createClass(TreeMapManagerResponsive, [{
     key: "render",
     value: function render() {
-      var child = _react2.default.cloneElement(_react2.default.createElement(TreeMapManager, { data: this.props.data }), this.props);
 
       return _react2.default.createElement(
         _replotCore.Resize,
-        null,
-        child
+        { width: this.props.width },
+        _react2.default.createElement(TreeMapManager, this.props)
       );
     }
   }]);
@@ -1059,8 +1097,11 @@ var TreeMapManagerResponsive = function (_React$Component2) {
   return TreeMapManagerResponsive;
 }(_react2.default.Component);
 
+TreeMapManagerResponsive.defaultProps = {
+  width: 800
+};
+
 TreeMapManager.defaultProps = {
-  width: 800,
   height: 400,
   titleKey: "title",
   keyOrder: ["title"],
@@ -1100,6 +1141,11 @@ exports.default = TreeMapManagerResponsive;
 
 "use strict";
 
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OtherRect = exports.TreeRects = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -1205,7 +1251,7 @@ var TreeRects = function (_React$Component) {
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
-                onClick: _this2.props.handleNest.bind(_this2, _this2.props.level, _this2.props.title),
+                onClick: _this2.props.handleClick.bind(_this2, _this2.props.level, _this2.props.title),
                 onMouseOver: _this2.props.activateTooltip.bind(_this2, _this2.props.titleKey, _this2.props.title, _this2.props.hoverData, _this2.props.allData),
                 onMouseOut: _this2.props.deactivateTooltip,
                 style: _this2.props.clickable ? { cursor: "pointer" } : null
@@ -1318,7 +1364,7 @@ var OtherRect = function (_React$Component2) {
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
-                onClick: _this4.props.handleNest.bind(_this4, _this4.props.level, _this4.props.title),
+                onClick: _this4.props.handleClick.bind(_this4, _this4.props.level, _this4.props.title),
                 onMouseOver: _this4.props.activateTooltip.bind(_this4, _this4.props.titleKey, _this4.props.title, _this4.props.hoverData, _this4.props.allData),
                 onMouseOut: _this4.props.deactivateTooltip,
                 style: { cursor: "pointer" }
@@ -1351,10 +1397,8 @@ var OtherRect = function (_React$Component2) {
   return OtherRect;
 }(_react2.default.Component);
 
-module.exports = {
-  TreeRects: TreeRects,
-  OtherRect: OtherRect
-};
+exports.TreeRects = TreeRects;
+exports.OtherRect = OtherRect;
 
 /***/ }),
 /* 17 */
@@ -2001,7 +2045,7 @@ var TreeMap = function (_React$Component) {
                 displayPercentages: this.props.displayPercentages,
                 initialAnimation: this.props.initialAnimation,
                 clickable: this.props.titleKey != this.props.keyOrder[this.props.keyOrder.length - 1] || !this.props.active,
-                handleNest: this.props.handleNest,
+                handleClick: this.props.handleClick,
                 activateTooltip: this.props.activateTooltip,
                 deactivateTooltip: this.props.deactivateTooltip
               }));
@@ -2050,7 +2094,7 @@ var TreeMap = function (_React$Component) {
           titleScale: this.props.titleScale, level: this.props.level,
           weightKey: this.props.weightKey,
           textDark: this.props.textDark, textLight: this.props.textLight
-        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * formattedData[formattedData.length - 1][this.props.weightKey] / considerOther[2]).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "handleNest", this.props.handleNest), _defineProperty(_React$createElement, "activateTooltip", this.props.activateTooltip), _defineProperty(_React$createElement, "deactivateTooltip", this.props.deactivateTooltip), _React$createElement)));
+        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * formattedData[formattedData.length - 1][this.props.weightKey] / considerOther[2]).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "handleClick", this.props.handleClick), _defineProperty(_React$createElement, "activateTooltip", this.props.activateTooltip), _defineProperty(_React$createElement, "deactivateTooltip", this.props.deactivateTooltip), _React$createElement)));
       }
 
       return _react2.default.createElement(
@@ -5765,7 +5809,7 @@ var LoadingIcon = function (_React$Component) {
               "svg",
               { width: _this2.props.width, height: _this2.props.width / (15 / 3.6) },
               interpolatingStyles.map(function (newStyle, i) {
-                return _react2.default.createElement("circle", { key: i, cx: style["x" + (i + 1)], cy: style.y, r: newStyle.r, fill: style.color });
+                return _react2.default.createElement("circle", { key: i, cx: style["x" + (i + 1)], cy: style.y, r: newStyle.r > 0 ? newStyle.r : 0, fill: style.color });
               })
             )
           );
@@ -5838,7 +5882,7 @@ var Resize = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (Resize.__proto__ || Object.getPrototypeOf(Resize)).call(this, props));
 
     _this.state = {
-      width: parseInt(_this.props.children.props.width),
+      width: parseInt(_this.props.width),
       resizing: false
     };
     return _this;
@@ -5847,36 +5891,34 @@ var Resize = function (_React$Component) {
   _createClass(Resize, [{
     key: "parseWidth",
     value: function parseWidth(width) {
-      if (typeof width == "number" || width.includes("px")) {
+      if (typeof width === "number" || !width.includes("%")) {
         return { dynamic: false, scale: 1 };
-      } else if (width.includes("%")) {
-        return { dynamic: true, scale: parseInt(width) / 100 };
-      }
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      if (this.parseWidth(this.props.children.props.width).dynamic) {
-        this.updateDimensions(this.elem.parentNode);
-        window.addEventListener("resize", this.resize.bind(this, this.elem.parentNode));
+      } else {
+        return {
+          dynamic: true,
+          scale: parseInt(width) / 100
+        };
       }
     }
   }, {
     key: "resize",
-    value: function resize(comp) {
-      this.setState({
-        resizing: true
-      });
-      var updateFunction;
-      clearTimeout(updateFunction);
-      updateFunction = setTimeout(this.updateDimensions.bind(this, comp), 1200);
+    value: function resize() {
+      if (this.parseWidth(this.props.width).dynamic) {
+        this.setState({
+          resizing: true,
+          width: this.elem.parentNode.clientWidth * parseInt(this.props.width) / 100
+        });
+        var updateFunction;
+        clearTimeout(updateFunction);
+        updateFunction = setTimeout(this.updateDimensions.bind(this), 1200);
+      }
     }
   }, {
     key: "updateDimensions",
-    value: function updateDimensions(comp) {
+    value: function updateDimensions() {
       this.setState({
         resizing: false,
-        width: comp.clientWidth * this.parseWidth(this.props.children.props.width).scale
+        width: this.elem.parentNode.clientWidth * parseInt(this.props.width) / 100
       });
     }
   }, {
@@ -5887,7 +5929,9 @@ var Resize = function (_React$Component) {
       if (this.state.resizing) {
         return _react2.default.createElement(
           "div",
-          null,
+          { ref: function ref(comp) {
+              _this2.elem = comp;
+            } },
           _react2.default.createElement(_LoadingIcon2.default, { width: this.state.width })
         );
       }
@@ -5901,6 +5945,35 @@ var Resize = function (_React$Component) {
           }, style: { width: this.state.width + "px" } },
         child
       );
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      if (this.parseWidth(this.props.width).dynamic) {
+        this.setState({
+          width: this.elem.parentNode.clientWidth * parseInt(this.props.width) / 100
+        });
+      }
+      this.listener = this.resize.bind(this);
+      window.addEventListener("resize", this.listener);
+    }
+  }, {
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(nextProps) {
+      if (this.props != nextProps) {
+        if (this.parseWidth(nextProps.width).dynamic) {
+          this.setState({
+            width: this.elem.parentNode.clientWidth * parseInt(nextProps.width) / 100 > 0 ? this.elem.parentNode.clientWidth * parseInt(nextProps.width) / 100 : 1
+          });
+        } else {
+          this.setState({ width: parseInt(nextProps.width) });
+        }
+      }
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      window.removeEventListener("resize", this.listener);
     }
   }]);
 
