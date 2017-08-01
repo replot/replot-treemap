@@ -66,7 +66,7 @@ class TreeRects extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  fill={this.props.fill}
+                  fill={this.props.fill(this.props.index, this.props.rectData)}
                   />
                 <foreignObject
                   x={interpolatingStyles.x}
@@ -77,7 +77,7 @@ class TreeRects extends React.Component {
                     this.props.level, this.props.title)}
                   onMouseOver={this.props.activateTooltip.bind(this,
                     this.props.titleKey, this.props.title,
-                    this.props.hoverData, this.props.allData)}
+                    this.props.rectData, this.props.allData)}
                   onMouseOut={this.props.deactivateTooltip}
                   style={this.props.clickable ? {cursor: "pointer"} : null}
                   >
@@ -157,7 +157,7 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  fill={this.props.fill}
+                  fill={this.props.fill(this.props.index, this.props.rectData)}
                   />
                 <foreignObject
                   x={interpolatingStyles.x}
@@ -168,7 +168,7 @@ class OtherRect extends React.Component {
                     this.props.level, this.props.title)}
                   onMouseOver={this.props.activateTooltip.bind(this,
                     this.props.titleKey, this.props.title,
-                    this.props.hoverData, this.props.allData)}
+                    this.props.rectData, this.props.allData)}
                   onMouseOut={this.props.deactivateTooltip}
                   style={{cursor: "pointer"}}
                   >

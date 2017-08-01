@@ -155,16 +155,16 @@ class TreeMap extends React.Component {
     return relevantData
   }
 
-  dataForHover(hoverKey, hoverValue, weight){
-    let hoverData = []
-    if (hoverValue === "Other") {
+  getRectData(key, value, weight){
+    let data = []
+    if (value === "Other") {
       let threshold = (this.props.otherThreshold < .025 ?
         .025 : this.props.otherThreshold) * weight
 
 
       let parentTitleKey = null
       if (this.props.parent){
-        parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(hoverKey) - 1]
+        parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(key) - 1]
       }
 
       for (let dataPoint of this.props.data){
@@ -172,35 +172,43 @@ class TreeMap extends React.Component {
           if (dataPoint[parentTitleKey] == this.props.parent) {
             let total = 0
             for (let subData of this.props.data){
-              if (subData[hoverKey] === dataPoint[hoverKey]){
+              if (subData[key] === dataPoint[key]){
                 total += subData[this.props.weightKey]
               }
             }
             if (total <= threshold) {
-              hoverData.push(dataPoint)
+              data.push(dataPoint)
             }
           }
         } else {
           let total = 0
           for (let subData of this.props.data){
-            if (subData[hoverKey] === dataPoint[hoverKey]){
+            if (subData[key] === dataPoint[key]){
               total += subData[this.props.weightKey]
             }
           }
           if (total <= threshold) {
-            hoverData.push(dataPoint)
+            data.push(dataPoint)
           }
         }
       }
     }
     else {
       for (let dataPoint of this.props.data){
-        if (dataPoint[hoverKey] === hoverValue){
-          hoverData.push(dataPoint)
+        if (dataPoint[key] === value){
+          data.push(dataPoint)
         }
       }
     }
-    return hoverData
+    return data
+  }
+
+  colorFunc(i, rectData){
+    if (this.props.color instanceof Array) {
+      return this.props.color[i%this.props.color.length]
+    } else {
+      return this.props.color(i, rectData)
+    }
   }
 
   render() {
@@ -239,33 +247,16 @@ class TreeMap extends React.Component {
     )
     s.layout()
 
-    let colorFunction = null
-    if (this.props.colorFunction) {
-      colorFunction = this.props.colorFunction
-    } else if (this.props.colorKey) {
-      colorFunction = (rawDatum) => {
-        return rawDatum[this.props.colorKey]
-      }
-    } else {
-      colorFunction = (rawDatum, index) => {
-        if (this.props.active) {
-          return this.props.colorPalette[index%this.props.colorPalette.length]
-        }
-        return this.props.grayscalePalette[index%this.props.grayscalePalette.length]
-      }
-    }
-
     let rects = []
     let rectIndex = 0
     for (let row of s.rows) {
       for (let datum of row.data) {
-        rectIndex += 1
         rects.push(
           <TreeRects key={datum.index} data={datum.raw} allData={this.props.data}
-            hoverData={this.dataForHover(this.props.titleKey, datum.raw[this.props.titleKey])}
+            rectData={this.getRectData(this.props.titleKey, datum.raw[this.props.titleKey])}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
-            fill={colorFunction(datum.raw, rectIndex)}
+            fill={this.colorFunc.bind(this)} index={rectIndex}
             titleKey={this.props.titleKey} title={datum.raw[this.props.titleKey]}
             level={this.props.level}
             weightKey={this.props.weightKey}
@@ -283,17 +274,17 @@ class TreeMap extends React.Component {
             deactivateTooltip={this.props.deactivateTooltip}
           />
         )
+        rectIndex += 1
       }
     }
     if (considerOther[1] == true){
-      rectIndex += 1
       rects.push(
         <OtherRect key="other" data={formattedData[formattedData.length-1]}
-          hoverData={this.dataForHover(this.props.titleKey, "Other", considerOther[2])}
+          rectData={this.getRectData(this.props.titleKey, "Other", considerOther[2])}
           allData={this.props.data}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
-          fill={colorFunction(formattedData[formattedData.length-1], rectIndex)}
+          fill={this.colorFunc.bind(this)} index={rectIndex}
           titleKey={this.props.titleKey} title="Other"
           titleScale={this.props.titleScale} level={this.props.level}
           weightKey={this.props.weightKey}
