@@ -195,8 +195,8 @@ class TreeMapManager extends React.Component {
           <Tooltip
             x={this.state.mouseX} y={this.state.mouseY}
             active={this.state.mouseOver}
-            colorScheme={this.props.tooltipColor}
             contents={this.state.tooltipContents}
+            colorScheme={this.props.tooltipColor}
           />
         }
         <div style={{height: `${this.props.height + (this.state.mapList.length-1)*(this.getNestPosition())}px`,

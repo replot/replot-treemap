@@ -13,7 +13,7 @@ Then with a module bundler like webpack/browserify that supports CommonJS/ES2015
 modules, use as you would anything else.
 
 ```javascript
-import TreeMapManager from 'replot-treemap'
+import TreeMap from 'replot-treemap'
 ```
 
 ## API
@@ -33,7 +33,7 @@ render() {
   ]
 
   return(
-    <TreeMapManager data={populations} titleKey="country"
+    <TreeMap data={populations} titleKey="country"
       weightKey="population" />
   )
 }
@@ -68,7 +68,7 @@ render() {
   let keys = ["country", "state", "city"]
 
   return(
-    <TreeMapManager data={populations} weightKey="population"
+    <TreeMap data={populations} weightKey="population"
       keyOrder={keys}/>
   )
 }
@@ -79,65 +79,20 @@ Dimensions may be specified by passing in `width` and `height` props. The
 unit is pixels, and the treemap defaults to 800 by 400 pixels.
 
 ### Colors
-Colors may be specified through 3 different mechanisms.
-If none of the three props are specified, TreeMap defaults to a built in
-`colorPalette`.
+Colors may be specified through 2 different mechanisms, both through a `color` prop.
+If none of the mechanisms are specified, TreeMap defaults to a built in
+color palette.
 
-#### colorPalette
-A `colorPalette` array prop may be specified. This array will be applied in
-the same order starting with the largest rectangle. If the array is not large
-enough, TreeMap will automatically recycle the colors.
+#### User-provided Color Palette
+The user can specify their own desired colored palette for the boxplots to use.
+This is done by passing in an array of color strings to the component with the
+`color` prop. The displayed boxplots will cycle through the provided colors.
 
-#### colorFunction
-A `colorFunction` prop may be specified. This will override all other color
-methods. The colorFunction will receive two arguments, the object
-corresponding to that rectangle and the integer index of the rectangle.
-This enables more complex coloring rules to group data based on some
-feature of the data. In the example below, we change the color based
-on the political party of the candidate.
-
-```javascript
-render() {
-  let primary_results = [
-    {candidate: "Barrack Obama", votes: 1236812, party: "Democrat"},
-    {candidate: "Hilary Clinton", votes: 693021, party: "Democrat"},
-    {candidate: "John Kerry", votes: 991315, party: "Republican"},
-  ]
-
-  let colorFunction = (data, index) => {
-    if (data.party == 'Republican') {
-      return "#ee3333"
-    } else {
-      return "#3333ee"
-    }
-  }
-
-  return(
-    <TreeMapManager data={primary_results} titleKey="candidate"
-      weightKey="votes" colorFunction={colorFunction} />
-  )
-}
-```
-
-#### colorKey
-A `colorKey` prop may be specified. This will override the colorPalette method.
-TreeMap will look for this key in each row of data and use this to color the
-area. This gives complete flexibility in specifying colors.
-
-```javascript
-render() {
-  let populations = [
-    {country: "China", population: 1388232693, color="#336699"},
-    {country: "India", population: 1342512706, color="#336666"},
-    {country: "USA", population: 326474013, color="#666699"},
-  ]
-
-  return(
-    <TreeMapManager data={populations} titleKey="country"
-      weightKey="population" colorKey="color" />
-  )
-}
-```
+#### User-provided Color function
+The user can specify the color for rectangles by provided a function
+as well. One can expect to receive the index of the rectangle (from 0 to n, where
+0 is the top left rectangle, and indexes increase from left to right and then
+top to bottom.), as well as any data associated with that specific rectangle.
 
 ### Clustering Small Rectangles
 Replot treemaps intelligently aggregate smaller rectangles into a rectangle
@@ -150,7 +105,7 @@ render() {
   ...
 
   return(
-    <TreeMapManager data={populations} titleKey="country"
+    <TreeMap data={populations} titleKey="country"
       weightKey="population" otherThreshold={.05} />
   )
 }
@@ -168,23 +123,23 @@ render() {
   ...
 
   return(
-    <TreeMapManager data={populations} titleKey="country"
+    <TreeMap data={populations} titleKey="country"
       tooltip tooltipColor="light" />
   )
 }
 ```
 
 ####Customizing Tooltip contents
-By default, the tooltip will simply display the title of a square.
+By default, the tooltip will simply display the title of a rectangle.
 The user can customize exactly what is displayed inside the tooltip by
 passing in a `tooltipContents` prop in the form of a Javascript function.
-The user can expect to receive the key and value of the square you are hovering over
+The user can expect to receive the key and value of the rectangle you are hovering over
 (e.g. key="country" and value="USA"), an array of data related to that specific
-square, and all data for the treemap. The function should return JSX,
+rectangle, and all data for the treemap. The function should return JSX,
 which can utilize the provided values.
 
 ```javascript
-fillTooltip(key, value, squareData, allData){
+fillTooltip(key, value, rectData, allData){
   return (
     <div>You are hovering on the {key}: {value}</div>
   )
@@ -194,7 +149,7 @@ render() {
   ...
 
   return(
-    <TreeMapManager data={populations}
+    <TreeMap data={populations}
       titleKey="country" weightKey="population"
       tooltip tooltipContents={this.fillTooltip} />
   )
@@ -211,7 +166,7 @@ render() {
   ...
 
   return(
-    <TreeMapManager data={populations} titleKey="country"
+    <TreeMap data={populations} titleKey="country"
       weightKey="population" colorKey="color" displayPercentages={false} />
   )
 }
