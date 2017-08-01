@@ -1032,6 +1032,7 @@ var TreeMapManager = function (_React$Component) {
           _react2.default.createElement(_TreeMap2.default, { width: this.props.width, height: this.props.height,
             data: this.props.data, weightKey: this.props.weightKey,
             titleKey: this.chooseTitleKey(i),
+            color: this.props.color,
             parent: i - 1 >= 0 ? this.state.mapList[i - 1].chosenValue : null,
             otherParent: this.chooseParentifOther(i),
             otherDepth: this.otherDepth(i),
@@ -1056,8 +1057,8 @@ var TreeMapManager = function (_React$Component) {
         this.props.tooltip && _react2.default.createElement(_replotCore.Tooltip, {
           x: this.state.mouseX, y: this.state.mouseY,
           active: this.state.mouseOver,
-          colorScheme: this.props.tooltipColor,
-          contents: this.state.tooltipContents
+          contents: this.state.tooltipContents,
+          colorScheme: this.props.tooltipColor
         }),
         _react2.default.createElement(
           "div",
@@ -1106,14 +1107,10 @@ TreeMapManager.defaultProps = {
   titleKey: "title",
   keyOrder: ["title"],
   weightKey: "weight",
-  colorFunction: null,
-  colorKey: "",
-  colorPalette: ["#4cab92", "#ca0004", "#8e44ad", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000"],
+  color: ["#ca0004", "#8e44ad", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000", "#4cab92"],
   otherThreshold: .025,
   displayPercentages: true,
-  initialAnimation: true,
-  tooltip: false,
-  tooltipColor: "dark"
+  initialAnimation: true
 };
 
 TreeMapManager.propTypes = {
@@ -1122,9 +1119,8 @@ TreeMapManager.propTypes = {
   height: _propTypes2.default.number,
   titleKey: _propTypes2.default.string,
   keyOrder: _propTypes2.default.array,
-  colorFunction: _propTypes2.default.func,
-  colorKey: _propTypes2.default.string,
-  colorPalette: _propTypes2.default.array,
+  weightKey: _propTypes2.default.string,
+  color: _propTypes2.default.oneOfType([_propTypes2.default.array, _propTypes2.default.func]),
   otherThreshold: _propTypes2.default.number,
   displayPercentages: _propTypes2.default.bool,
   initialAnimation: _propTypes2.default.bool,
@@ -1242,7 +1238,7 @@ var TreeRects = function (_React$Component) {
               y: interpolatingStyles.y,
               width: interpolatingStyles.width,
               height: interpolatingStyles.height,
-              fill: _this2.props.fill
+              fill: _this2.props.fill(_this2.props.index, _this2.props.rectData)
             }),
             _react2.default.createElement(
               "foreignObject",
@@ -1252,7 +1248,7 @@ var TreeRects = function (_React$Component) {
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
                 onClick: _this2.props.handleClick.bind(_this2, _this2.props.level, _this2.props.title),
-                onMouseOver: _this2.props.activateTooltip.bind(_this2, _this2.props.titleKey, _this2.props.title, _this2.props.hoverData, _this2.props.allData),
+                onMouseOver: _this2.props.activateTooltip.bind(_this2, _this2.props.titleKey, _this2.props.title, _this2.props.rectData, _this2.props.allData),
                 onMouseOut: _this2.props.deactivateTooltip,
                 style: _this2.props.clickable ? { cursor: "pointer" } : null
               },
@@ -1355,7 +1351,7 @@ var OtherRect = function (_React$Component2) {
               y: interpolatingStyles.y,
               width: interpolatingStyles.width,
               height: interpolatingStyles.height,
-              fill: _this4.props.fill
+              fill: _this4.props.fill(_this4.props.index, _this4.props.rectData)
             }),
             _react2.default.createElement(
               "foreignObject",
@@ -1365,7 +1361,7 @@ var OtherRect = function (_React$Component2) {
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
                 onClick: _this4.props.handleClick.bind(_this4, _this4.props.level, _this4.props.title),
-                onMouseOver: _this4.props.activateTooltip.bind(_this4, _this4.props.titleKey, _this4.props.title, _this4.props.hoverData, _this4.props.allData),
+                onMouseOver: _this4.props.activateTooltip.bind(_this4, _this4.props.titleKey, _this4.props.title, _this4.props.rectData, _this4.props.allData),
                 onMouseOut: _this4.props.deactivateTooltip,
                 style: { cursor: "pointer" }
               },
@@ -1835,15 +1831,15 @@ var TreeMap = function (_React$Component) {
       return relevantData;
     }
   }, {
-    key: "dataForHover",
-    value: function dataForHover(hoverKey, hoverValue, weight) {
-      var hoverData = [];
-      if (hoverValue === "Other") {
+    key: "getRectData",
+    value: function getRectData(key, value, weight) {
+      var data = [];
+      if (value === "Other") {
         var threshold = (this.props.otherThreshold < .025 ? .025 : this.props.otherThreshold) * weight;
 
         var parentTitleKey = null;
         if (this.props.parent) {
-          parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(hoverKey) - 1];
+          parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(key) - 1];
         }
 
         var _iteratorNormalCompletion11 = true;
@@ -1865,7 +1861,7 @@ var TreeMap = function (_React$Component) {
                   for (var _iterator12 = this.props.data[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
                     var subData = _step12.value;
 
-                    if (subData[hoverKey] === _dataPoint3[hoverKey]) {
+                    if (subData[key] === _dataPoint3[key]) {
                       total += subData[this.props.weightKey];
                     }
                   }
@@ -1885,7 +1881,7 @@ var TreeMap = function (_React$Component) {
                 }
 
                 if (total <= threshold) {
-                  hoverData.push(_dataPoint3);
+                  data.push(_dataPoint3);
                 }
               }
             } else {
@@ -1898,7 +1894,7 @@ var TreeMap = function (_React$Component) {
                 for (var _iterator13 = this.props.data[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
                   var _subData3 = _step13.value;
 
-                  if (_subData3[hoverKey] === _dataPoint3[hoverKey]) {
+                  if (_subData3[key] === _dataPoint3[key]) {
                     _total4 += _subData3[this.props.weightKey];
                   }
                 }
@@ -1918,7 +1914,7 @@ var TreeMap = function (_React$Component) {
               }
 
               if (_total4 <= threshold) {
-                hoverData.push(_dataPoint3);
+                data.push(_dataPoint3);
               }
             }
           }
@@ -1945,8 +1941,8 @@ var TreeMap = function (_React$Component) {
           for (var _iterator14 = this.props.data[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
             var _dataPoint4 = _step14.value;
 
-            if (_dataPoint4[hoverKey] === hoverValue) {
-              hoverData.push(_dataPoint4);
+            if (_dataPoint4[key] === value) {
+              data.push(_dataPoint4);
             }
           }
         } catch (err) {
@@ -1964,12 +1960,20 @@ var TreeMap = function (_React$Component) {
           }
         }
       }
-      return hoverData;
+      return data;
+    }
+  }, {
+    key: "colorFunc",
+    value: function colorFunc(i, rectData) {
+      if (this.props.color instanceof Array) {
+        return this.props.color[i % this.props.color.length];
+      } else {
+        return this.props.color(i, rectData);
+      }
     }
   }, {
     key: "render",
     value: function render() {
-      var _this3 = this;
 
       if (!this.props.visible) {
         return _react2.default.createElement("div", { style: { display: "none" } });
@@ -1995,22 +1999,6 @@ var TreeMap = function (_React$Component) {
       });
       s.layout();
 
-      var colorFunction = null;
-      if (this.props.colorFunction) {
-        colorFunction = this.props.colorFunction;
-      } else if (this.props.colorKey) {
-        colorFunction = function colorFunction(rawDatum) {
-          return rawDatum[_this3.props.colorKey];
-        };
-      } else {
-        colorFunction = function colorFunction(rawDatum, index) {
-          if (_this3.props.active) {
-            return _this3.props.colorPalette[index % _this3.props.colorPalette.length];
-          }
-          return _this3.props.grayscalePalette[index % _this3.props.grayscalePalette.length];
-        };
-      }
-
       var rects = [];
       var rectIndex = 0;
       var _iteratorNormalCompletion15 = true;
@@ -2028,12 +2016,11 @@ var TreeMap = function (_React$Component) {
             for (var _iterator16 = row.data[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
               var datum = _step16.value;
 
-              rectIndex += 1;
               rects.push(_react2.default.createElement(_Rectangles.TreeRects, { key: datum.index, data: datum.raw, allData: this.props.data,
-                hoverData: this.dataForHover(this.props.titleKey, datum.raw[this.props.titleKey]),
+                rectData: this.getRectData(this.props.titleKey, datum.raw[this.props.titleKey]),
                 x: datum.origin.x, y: datum.origin.y,
                 width: datum.dimensions.x, height: datum.dimensions.y,
-                fill: colorFunction(datum.raw, rectIndex),
+                fill: this.colorFunc.bind(this), index: rectIndex,
                 titleKey: this.props.titleKey, title: datum.raw[this.props.titleKey],
                 level: this.props.level,
                 weightKey: this.props.weightKey,
@@ -2049,6 +2036,7 @@ var TreeMap = function (_React$Component) {
                 activateTooltip: this.props.activateTooltip,
                 deactivateTooltip: this.props.deactivateTooltip
               }));
+              rectIndex += 1;
             }
           } catch (err) {
             _didIteratorError16 = true;
@@ -2083,13 +2071,12 @@ var TreeMap = function (_React$Component) {
       if (considerOther[1] == true) {
         var _React$createElement;
 
-        rectIndex += 1;
         rects.push(_react2.default.createElement(_Rectangles.OtherRect, (_React$createElement = { key: "other", data: formattedData[formattedData.length - 1],
-          hoverData: this.dataForHover(this.props.titleKey, "Other", considerOther[2]),
+          rectData: this.getRectData(this.props.titleKey, "Other", considerOther[2]),
           allData: this.props.data,
           x: this.props.width - otherWidth, y: 0,
           width: otherWidth, height: this.props.height,
-          fill: colorFunction(formattedData[formattedData.length - 1], rectIndex),
+          fill: this.colorFunc.bind(this), index: rectIndex,
           titleKey: this.props.titleKey, title: "Other",
           titleScale: this.props.titleScale, level: this.props.level,
           weightKey: this.props.weightKey,
