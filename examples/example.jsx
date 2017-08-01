@@ -155,6 +155,22 @@ class ExampleApp extends React.Component {
     )
   }
 
+  colorRectangles(index, data){
+    let total = 0
+    for (let element of data){
+      total += element.population
+    }
+    if (total < 100){
+      return "#ffb2b2"
+    } else if (total < 1000) {
+      return "#ff6666"
+    } else if (total < 10000) {
+      return "#ff3232"
+    } else {
+      return "#ff0000"
+    }
+  }
+
   render() {
     return(
       <div className="container">
@@ -162,7 +178,7 @@ class ExampleApp extends React.Component {
         <TreeDataTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMap data={this.state.data} weightKey="population"
-            keyOrder={this.state.keyOrder} width="50%" />
+            keyOrder={this.state.keyOrder} width="50%" color={this.colorRectangles}/>
         </div>
       </div>
     )
