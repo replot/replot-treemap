@@ -238,9 +238,7 @@ TreeMapManager.defaultProps = {
   ],
   otherThreshold: .025,
   displayPercentages: true,
-  initialAnimation: true,
-  tooltip: false,
-  tooltipColor: "dark"
+  initialAnimation: true
 }
 
 TreeMapManager.propTypes = {

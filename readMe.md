@@ -156,7 +156,7 @@ render() {
 }
 ```
 
-###Tooltip
+### Tooltip
 Treemaps are capable of utilizing a tooltip to display more specific information
 about any data element. By default, the tooltip is off, but can be activated by
 passing in a `tooltip` prop (no value needed). The tooltip features two different
@@ -196,7 +196,7 @@ render() {
   return(
     <TreeMapManager data={populations}
       titleKey="country" weightKey="population"
-      tooltip tooltipContents=this.fillTooltip.bind(this) />
+      tooltip tooltipContents={this.fillTooltip} />
   )
 }
 ```
