@@ -88,11 +88,70 @@ The user can specify their own desired colored palette for the boxplots to use.
 This is done by passing in an array of color strings to the component with the
 `color` prop. The displayed boxplots will cycle through the provided colors.
 
+```javascript
+render() {
+  let colors = [
+    "#fea9ac", "#fc858f", "#f46b72", "#de836e",
+    "#caa56f", "#adcc6f", "#8ebc57", "#799b3f"
+  ]
+
+  return(
+    <TreeMap data={populations} weightKey="population"
+      titleKey="country" color={colors}/>
+  )
+}
+```
+
 #### User-provided Color function
 The user can specify the color for rectangles by provided a function
 as well. One can expect to receive the index of the rectangle (from 0 to n, where
 0 is the top left rectangle, and indexes increase from left to right and then
 top to bottom.), as well as any data associated with that specific rectangle.
+Keep in mind the data associated with one rectangle may come from many rows in
+the dataset.
+
+The following example colors rectangles based on the total population numbers
+for different regions.
+
+```javascript
+let data = [
+  {population: 650, country: "China", state: "Beijing", city: "Miyun"},
+  {population: 902, country: "China", state: "Beijing", city: "Tongzhou"},
+  {population: 120, country: "China", state: "Beijing", city: "Yizhuang"},
+  {population: 800, country: "United States", state: "California", city: "San Francisco"},
+  {population: 10020, country: "United States", state: "California", city: "Los Angeles"},
+  {population: 150, country: "United States", state: "Vermont", city: "Newport"},
+  {population: 20, country: "United States", state: "Vermont", city: "Montpelier"},
+  {population: 202, country: "United States", state: "Illinois", city: "Chicago"},
+  {population: 112, country: "Canada", state: "Ontario", city: "Kingston"},
+  {population: 80, country: "Canada", state: "Ontario", city: "Barrie"},
+]
+let keyOrder = ["country", "state", "city"]
+
+colorRectangles(index, data){
+  let total = 0
+  for (let element of data){
+    total += element.population
+  }
+  if (total < 100){
+    return "#ffb2b2"
+  } else if (total < 1000) {
+    return "#ff6666"
+  } else if (total < 10000) {
+    return "#ff3232"
+  } else {
+    return "#ff0000"
+  }
+}
+
+render() {
+
+  return(
+    <TreeMap data={populations} weightKey="population"
+      keyOrder={keyOrder} color={this.colorRectangles}/>
+  )
+}
+```
 
 ### Clustering Small Rectangles
 Replot treemaps intelligently aggregate smaller rectangles into a rectangle
