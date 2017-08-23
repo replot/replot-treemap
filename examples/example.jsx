@@ -65,7 +65,7 @@ class TreeDataTable extends React.Component {
     )
     for (let dataPoint of this.props.data) {
       rows.push(
-        <TreeDataRow key={dataPoint.title} country={dataPoint.country}
+        <TreeDataRow key={dataPoint.city} country={dataPoint.country}
           state={dataPoint.state} city={dataPoint.city}
           population={dataPoint.population}
           updateData={this.props.updateData.bind(this)} />
@@ -155,21 +155,21 @@ class ExampleApp extends React.Component {
     )
   }
 
-  colorRectangles(index, data){
-    let total = 0
-    for (let element of data){
-      total += element.population
-    }
-    if (total < 100){
-      return "#ffb2b2"
-    } else if (total < 1000) {
-      return "#ff6666"
-    } else if (total < 10000) {
-      return "#ff3232"
-    } else {
-      return "#ff0000"
-    }
-  }
+  // colorRectangles(index, data){
+  //   let total = 0
+  //   for (let element of data){
+  //     total += element.population
+  //   }
+  //   if (total < 100){
+  //     return "#ffb2b2"
+  //   } else if (total < 1000) {
+  //     return "#ff6666"
+  //   } else if (total < 10000) {
+  //     return "#ff3232"
+  //   } else {
+  //     return "#ff0000"
+  //   }
+  // }
 
   render() {
     return(
@@ -178,7 +178,7 @@ class ExampleApp extends React.Component {
         <TreeDataTable data={this.state.data} updateData={this.updateData.bind(this)} />
         <div style={{width:"70%", display:"inline-block"}}>
           <TreeMap data={this.state.data} weightKey="population"
-            keyOrder={this.state.keyOrder} width="50%" color={this.colorRectangles}/>
+            keyOrder={this.state.keyOrder} width="50%" />
         </div>
       </div>
     )
