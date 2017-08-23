@@ -194,9 +194,18 @@ class TreeMap extends React.Component {
       }
     }
     else {
-      for (let dataPoint of this.props.data){
-        if (dataPoint[key] === value){
-          data.push(dataPoint)
+      if (this.props.parent) {
+        let parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(key) - 1]
+        for (let dataPoint of this.props.data){
+          if (dataPoint[parentTitleKey] === this.props.parent && dataPoint[key] === value) {
+            data.push(dataPoint)
+          }
+        }
+      } else {
+        for (let dataPoint of this.props.data){
+          if (dataPoint[key] === value){
+            data.push(dataPoint)
+          }
         }
       }
     }

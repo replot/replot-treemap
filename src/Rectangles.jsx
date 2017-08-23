@@ -6,6 +6,7 @@ import {spring, Motion} from "react-motion"
 class TreeRects extends React.Component {
 
   render() {
+
     let percentage = null
     if (this.props.displayPercentages) {
       percentage = `${this.props.percentage}%`
@@ -66,7 +67,7 @@ class TreeRects extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  fill={this.props.fill(this.props.index, this.props.rectData)}
+                  fill={this.props.fill(this.props.index + this.props.level, this.props.rectData)}
                   />
                 <foreignObject
                   x={interpolatingStyles.x}
@@ -157,7 +158,7 @@ class OtherRect extends React.Component {
                   y={interpolatingStyles.y}
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
-                  fill={this.props.fill(this.props.index, this.props.rectData)}
+                  fill={this.props.fill(this.props.index + this.props.level, this.props.rectData)}
                   />
                 <foreignObject
                   x={interpolatingStyles.x}
