@@ -233,25 +233,22 @@ class TreeMap extends React.Component {
     formattedData = considerOther[0]
 
     let otherWidth = 0
-    let scaleWithOther = 1
 
     if (considerOther[1] == true){
       let otherArea = (formattedData[formattedData.length-1][this.props.weightKey]
         / considerOther[2]) * (this.props.width * this.props.height)
       otherWidth = otherArea / this.props.height
-      scaleWithOther = considerOther[2]
-        / (considerOther[2] - formattedData[formattedData.length-1][this.props.weightKey])
     }
 
     let s = new Squarify(
       JSON.parse(JSON.stringify(
         considerOther[1] == true ? formattedData.slice(0,formattedData.length-1) : formattedData
       )),
-      scaleWithOther,
       {
         width: this.props.width-otherWidth,
         height: this.props.height,
-        weightKey: this.props.weightKey
+        weightKey: this.props.weightKey,
+        dataTotal: this.props.dataTotal
       }
     )
     s.layout()
@@ -299,7 +296,7 @@ class TreeMap extends React.Component {
           weightKey={this.props.weightKey}
           textDark={this.props.textDark} textLight={this.props.textLight}
           titleScale={this.props.titleScale}
-          percentage={(100 * formattedData[formattedData.length-1][this.props.weightKey] / considerOther[2]).toFixed(1)}
+          percentage={(100 * formattedData[formattedData.length-1][this.props.weightKey] / this.props.dataTotal).toFixed(1)}
           percentageScale={this.props.percentageScale}
           displayPercentages={this.props.displayPercentages}
           initialAnimation={this.props.initialAnimation}
