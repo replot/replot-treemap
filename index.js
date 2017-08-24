@@ -915,7 +915,21 @@ var TreeMapManager = function (_React$Component) {
     value: function handleClick(level, chosenRect) {
       var newMapList = this.state.mapList.slice();
       var index = level;
-      if (chosenRect == "Other") {
+      if (newMapList[index].chosenValue != null) {
+        newMapList[index].chosenValue = null;
+        for (var j = newMapList.length - 1; j > index; j--) {
+          if (newMapList[j].key.includes("other")) {
+            newMapList.splice(j, 1);
+          } else {
+            newMapList[j].visible = false;
+            newMapList[j].chosenValue = null;
+            newMapList[j].shadowLevel = 0;
+            for (var i = 0; i < this.timeouts.length; i++) {
+              clearTimeout(this.timeouts[i]);
+            }
+          }
+        }
+      } else if (chosenRect == "Other") {
         //clicking on an active map, specifically the "other" rect
         var newOtherMap = {};
         newOtherMap.key = "other" + (level + 1);
@@ -935,21 +949,6 @@ var TreeMapManager = function (_React$Component) {
         newMapList[index].chosenValue = chosenRect;
         if (newMapList[index + 1]) {
           newMapList[index + 1].visible = true;
-        }
-      } else {
-        //clicking on an inactive TreeMap to go back
-        newMapList[index].chosenValue = null;
-        for (var j = newMapList.length - 1; j > index; j--) {
-          if (newMapList[j].key.includes("other")) {
-            newMapList.splice(j, 1);
-          } else {
-            newMapList[j].visible = false;
-            newMapList[j].chosenValue = null;
-            newMapList[j].shadowLevel = 0;
-            for (var i = 0; i < this.timeouts.length; i++) {
-              clearTimeout(this.timeouts[i]);
-            }
-          }
         }
       }
       this.setState({
@@ -1064,7 +1063,7 @@ var TreeMapManager = function (_React$Component) {
           "div",
           { style: { height: this.props.height + (this.state.mapList.length - 1) * this.getNestPosition() + "px",
               width: this.props.width + (this.state.mapList.length - 1) * this.getNestPosition() + "px",
-              position: "relative" } },
+              position: "relative", textAlign: "initial" } },
           treeMaps
         )
       );
@@ -1238,7 +1237,7 @@ var TreeRects = function (_React$Component) {
               y: interpolatingStyles.y,
               width: interpolatingStyles.width,
               height: interpolatingStyles.height,
-              fill: _this2.props.fill(_this2.props.index, _this2.props.rectData)
+              fill: _this2.props.fill(_this2.props.index + _this2.props.level, _this2.props.rectData)
             }),
             _react2.default.createElement(
               "foreignObject",
@@ -1351,7 +1350,7 @@ var OtherRect = function (_React$Component2) {
               y: interpolatingStyles.y,
               width: interpolatingStyles.width,
               height: interpolatingStyles.height,
-              fill: _this4.props.fill(_this4.props.index, _this4.props.rectData)
+              fill: _this4.props.fill(_this4.props.index + _this4.props.level, _this4.props.rectData)
             }),
             _react2.default.createElement(
               "foreignObject",
@@ -1933,29 +1932,59 @@ var TreeMap = function (_React$Component) {
           }
         }
       } else {
-        var _iteratorNormalCompletion14 = true;
-        var _didIteratorError14 = false;
-        var _iteratorError14 = undefined;
+        if (this.props.parent) {
+          var _parentTitleKey = this.props.keyOrder[this.props.keyOrder.indexOf(key) - 1];
+          var _iteratorNormalCompletion14 = true;
+          var _didIteratorError14 = false;
+          var _iteratorError14 = undefined;
 
-        try {
-          for (var _iterator14 = this.props.data[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-            var _dataPoint4 = _step14.value;
+          try {
+            for (var _iterator14 = this.props.data[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+              var _dataPoint4 = _step14.value;
 
-            if (_dataPoint4[key] === value) {
-              data.push(_dataPoint4);
+              if (_dataPoint4[_parentTitleKey] === this.props.parent && _dataPoint4[key] === value) {
+                data.push(_dataPoint4);
+              }
+            }
+          } catch (err) {
+            _didIteratorError14 = true;
+            _iteratorError14 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion14 && _iterator14.return) {
+                _iterator14.return();
+              }
+            } finally {
+              if (_didIteratorError14) {
+                throw _iteratorError14;
+              }
             }
           }
-        } catch (err) {
-          _didIteratorError14 = true;
-          _iteratorError14 = err;
-        } finally {
+        } else {
+          var _iteratorNormalCompletion15 = true;
+          var _didIteratorError15 = false;
+          var _iteratorError15 = undefined;
+
           try {
-            if (!_iteratorNormalCompletion14 && _iterator14.return) {
-              _iterator14.return();
+            for (var _iterator15 = this.props.data[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+              var _dataPoint5 = _step15.value;
+
+              if (_dataPoint5[key] === value) {
+                data.push(_dataPoint5);
+              }
             }
+          } catch (err) {
+            _didIteratorError15 = true;
+            _iteratorError15 = err;
           } finally {
-            if (_didIteratorError14) {
-              throw _iteratorError14;
+            try {
+              if (!_iteratorNormalCompletion15 && _iterator15.return) {
+                _iterator15.return();
+              }
+            } finally {
+              if (_didIteratorError15) {
+                throw _iteratorError15;
+              }
             }
           }
         }
@@ -2001,20 +2030,20 @@ var TreeMap = function (_React$Component) {
 
       var rects = [];
       var rectIndex = 0;
-      var _iteratorNormalCompletion15 = true;
-      var _didIteratorError15 = false;
-      var _iteratorError15 = undefined;
+      var _iteratorNormalCompletion16 = true;
+      var _didIteratorError16 = false;
+      var _iteratorError16 = undefined;
 
       try {
-        for (var _iterator15 = s.rows[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
-          var row = _step15.value;
-          var _iteratorNormalCompletion16 = true;
-          var _didIteratorError16 = false;
-          var _iteratorError16 = undefined;
+        for (var _iterator16 = s.rows[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+          var row = _step16.value;
+          var _iteratorNormalCompletion17 = true;
+          var _didIteratorError17 = false;
+          var _iteratorError17 = undefined;
 
           try {
-            for (var _iterator16 = row.data[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
-              var datum = _step16.value;
+            for (var _iterator17 = row.data[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+              var datum = _step17.value;
 
               rects.push(_react2.default.createElement(_Rectangles.TreeRects, { key: datum.index, data: datum.raw, allData: this.props.data,
                 rectData: this.getRectData(this.props.titleKey, datum.raw[this.props.titleKey]),
@@ -2039,31 +2068,31 @@ var TreeMap = function (_React$Component) {
               rectIndex += 1;
             }
           } catch (err) {
-            _didIteratorError16 = true;
-            _iteratorError16 = err;
+            _didIteratorError17 = true;
+            _iteratorError17 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion16 && _iterator16.return) {
-                _iterator16.return();
+              if (!_iteratorNormalCompletion17 && _iterator17.return) {
+                _iterator17.return();
               }
             } finally {
-              if (_didIteratorError16) {
-                throw _iteratorError16;
+              if (_didIteratorError17) {
+                throw _iteratorError17;
               }
             }
           }
         }
       } catch (err) {
-        _didIteratorError15 = true;
-        _iteratorError15 = err;
+        _didIteratorError16 = true;
+        _iteratorError16 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion15 && _iterator15.return) {
-            _iterator15.return();
+          if (!_iteratorNormalCompletion16 && _iterator16.return) {
+            _iterator16.return();
           }
         } finally {
-          if (_didIteratorError15) {
-            throw _iteratorError15;
+          if (_didIteratorError16) {
+            throw _iteratorError16;
           }
         }
       }
