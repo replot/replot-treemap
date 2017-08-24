@@ -156,6 +156,10 @@ class TreeMapManager extends React.Component {
   }
 
   render() {
+    let dataTotal = 0
+    for (let dataPoint of this.props.data) {
+      dataTotal += dataPoint[this.props.weightKey]
+    }
 
     let treeMaps = []
     for (let i = 0; i < this.state.mapList.length; i++){
@@ -168,7 +172,7 @@ class TreeMapManager extends React.Component {
           <TreeMap width={this.props.width} height={this.props.height}
             data={this.props.data} weightKey={this.props.weightKey}
             titleKey={this.chooseTitleKey(i)}
-            color={this.props.color}
+            color={this.props.color} dataTotal={dataTotal}
             parent={i-1 >= 0 ? this.state.mapList[i-1].chosenValue : null}
             otherParent={this.chooseParentifOther(i)}
             otherDepth={this.otherDepth(i)}
