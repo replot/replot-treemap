@@ -1019,6 +1019,31 @@ var TreeMapManager = function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      var dataTotal = 0;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.props.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var dataPoint = _step.value;
+
+          dataTotal += dataPoint[this.props.weightKey];
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
 
       var treeMaps = [];
       for (var i = 0; i < this.state.mapList.length; i++) {
@@ -1031,7 +1056,7 @@ var TreeMapManager = function (_React$Component) {
           _react2.default.createElement(_TreeMap2.default, { width: this.props.width, height: this.props.height,
             data: this.props.data, weightKey: this.props.weightKey,
             titleKey: this.chooseTitleKey(i),
-            color: this.props.color,
+            color: this.props.color, dataTotal: dataTotal,
             parent: i - 1 >= 0 ? this.state.mapList[i - 1].chosenValue : null,
             otherParent: this.chooseParentifOther(i),
             otherDepth: this.otherDepth(i),
@@ -2013,18 +2038,17 @@ var TreeMap = function (_React$Component) {
       formattedData = considerOther[0];
 
       var otherWidth = 0;
-      var scaleWithOther = 1;
 
       if (considerOther[1] == true) {
         var otherArea = formattedData[formattedData.length - 1][this.props.weightKey] / considerOther[2] * (this.props.width * this.props.height);
         otherWidth = otherArea / this.props.height;
-        scaleWithOther = considerOther[2] / (considerOther[2] - formattedData[formattedData.length - 1][this.props.weightKey]);
       }
 
-      var s = new _Squarify2.default(JSON.parse(JSON.stringify(considerOther[1] == true ? formattedData.slice(0, formattedData.length - 1) : formattedData)), scaleWithOther, {
+      var s = new _Squarify2.default(JSON.parse(JSON.stringify(considerOther[1] == true ? formattedData.slice(0, formattedData.length - 1) : formattedData)), {
         width: this.props.width - otherWidth,
         height: this.props.height,
-        weightKey: this.props.weightKey
+        weightKey: this.props.weightKey,
+        dataTotal: this.props.dataTotal
       });
       s.layout();
 
@@ -2110,7 +2134,7 @@ var TreeMap = function (_React$Component) {
           titleScale: this.props.titleScale, level: this.props.level,
           weightKey: this.props.weightKey,
           textDark: this.props.textDark, textLight: this.props.textLight
-        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * formattedData[formattedData.length - 1][this.props.weightKey] / considerOther[2]).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "handleClick", this.props.handleClick), _defineProperty(_React$createElement, "activateTooltip", this.props.activateTooltip), _defineProperty(_React$createElement, "deactivateTooltip", this.props.deactivateTooltip), _React$createElement)));
+        }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * formattedData[formattedData.length - 1][this.props.weightKey] / this.props.dataTotal).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "handleClick", this.props.handleClick), _defineProperty(_React$createElement, "activateTooltip", this.props.activateTooltip), _defineProperty(_React$createElement, "deactivateTooltip", this.props.deactivateTooltip), _React$createElement)));
       }
 
       return _react2.default.createElement(
@@ -9243,12 +9267,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 class Squarify {
 
-  constructor(data, scale, options) {
+  constructor(data, options) {
     this.data = data
-    this.scale = scale
     this.totalHeight = options.height
     this.totalWidth = options.width
     this.weightKey = options.weightKey
+    this.dataTotal = options.dataTotal
     // Computed properties
     this.remainingX = this.totalWidth
     this.remainingY = this.totalHeight
@@ -9323,7 +9347,7 @@ class Squarify {
         origin: {},
         dimensions: {},
         weight: member[this.weightKey],
-        weightPercent: Number((100 * member[this.weightKey]/this.totalWeight)/this.scale).toFixed(1),
+        weightPercent: Number((100 * member[this.weightKey]/this.dataTotal)).toFixed(1),
         raw: member
       }
 
