@@ -60,7 +60,22 @@ class TreeMapManager extends React.Component {
   handleClick(level, chosenRect) {
     let newMapList = this.state.mapList.slice()
     let index = level
-    if (chosenRect == "Other"){ //clicking on an active map, specifically the "other" rect
+    if (newMapList[index].chosenValue != null) {
+      newMapList[index].chosenValue = null
+      for (let j = newMapList.length-1; j > index; j--){
+        if (newMapList[j].key.includes("other")){
+          newMapList.splice(j,1)
+        }
+        else{
+          newMapList[j].visible = false
+          newMapList[j].chosenValue = null
+          newMapList[j].shadowLevel = 0
+          for (let i = 0; i < this.timeouts.length; i++) {
+            clearTimeout(this.timeouts[i])
+          }
+        }
+      }
+    } else if (chosenRect == "Other"){ //clicking on an active map, specifically the "other" rect
       let newOtherMap = {}
       newOtherMap.key = "other" + (level+1)
       newOtherMap.visible = true
@@ -80,22 +95,6 @@ class TreeMapManager extends React.Component {
       newMapList[index].chosenValue = chosenRect
       if (newMapList[index+1]) {
         newMapList[index+1].visible = true
-      }
-    }
-    else { //clicking on an inactive TreeMap to go back
-      newMapList[index].chosenValue = null
-      for (let j = newMapList.length-1; j > index; j--){
-        if (newMapList[j].key.includes("other")){
-          newMapList.splice(j,1)
-        }
-        else{
-          newMapList[j].visible = false
-          newMapList[j].chosenValue = null
-          newMapList[j].shadowLevel = 0
-          for (let i = 0; i < this.timeouts.length; i++) {
-            clearTimeout(this.timeouts[i])
-          }
-        }
       }
     }
     this.setState({
@@ -201,7 +200,7 @@ class TreeMapManager extends React.Component {
         }
         <div style={{height: `${this.props.height + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
           width: `${this.props.width + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
-          position: "relative"}}>
+          position: "relative", textAlign: "initial"}}>
           {treeMaps}
         </div>
       </div>
