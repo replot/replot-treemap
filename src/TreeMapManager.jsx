@@ -235,8 +235,8 @@ TreeMapManager.defaultProps = {
   keyOrder: ["title"],
   weightKey: "weight",
   color: [
-    "#ca0004", "#8e44ad", "#eccc00", "#9dbd5f",
-    "#0097bf", "#005c7a", "#fc6000", "#4cab92"
+    "#FEA30D", "#FD7C54", "#D1638C", "#AE41B8",
+    "#7A1FDF", "#4A46DA", "#0071BB", "#2D95EA", "#9FBAF7"
   ],
   otherThreshold: .025,
   displayPercentages: true,
