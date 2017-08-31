@@ -8,7 +8,7 @@
     "example": "examples"
   },
   "scripts": {
-    "start": "cd examples && webpack index.js bundle.js",
+    "examples": "cd examples && webpack --watch",
     "build-umd": "webpack src/index.js umd/replot-treemap.js"
   },
   "repository": {
