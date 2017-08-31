@@ -50,7 +50,7 @@ class TreeMapManager extends React.Component {
     })
   }
 
-  updateMousePos(e) {
+  updateMousePosition(e) {
     this.setState({
       mouseX: e.pageX,
       mouseY: e.pageY - 12
@@ -131,7 +131,7 @@ class TreeMapManager extends React.Component {
     }
   }
 
-  chooseParentifOther(index){
+  chooseParentIfOther(index){
     for (let i = index - 2; i >=0 ; i--){
       if (this.state.mapList[i].chosenValue != null && !this.state.mapList[i].chosenValue.includes("Other")){
         return this.state.mapList[i].chosenValue
@@ -174,7 +174,7 @@ class TreeMapManager extends React.Component {
             titleKey={this.chooseTitleKey(i)}
             color={this.props.color} dataTotal={dataTotal}
             parent={i-1 >= 0 ? this.state.mapList[i-1].chosenValue : null}
-            otherParent={this.chooseParentifOther(i)}
+            otherParent={this.chooseParentIfOther(i)}
             otherDepth={this.otherDepth(i)}
             otherThreshold={this.props.otherThreshold} level={i}
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
@@ -193,7 +193,7 @@ class TreeMapManager extends React.Component {
     }
 
     return (
-      <div onMouseMove={this.props.tooltip ? this.updateMousePos.bind(this) : null}>
+      <div onMouseMove={this.props.tooltip ? this.updateMousePosition.bind(this) : null}>
         {this.props.tooltip &&
           <Tooltip
             x={this.state.mouseX} y={this.state.mouseY}
@@ -256,7 +256,7 @@ TreeMapManager.propTypes = {
   initialAnimation: PropTypes.bool,
   tooltip: PropTypes.bool,
   tooltipColor: PropTypes.string,
-  TooltipContents: PropTypes.func
+  tooltipContents: PropTypes.func
 }
 
 export default TreeMapManagerResponsive
