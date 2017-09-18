@@ -293,6 +293,7 @@ class TreeMap extends React.Component {
           fill={this.colorFunc.bind(this)} index={rectIndex}
           titleKey={this.props.titleKey} title="Other"
           titleScale={this.props.titleScale} level={this.props.level}
+          maxLayers = {this.props.maxLayers}
           weightKey={this.props.weightKey}
           textDark={this.props.textDark} textLight={this.props.textLight}
           titleScale={this.props.titleScale}
@@ -327,6 +328,7 @@ TreeMap.defaultProps = {
   textLight: "#eee",
   titleScale: 3.5,
   percentageScale: 2.5,
+  maxLayers: 2,
 }
 
 
