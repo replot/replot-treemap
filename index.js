@@ -418,6 +418,13 @@ module.exports = exports['default'];
 var React = __webpack_require__(1);
 var factory = __webpack_require__(19);
 
+if (typeof React === 'undefined') {
+  throw Error(
+    'create-react-class could not find the React object. If you are using script tags, ' +
+      'make sure that React is being loaded before create-react-class.'
+  );
+}
+
 // Hack to grab NoopUpdateQueue from isomorphic React
 var ReactNoopUpdateQueue = new React.Component().updater;
 
@@ -501,45 +508,43 @@ var emptyFunction = __webpack_require__(6);
 var warning = emptyFunction;
 
 if (process.env.NODE_ENV !== 'production') {
-  (function () {
-    var printWarning = function printWarning(format) {
-      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        args[_key - 1] = arguments[_key];
+  var printWarning = function printWarning(format) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    var argIndex = 0;
+    var message = 'Warning: ' + format.replace(/%s/g, function () {
+      return args[argIndex++];
+    });
+    if (typeof console !== 'undefined') {
+      console.error(message);
+    }
+    try {
+      // --- Welcome to debugging React ---
+      // This error was thrown as a convenience so that you can use this stack
+      // to find the callsite that caused this warning to fire.
+      throw new Error(message);
+    } catch (x) {}
+  };
+
+  warning = function warning(condition, format) {
+    if (format === undefined) {
+      throw new Error('`warning(condition, format, ...args)` requires a warning ' + 'message argument');
+    }
+
+    if (format.indexOf('Failed Composite propType: ') === 0) {
+      return; // Ignore CompositeComponent proptype check.
+    }
+
+    if (!condition) {
+      for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        args[_key2 - 2] = arguments[_key2];
       }
 
-      var argIndex = 0;
-      var message = 'Warning: ' + format.replace(/%s/g, function () {
-        return args[argIndex++];
-      });
-      if (typeof console !== 'undefined') {
-        console.error(message);
-      }
-      try {
-        // --- Welcome to debugging React ---
-        // This error was thrown as a convenience so that you can use this stack
-        // to find the callsite that caused this warning to fire.
-        throw new Error(message);
-      } catch (x) {}
-    };
-
-    warning = function warning(condition, format) {
-      if (format === undefined) {
-        throw new Error('`warning(condition, format, ...args)` requires a warning ' + 'message argument');
-      }
-
-      if (format.indexOf('Failed Composite propType: ') === 0) {
-        return; // Ignore CompositeComponent proptype check.
-      }
-
-      if (!condition) {
-        for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-          args[_key2 - 2] = arguments[_key2];
-        }
-
-        printWarning.apply(undefined, [format].concat(args));
-      }
-    };
-  })();
+      printWarning.apply(undefined, [format].concat(args));
+    }
+  };
 }
 
 module.exports = warning;
@@ -903,8 +908,8 @@ var TreeMapManager = function (_React$Component) {
       });
     }
   }, {
-    key: "updateMousePos",
-    value: function updateMousePos(e) {
+    key: "updateMousePosition",
+    value: function updateMousePosition(e) {
       this.setState({
         mouseX: e.pageX,
         mouseY: e.pageY - 12
@@ -912,7 +917,7 @@ var TreeMapManager = function (_React$Component) {
     }
   }, {
     key: "handleClick",
-    value: function handleClick(level, chosenRect) {
+    value: function handleClick(level, chosenRect, maxLayers) {
       var newMapList = this.state.mapList.slice();
       var index = level;
       if (newMapList[index].chosenValue != null) {
@@ -931,16 +936,18 @@ var TreeMapManager = function (_React$Component) {
         }
       } else if (chosenRect == "Other") {
         //clicking on an active map, specifically the "other" rect
-        var newOtherMap = {};
-        newOtherMap.key = "other" + (level + 1);
-        newOtherMap.visible = true;
-        newOtherMap.chosenValue = null;
-        newOtherMap.shadowLevel = 0;
-        newMapList.splice(index + 1, 0, newOtherMap);
-        if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
-          this.interpolateShadow(newMapList, level + 1);
+        if (level < maxLayers) {
+          var newOtherMap = {};
+          newOtherMap.key = "other" + (level + 1);
+          newOtherMap.visible = true;
+          newOtherMap.chosenValue = null;
+          newOtherMap.shadowLevel = 0;
+          newMapList.splice(index + 1, 0, newOtherMap);
+          if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
+            this.interpolateShadow(newMapList, level + 1);
+          }
+          newMapList[index].chosenValue = chosenRect;
         }
-        newMapList[index].chosenValue = chosenRect;
       } else if (!newMapList[index].chosenValue && index != newMapList.length - 1) {
         //clicking on an active map to go forward, not "other" rect and not last level
         if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
@@ -991,8 +998,8 @@ var TreeMapManager = function (_React$Component) {
       }
     }
   }, {
-    key: "chooseParentifOther",
-    value: function chooseParentifOther(index) {
+    key: "chooseParentIfOther",
+    value: function chooseParentIfOther(index) {
       for (var i = index - 2; i >= 0; i--) {
         if (this.state.mapList[i].chosenValue != null && !this.state.mapList[i].chosenValue.includes("Other")) {
           return this.state.mapList[i].chosenValue;
@@ -1058,7 +1065,7 @@ var TreeMapManager = function (_React$Component) {
             titleKey: this.chooseTitleKey(i),
             color: this.props.color, dataTotal: dataTotal,
             parent: i - 1 >= 0 ? this.state.mapList[i - 1].chosenValue : null,
-            otherParent: this.chooseParentifOther(i),
+            otherParent: this.chooseParentIfOther(i),
             otherDepth: this.otherDepth(i),
             otherThreshold: this.props.otherThreshold, level: i,
             keyOrder: this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder,
@@ -1077,7 +1084,7 @@ var TreeMapManager = function (_React$Component) {
 
       return _react2.default.createElement(
         "div",
-        { onMouseMove: this.props.tooltip ? this.updateMousePos.bind(this) : null },
+        { onMouseMove: this.props.tooltip ? this.updateMousePosition.bind(this) : null },
         this.props.tooltip && _react2.default.createElement(_replotCore.Tooltip, {
           x: this.state.mouseX, y: this.state.mouseY,
           active: this.state.mouseOver,
@@ -1131,7 +1138,7 @@ TreeMapManager.defaultProps = {
   titleKey: "title",
   keyOrder: ["title"],
   weightKey: "weight",
-  color: ["#ca0004", "#8e44ad", "#eccc00", "#9dbd5f", "#0097bf", "#005c7a", "#fc6000", "#4cab92"],
+  color: ["#FEA30D", "#FD7C54", "#D1638C", "#AE41B8", "#7A1FDF", "#4A46DA", "#0071BB", "#2D95EA", "#9FBAF7"],
   otherThreshold: .025,
   displayPercentages: true,
   initialAnimation: true
@@ -1150,7 +1157,7 @@ TreeMapManager.propTypes = {
   initialAnimation: _propTypes2.default.bool,
   tooltip: _propTypes2.default.bool,
   tooltipColor: _propTypes2.default.string,
-  TooltipContents: _propTypes2.default.func
+  tooltipContents: _propTypes2.default.func
 };
 
 exports.default = TreeMapManagerResponsive;
@@ -1271,7 +1278,7 @@ var TreeRects = function (_React$Component) {
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
-                onClick: _this2.props.handleClick.bind(_this2, _this2.props.level, _this2.props.title),
+                onClick: _this2.props.handleClick.bind(_this2, _this2.props.level, _this2.props.title, null),
                 onMouseOver: _this2.props.activateTooltip.bind(_this2, _this2.props.titleKey, _this2.props.title, _this2.props.rectData, _this2.props.allData),
                 onMouseOut: _this2.props.deactivateTooltip,
                 style: _this2.props.clickable ? { cursor: "pointer" } : null
@@ -1351,20 +1358,23 @@ var OtherRect = function (_React$Component2) {
           }
         },
         function (interpolatingStyles) {
+          var percentageFontSize = Math.sqrt(_this4.props.percentageScale * _this4.props.width * _this4.props.height / 200);
+
           var titleStyle = {
             color: (0, _isLight2.default)(_this4.props.fill) ? _this4.props.textDark : _this4.props.textLight,
-            textAlign: "center",
+            textAlign: "left",
             fontSize: Math.sqrt(_this4.props.titleScale * _this4.props.width * _this4.props.height / 100) + "px",
-            transform: "rotate(270deg)",
-            width: "1px",
-            margin: "0px " + _this4.props.width / 2.25 + "px " + -_this4.props.width / 3 + "px"
+            transform: "rotate(270deg) translate(50%, 50%)",
+            transformOrigin: "bottom",
+            marginBottom: -percentageFontSize / 1.25 + "px"
           };
 
           var percentageStyle = {
             color: (0, _isLight2.default)(_this4.props.fill) ? _this4.props.textDark : _this4.props.textLight,
             textAlign: "center",
-            fontSize: Math.sqrt(_this4.props.percentageScale * _this4.props.width * _this4.props.height / 200) + "px",
-            opacity: 0.75
+            fontSize: percentageFontSize + "px",
+            opacity: 0.75,
+            transform: "translateY(100%)"
           };
 
           return _react2.default.createElement(
@@ -1384,10 +1394,10 @@ var OtherRect = function (_React$Component2) {
                 y: interpolatingStyles.y,
                 width: interpolatingStyles.width,
                 height: interpolatingStyles.height,
-                onClick: _this4.props.handleClick.bind(_this4, _this4.props.level, _this4.props.title),
+                onClick: _this4.props.handleClick.bind(_this4, _this4.props.level, _this4.props.title, _this4.props.maxLayers),
                 onMouseOver: _this4.props.activateTooltip.bind(_this4, _this4.props.titleKey, _this4.props.title, _this4.props.rectData, _this4.props.allData),
                 onMouseOut: _this4.props.deactivateTooltip,
-                style: { cursor: "pointer" }
+                style: _this4.props.level < _this4.props.maxLayers ? { cursor: "pointer" } : null
               },
               _react2.default.createElement(
                 "div",
@@ -2132,6 +2142,7 @@ var TreeMap = function (_React$Component) {
           fill: this.colorFunc.bind(this), index: rectIndex,
           titleKey: this.props.titleKey, title: "Other",
           titleScale: this.props.titleScale, level: this.props.level,
+          maxLayers: this.props.maxLayers,
           weightKey: this.props.weightKey,
           textDark: this.props.textDark, textLight: this.props.textLight
         }, _defineProperty(_React$createElement, "titleScale", this.props.titleScale), _defineProperty(_React$createElement, "percentage", (100 * formattedData[formattedData.length - 1][this.props.weightKey] / this.props.dataTotal).toFixed(1)), _defineProperty(_React$createElement, "percentageScale", this.props.percentageScale), _defineProperty(_React$createElement, "displayPercentages", this.props.displayPercentages), _defineProperty(_React$createElement, "initialAnimation", this.props.initialAnimation), _defineProperty(_React$createElement, "handleClick", this.props.handleClick), _defineProperty(_React$createElement, "activateTooltip", this.props.activateTooltip), _defineProperty(_React$createElement, "deactivateTooltip", this.props.deactivateTooltip), _React$createElement)));
@@ -2217,7 +2228,7 @@ if (process.env.NODE_ENV !== 'production') {
   ReactPropTypeLocationNames = {
     prop: 'prop',
     context: 'context',
-    childContext: 'child context',
+    childContext: 'child context'
   };
 } else {
   ReactPropTypeLocationNames = {};
@@ -2227,7 +2238,6 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
   /**
    * Policies that describe methods in `ReactClassInterface`.
    */
-
 
   var injectedMixins = [];
 
@@ -2254,7 +2264,6 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
    * @internal
    */
   var ReactClassInterface = {
-
     /**
      * An array of Mixin objects to include when defining your component.
      *
@@ -2345,7 +2354,6 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
      *   }
      *
      * @return {ReactComponent}
-     * @nosideeffects
      * @required
      */
     render: 'DEFINE_ONCE',
@@ -2473,7 +2481,6 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
      * @overridable
      */
     updateComponent: 'OVERRIDE_BASE'
-
   };
 
   /**
@@ -2486,71 +2493,106 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
    * which all other static methods are defined.
    */
   var RESERVED_SPEC_KEYS = {
-    displayName: function (Constructor, displayName) {
+    displayName: function(Constructor, displayName) {
       Constructor.displayName = displayName;
     },
-    mixins: function (Constructor, mixins) {
+    mixins: function(Constructor, mixins) {
       if (mixins) {
         for (var i = 0; i < mixins.length; i++) {
           mixSpecIntoComponent(Constructor, mixins[i]);
         }
       }
     },
-    childContextTypes: function (Constructor, childContextTypes) {
+    childContextTypes: function(Constructor, childContextTypes) {
       if (process.env.NODE_ENV !== 'production') {
         validateTypeDef(Constructor, childContextTypes, 'childContext');
       }
-      Constructor.childContextTypes = _assign({}, Constructor.childContextTypes, childContextTypes);
+      Constructor.childContextTypes = _assign(
+        {},
+        Constructor.childContextTypes,
+        childContextTypes
+      );
     },
-    contextTypes: function (Constructor, contextTypes) {
+    contextTypes: function(Constructor, contextTypes) {
       if (process.env.NODE_ENV !== 'production') {
         validateTypeDef(Constructor, contextTypes, 'context');
       }
-      Constructor.contextTypes = _assign({}, Constructor.contextTypes, contextTypes);
+      Constructor.contextTypes = _assign(
+        {},
+        Constructor.contextTypes,
+        contextTypes
+      );
     },
     /**
      * Special case getDefaultProps which should move into statics but requires
      * automatic merging.
      */
-    getDefaultProps: function (Constructor, getDefaultProps) {
+    getDefaultProps: function(Constructor, getDefaultProps) {
       if (Constructor.getDefaultProps) {
-        Constructor.getDefaultProps = createMergedResultFunction(Constructor.getDefaultProps, getDefaultProps);
+        Constructor.getDefaultProps = createMergedResultFunction(
+          Constructor.getDefaultProps,
+          getDefaultProps
+        );
       } else {
         Constructor.getDefaultProps = getDefaultProps;
       }
     },
-    propTypes: function (Constructor, propTypes) {
+    propTypes: function(Constructor, propTypes) {
       if (process.env.NODE_ENV !== 'production') {
         validateTypeDef(Constructor, propTypes, 'prop');
       }
       Constructor.propTypes = _assign({}, Constructor.propTypes, propTypes);
     },
-    statics: function (Constructor, statics) {
+    statics: function(Constructor, statics) {
       mixStaticSpecIntoComponent(Constructor, statics);
     },
-    autobind: function () {} };
+    autobind: function() {}
+  };
 
   function validateTypeDef(Constructor, typeDef, location) {
     for (var propName in typeDef) {
       if (typeDef.hasOwnProperty(propName)) {
         // use a warning instead of an _invariant so components
         // don't show up in prod but only in __DEV__
-        process.env.NODE_ENV !== 'production' ? warning(typeof typeDef[propName] === 'function', '%s: %s type `%s` is invalid; it must be a function, usually from ' + 'React.PropTypes.', Constructor.displayName || 'ReactClass', ReactPropTypeLocationNames[location], propName) : void 0;
+        if (process.env.NODE_ENV !== 'production') {
+          warning(
+            typeof typeDef[propName] === 'function',
+            '%s: %s type `%s` is invalid; it must be a function, usually from ' +
+              'React.PropTypes.',
+            Constructor.displayName || 'ReactClass',
+            ReactPropTypeLocationNames[location],
+            propName
+          );
+        }
       }
     }
   }
 
   function validateMethodOverride(isAlreadyDefined, name) {
-    var specPolicy = ReactClassInterface.hasOwnProperty(name) ? ReactClassInterface[name] : null;
+    var specPolicy = ReactClassInterface.hasOwnProperty(name)
+      ? ReactClassInterface[name]
+      : null;
 
     // Disallow overriding of base class methods unless explicitly allowed.
     if (ReactClassMixin.hasOwnProperty(name)) {
-      _invariant(specPolicy === 'OVERRIDE_BASE', 'ReactClassInterface: You are attempting to override ' + '`%s` from your class specification. Ensure that your method names ' + 'do not overlap with React methods.', name);
+      _invariant(
+        specPolicy === 'OVERRIDE_BASE',
+        'ReactClassInterface: You are attempting to override ' +
+          '`%s` from your class specification. Ensure that your method names ' +
+          'do not overlap with React methods.',
+        name
+      );
     }
 
     // Disallow defining methods more than once unless explicitly allowed.
     if (isAlreadyDefined) {
-      _invariant(specPolicy === 'DEFINE_MANY' || specPolicy === 'DEFINE_MANY_MERGED', 'ReactClassInterface: You are attempting to define ' + '`%s` on your component more than once. This conflict may be due ' + 'to a mixin.', name);
+      _invariant(
+        specPolicy === 'DEFINE_MANY' || specPolicy === 'DEFINE_MANY_MERGED',
+        'ReactClassInterface: You are attempting to define ' +
+          '`%s` on your component more than once. This conflict may be due ' +
+          'to a mixin.',
+        name
+      );
     }
   }
 
@@ -2564,14 +2606,33 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
         var typeofSpec = typeof spec;
         var isMixinValid = typeofSpec === 'object' && spec !== null;
 
-        process.env.NODE_ENV !== 'production' ? warning(isMixinValid, '%s: You\'re attempting to include a mixin that is either null ' + 'or not an object. Check the mixins included by the component, ' + 'as well as any mixins they include themselves. ' + 'Expected object but got %s.', Constructor.displayName || 'ReactClass', spec === null ? null : typeofSpec) : void 0;
+        if (process.env.NODE_ENV !== 'production') {
+          warning(
+            isMixinValid,
+            "%s: You're attempting to include a mixin that is either null " +
+              'or not an object. Check the mixins included by the component, ' +
+              'as well as any mixins they include themselves. ' +
+              'Expected object but got %s.',
+            Constructor.displayName || 'ReactClass',
+            spec === null ? null : typeofSpec
+          );
+        }
       }
 
       return;
     }
 
-    _invariant(typeof spec !== 'function', 'ReactClass: You\'re attempting to ' + 'use a component class or function as a mixin. Instead, just use a ' + 'regular object.');
-    _invariant(!isValidElement(spec), 'ReactClass: You\'re attempting to ' + 'use a component as a mixin. Instead, just use a regular object.');
+    _invariant(
+      typeof spec !== 'function',
+      "ReactClass: You're attempting to " +
+        'use a component class or function as a mixin. Instead, just use a ' +
+        'regular object.'
+    );
+    _invariant(
+      !isValidElement(spec),
+      "ReactClass: You're attempting to " +
+        'use a component as a mixin. Instead, just use a regular object.'
+    );
 
     var proto = Constructor.prototype;
     var autoBindPairs = proto.__reactAutoBindPairs;
@@ -2606,7 +2667,11 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
         // 2. Overridden methods (that were mixed in).
         var isReactClassMethod = ReactClassInterface.hasOwnProperty(name);
         var isFunction = typeof property === 'function';
-        var shouldAutoBind = isFunction && !isReactClassMethod && !isAlreadyDefined && spec.autobind !== false;
+        var shouldAutoBind =
+          isFunction &&
+          !isReactClassMethod &&
+          !isAlreadyDefined &&
+          spec.autobind !== false;
 
         if (shouldAutoBind) {
           autoBindPairs.push(name, property);
@@ -2616,7 +2681,15 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
             var specPolicy = ReactClassInterface[name];
 
             // These cases should already be caught by validateMethodOverride.
-            _invariant(isReactClassMethod && (specPolicy === 'DEFINE_MANY_MERGED' || specPolicy === 'DEFINE_MANY'), 'ReactClass: Unexpected spec policy %s for key %s ' + 'when mixing in component specs.', specPolicy, name);
+            _invariant(
+              isReactClassMethod &&
+                (specPolicy === 'DEFINE_MANY_MERGED' ||
+                  specPolicy === 'DEFINE_MANY'),
+              'ReactClass: Unexpected spec policy %s for key %s ' +
+                'when mixing in component specs.',
+              specPolicy,
+              name
+            );
 
             // For methods which are defined more than once, call the existing
             // methods before calling the new property, merging if appropriate.
@@ -2651,10 +2724,23 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
       }
 
       var isReserved = name in RESERVED_SPEC_KEYS;
-      _invariant(!isReserved, 'ReactClass: You are attempting to define a reserved ' + 'property, `%s`, that shouldn\'t be on the "statics" key. Define it ' + 'as an instance property instead; it will still be accessible on the ' + 'constructor.', name);
+      _invariant(
+        !isReserved,
+        'ReactClass: You are attempting to define a reserved ' +
+          'property, `%s`, that shouldn\'t be on the "statics" key. Define it ' +
+          'as an instance property instead; it will still be accessible on the ' +
+          'constructor.',
+        name
+      );
 
       var isInherited = name in Constructor;
-      _invariant(!isInherited, 'ReactClass: You are attempting to define ' + '`%s` on your component more than once. This conflict may be ' + 'due to a mixin.', name);
+      _invariant(
+        !isInherited,
+        'ReactClass: You are attempting to define ' +
+          '`%s` on your component more than once. This conflict may be ' +
+          'due to a mixin.',
+        name
+      );
       Constructor[name] = property;
     }
   }
@@ -2667,11 +2753,22 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
    * @return {object} one after it has been mutated to contain everything in two.
    */
   function mergeIntoWithNoDuplicateKeys(one, two) {
-    _invariant(one && two && typeof one === 'object' && typeof two === 'object', 'mergeIntoWithNoDuplicateKeys(): Cannot merge non-objects.');
+    _invariant(
+      one && two && typeof one === 'object' && typeof two === 'object',
+      'mergeIntoWithNoDuplicateKeys(): Cannot merge non-objects.'
+    );
 
     for (var key in two) {
       if (two.hasOwnProperty(key)) {
-        _invariant(one[key] === undefined, 'mergeIntoWithNoDuplicateKeys(): ' + 'Tried to merge two objects with the same key: `%s`. This conflict ' + 'may be due to a mixin; in particular, this may be caused by two ' + 'getInitialState() or getDefaultProps() methods returning objects ' + 'with clashing keys.', key);
+        _invariant(
+          one[key] === undefined,
+          'mergeIntoWithNoDuplicateKeys(): ' +
+            'Tried to merge two objects with the same key: `%s`. This conflict ' +
+            'may be due to a mixin; in particular, this may be caused by two ' +
+            'getInitialState() or getDefaultProps() methods returning objects ' +
+            'with clashing keys.',
+          key
+        );
         one[key] = two[key];
       }
     }
@@ -2732,8 +2829,14 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
       boundMethod.__reactBoundArguments = null;
       var componentName = component.constructor.displayName;
       var _bind = boundMethod.bind;
-      boundMethod.bind = function (newThis) {
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      boundMethod.bind = function(newThis) {
+        for (
+          var _len = arguments.length,
+            args = Array(_len > 1 ? _len - 1 : 0),
+            _key = 1;
+          _key < _len;
+          _key++
+        ) {
           args[_key - 1] = arguments[_key];
         }
 
@@ -2741,9 +2844,24 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
         // ignore the value of "this" that the user is trying to use, so
         // let's warn.
         if (newThis !== component && newThis !== null) {
-          process.env.NODE_ENV !== 'production' ? warning(false, 'bind(): React component methods may only be bound to the ' + 'component instance. See %s', componentName) : void 0;
+          if (process.env.NODE_ENV !== 'production') {
+            warning(
+              false,
+              'bind(): React component methods may only be bound to the ' +
+                'component instance. See %s',
+              componentName
+            );
+          }
         } else if (!args.length) {
-          process.env.NODE_ENV !== 'production' ? warning(false, 'bind(): You are binding a component method to the component. ' + 'React does this for you automatically in a high-performance ' + 'way, so you can safely remove this call. See %s', componentName) : void 0;
+          if (process.env.NODE_ENV !== 'production') {
+            warning(
+              false,
+              'bind(): You are binding a component method to the component. ' +
+                'React does this for you automatically in a high-performance ' +
+                'way, so you can safely remove this call. See %s',
+              componentName
+            );
+          }
           return boundMethod;
         }
         var reboundMethod = _bind.apply(boundMethod, arguments);
@@ -2770,11 +2888,14 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
     }
   }
 
-  var IsMountedMixin = {
-    componentDidMount: function () {
+  var IsMountedPreMixin = {
+    componentDidMount: function() {
       this.__isMounted = true;
-    },
-    componentWillUnmount: function () {
+    }
+  };
+
+  var IsMountedPostMixin = {
+    componentWillUnmount: function() {
       this.__isMounted = false;
     }
   };
@@ -2784,12 +2905,11 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
    * therefore not already part of the modern ReactComponent.
    */
   var ReactClassMixin = {
-
     /**
      * TODO: This will be deprecated because state should always keep a consistent
      * type signature and the only use case for this, is to avoid that.
      */
-    replaceState: function (newState, callback) {
+    replaceState: function(newState, callback) {
       this.updater.enqueueReplaceState(this, newState, callback);
     },
 
@@ -2799,17 +2919,29 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
      * @protected
      * @final
      */
-    isMounted: function () {
+    isMounted: function() {
       if (process.env.NODE_ENV !== 'production') {
-        process.env.NODE_ENV !== 'production' ? warning(this.__didWarnIsMounted, '%s: isMounted is deprecated. Instead, make sure to clean up ' + 'subscriptions and pending requests in componentWillUnmount to ' + 'prevent memory leaks.', this.constructor && this.constructor.displayName || this.name || 'Component') : void 0;
+        warning(
+          this.__didWarnIsMounted,
+          '%s: isMounted is deprecated. Instead, make sure to clean up ' +
+            'subscriptions and pending requests in componentWillUnmount to ' +
+            'prevent memory leaks.',
+          (this.constructor && this.constructor.displayName) ||
+            this.name ||
+            'Component'
+        );
         this.__didWarnIsMounted = true;
       }
       return !!this.__isMounted;
     }
   };
 
-  var ReactClassComponent = function () {};
-  _assign(ReactClassComponent.prototype, ReactComponent.prototype, ReactClassMixin);
+  var ReactClassComponent = function() {};
+  _assign(
+    ReactClassComponent.prototype,
+    ReactComponent.prototype,
+    ReactClassMixin
+  );
 
   /**
    * Creates a composite component class given a class specification.
@@ -2823,12 +2955,16 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
     // To keep our warnings more understandable, we'll use a little hack here to
     // ensure that Constructor.name !== 'Constructor'. This makes sure we don't
     // unnecessarily identify a class without displayName as 'Constructor'.
-    var Constructor = identity(function (props, context, updater) {
+    var Constructor = identity(function(props, context, updater) {
       // This constructor gets overridden by mocks. The argument is used
       // by mocks to assert on what gets mounted.
 
       if (process.env.NODE_ENV !== 'production') {
-        process.env.NODE_ENV !== 'production' ? warning(this instanceof Constructor, 'Something is calling a React component directly. Use a factory or ' + 'JSX instead. See: https://fb.me/react-legacyfactory') : void 0;
+        warning(
+          this instanceof Constructor,
+          'Something is calling a React component directly. Use a factory or ' +
+            'JSX instead. See: https://fb.me/react-legacyfactory'
+        );
       }
 
       // Wire up auto-binding
@@ -2849,13 +2985,20 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
       var initialState = this.getInitialState ? this.getInitialState() : null;
       if (process.env.NODE_ENV !== 'production') {
         // We allow auto-mocks to proceed as if they're returning null.
-        if (initialState === undefined && this.getInitialState._isMockFunction) {
+        if (
+          initialState === undefined &&
+          this.getInitialState._isMockFunction
+        ) {
           // This is probably bad practice. Consider warning here and
           // deprecating this convenience.
           initialState = null;
         }
       }
-      _invariant(typeof initialState === 'object' && !Array.isArray(initialState), '%s.getInitialState(): must return an object or null', Constructor.displayName || 'ReactCompositeComponent');
+      _invariant(
+        typeof initialState === 'object' && !Array.isArray(initialState),
+        '%s.getInitialState(): must return an object or null',
+        Constructor.displayName || 'ReactCompositeComponent'
+      );
 
       this.state = initialState;
     });
@@ -2865,8 +3008,9 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
 
     injectedMixins.forEach(mixSpecIntoComponent.bind(null, Constructor));
 
-    mixSpecIntoComponent(Constructor, IsMountedMixin);
+    mixSpecIntoComponent(Constructor, IsMountedPreMixin);
     mixSpecIntoComponent(Constructor, spec);
+    mixSpecIntoComponent(Constructor, IsMountedPostMixin);
 
     // Initialize the defaultProps property after all mixins have been merged.
     if (Constructor.getDefaultProps) {
@@ -2886,11 +3030,26 @@ function factory(ReactComponent, isValidElement, ReactNoopUpdateQueue) {
       }
     }
 
-    _invariant(Constructor.prototype.render, 'createClass(...): Class specification must implement a `render` method.');
+    _invariant(
+      Constructor.prototype.render,
+      'createClass(...): Class specification must implement a `render` method.'
+    );
 
     if (process.env.NODE_ENV !== 'production') {
-      process.env.NODE_ENV !== 'production' ? warning(!Constructor.prototype.componentShouldUpdate, '%s has a method called ' + 'componentShouldUpdate(). Did you mean shouldComponentUpdate()? ' + 'The name is phrased as a question because the function is ' + 'expected to return a value.', spec.displayName || 'A component') : void 0;
-      process.env.NODE_ENV !== 'production' ? warning(!Constructor.prototype.componentWillRecieveProps, '%s has a method called ' + 'componentWillRecieveProps(). Did you mean componentWillReceiveProps()?', spec.displayName || 'A component') : void 0;
+      warning(
+        !Constructor.prototype.componentShouldUpdate,
+        '%s has a method called ' +
+          'componentShouldUpdate(). Did you mean shouldComponentUpdate()? ' +
+          'The name is phrased as a question because the function is ' +
+          'expected to return a value.',
+        spec.displayName || 'A component'
+      );
+      warning(
+        !Constructor.prototype.componentWillRecieveProps,
+        '%s has a method called ' +
+          'componentWillRecieveProps(). Did you mean componentWillReceiveProps()?',
+        spec.displayName || 'A component'
+      );
     }
 
     // Reduce time spent doing lookups by setting these on the prototype.
@@ -5053,7 +5212,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -5256,6 +5415,43 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
+/* WEBPACK VAR INJECTION */(function(process) {/**
+ * Copyright 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+if (process.env.NODE_ENV !== 'production') {
+  var REACT_ELEMENT_TYPE = (typeof Symbol === 'function' &&
+    Symbol.for &&
+    Symbol.for('react.element')) ||
+    0xeac7;
+
+  var isValidElement = function(object) {
+    return typeof object === 'object' &&
+      object !== null &&
+      object.$$typeof === REACT_ELEMENT_TYPE;
+  };
+
+  // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+  var throwOnDirectAccess = true;
+  module.exports = __webpack_require__(27)(isValidElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = __webpack_require__(26)();
+}
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -5315,7 +5511,7 @@ module.exports = invariant;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5342,7 +5538,7 @@ function stripStyle(style) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5359,7 +5555,7 @@ module.exports = exports['default'];
 
 
 var React = __webpack_require__(1);
-var factory = __webpack_require__(19);
+var factory = __webpack_require__(21);
 
 if (typeof React === 'undefined') {
   throw Error(
@@ -5379,7 +5575,7 @@ module.exports = factory(
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5423,7 +5619,7 @@ emptyFunction.thatReturnsArgument = function (arg) {
 module.exports = emptyFunction;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5439,7 +5635,7 @@ module.exports = emptyFunction;
 
 
 
-var emptyFunction = __webpack_require__(5);
+var emptyFunction = __webpack_require__(6);
 
 /**
  * Similar to invariant but only logs a warning if the condition is not met.
@@ -5496,7 +5692,7 @@ module.exports = warning;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {// Generated by CoffeeScript 1.7.1
@@ -5535,43 +5731,6 @@ module.exports = warning;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(process) {/**
- * Copyright 2013-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- */
-
-if (process.env.NODE_ENV !== 'production') {
-  var REACT_ELEMENT_TYPE = (typeof Symbol === 'function' &&
-    Symbol.for &&
-    Symbol.for('react.element')) ||
-    0xeac7;
-
-  var isValidElement = function(object) {
-    return typeof object === 'object' &&
-      object !== null &&
-      object.$$typeof === REACT_ELEMENT_TYPE;
-  };
-
-  // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-  var throwOnDirectAccess = true;
-  module.exports = __webpack_require__(24)(isValidElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = __webpack_require__(23)();
-}
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
-
-/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5596,7 +5755,7 @@ module.exports = ReactPropTypesSecret;
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {var now = __webpack_require__(25)
+/* WEBPACK VAR INJECTION */(function(global) {var now = __webpack_require__(28)
   , root = typeof window === 'undefined' ? global : window
   , vendors = ['moz', 'webkit']
   , suffix = 'AnimationFrame'
@@ -5669,7 +5828,7 @@ module.exports.polyfill = function() {
   root.cancelAnimationFrame = caf
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ }),
 /* 11 */
@@ -5799,7 +5958,168 @@ var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactMotion = __webpack_require__(30);
+var _propTypes = __webpack_require__(2);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Legend = function (_React$Component) {
+  _inherits(Legend, _React$Component);
+
+  function Legend() {
+    _classCallCheck(this, Legend);
+
+    return _possibleConstructorReturn(this, (Legend.__proto__ || Object.getPrototypeOf(Legend)).apply(this, arguments));
+  }
+
+  _createClass(Legend, [{
+    key: "render",
+    value: function render() {
+      if (Object.keys(this.props.values).length === 0 || !this.props.showLegend) {
+        return null;
+      } else {
+        var titles = Object.keys(this.props.values).sort();
+        var longest = Object.keys(this.props.values).sort(function (a, b) {
+          return b.length - a.length;
+        })[0];
+        var items = [];
+        var size = 16;
+        if (titles.length > 12) {
+          size = 12;
+        }
+        if (titles.length > 15) {
+          size = 10;
+        }
+        var buffer = { x: 5, y: 4 };
+        if (this.props.mode === "flat") {
+          var numColumns = Math.min(titles.length, Math.floor((this.props.width - buffer.x) / (size * 2 + longest.length * size / 2)));
+          if (!numColumns) {
+            numColumns = 1;
+          }
+          var numRows = Math.ceil(titles.length / numColumns);
+
+          for (var i = 0; i < titles.length; i++) {
+            var title = titles[i];
+            if (title) {
+              var x = buffer.x + i % numColumns * ((this.props.width - buffer.x - (size * 2 + longest.length * size / 2)) / (numColumns - 1 <= 0 ? 1 : numColumns - 1));
+              var y = buffer.y + Math.floor(i / numColumns) * 1.5 * size;
+              items.push(_react2.default.createElement(
+                "g",
+                { key: title },
+                _react2.default.createElement("rect", { x: x, y: y, width: size, height: size,
+                  fill: this.props.values[title] }),
+                _react2.default.createElement(
+                  "text",
+                  { x: x + 1.5 * size, y: y + size / 1.7,
+                    alignmentBaseline: "middle", fontSize: size,
+                    fill: this.props.fontColor, fontFamily: this.props.fontFamily },
+                  title
+                )
+              ));
+            }
+          }
+
+          return _react2.default.createElement(
+            "g",
+            null,
+            _react2.default.createElement("rect", { x: 0, y: 0, width: this.props.width <= 0 ? 0 : this.props.width,
+              height: numRows * size * 1.4 + 5 <= 0 ? 0 : numRows * size * 1.4 + 5, fill: this.props.backgroundColor,
+              stroke: this.props.showBorder ? this.props.borderColor : "none",
+              strokeWidth: 2 }),
+            items
+          );
+        } else if (this.props.mode === "stack") {
+
+          for (var _i = 0; _i < titles.length; _i++) {
+            var _title = titles[_i];
+            if (_title) {
+              var _x = buffer.x;
+              var _y = void 0;
+              if (this.props.height) {
+                _y = buffer.y + _i * ((this.props.height - size * 1.5) / (titles.length - 1));
+              } else {
+                _y = buffer.y + _i * size * 1.5;
+              }
+              items.push(_react2.default.createElement(
+                "g",
+                { key: _title },
+                _react2.default.createElement("rect", { x: _x, y: _y, width: size, height: size,
+                  fill: this.props.values[_title] }),
+                _react2.default.createElement(
+                  "text",
+                  { x: _x + 1.5 * size, y: _y + size / 1.7,
+                    alignmentBaseline: "middle", fontSize: size,
+                    fill: this.props.fontColor, fontFamily: this.props.fontFamily },
+                  _title
+                )
+              ));
+            }
+          }
+          return _react2.default.createElement(
+            "g",
+            null,
+            _react2.default.createElement("rect", { x: 0, y: 0, width: size * 2 + longest.length * size / 2 <= 0 ? 0 : size * 2 + longest.length * size / 2,
+              height: this.props.height ? this.props.height : titles.length * size * 1.5,
+              fill: this.props.backgroundColor, strokeWidth: 2,
+              stroke: this.props.showBorder ? this.props.borderColor : "none" }),
+            items
+          );
+        }
+      }
+    }
+  }]);
+
+  return Legend;
+}(_react2.default.Component);
+
+Legend.defaultProps = {
+  width: 500,
+  mode: "flat",
+  showLegend: true,
+  fontColor: "#000000",
+  backgroundColor: "none",
+  showBorder: true,
+  borderColor: "#000000"
+};
+
+Legend.propTypes = {
+  values: _propTypes2.default.object.isRequired,
+  width: _propTypes2.default.number,
+  mode: _propTypes2.default.string,
+  showLegend: _propTypes2.default.bool,
+  fontColor: _propTypes2.default.string,
+  backgroundColor: _propTypes2.default.string,
+  showBorder: _propTypes2.default.bool,
+  borderColor: _propTypes2.default.string
+};
+
+exports.default = Legend;
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(1);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactMotion = __webpack_require__(33);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5838,7 +6158,7 @@ var LoadingIcon = function (_React$Component) {
           defaultStyles: [{ r: style.r }, { r: style.r }, { r: style.r }],
           styles: function styles(prevInterpolatedStyles) {
             return prevInterpolatedStyles.map(function (_, i) {
-              return i === 0 ? { r: (0, _reactMotion.spring)(2 * style.r, { stiffness: 25, damping: 0 }) } : { r: (0, _reactMotion.spring)(prevInterpolatedStyles[i - 1].r) };
+              return i === 0 ? { r: (0, _reactMotion.spring)(0, { stiffness: 15, damping: 0, precision: 0.5 }) } : { r: (0, _reactMotion.spring)(prevInterpolatedStyles[i - 1].r) };
             });
           } },
         function (interpolatingStyles) {
@@ -5869,7 +6189,7 @@ LoadingIcon.defaultProps = {
 exports.default = LoadingIcon;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5885,7 +6205,7 @@ exports["default"] = {
 module.exports = exports["default"];
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5901,7 +6221,735 @@ var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _LoadingIcon = __webpack_require__(14);
+var _propTypes = __webpack_require__(2);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _humanizePlus = __webpack_require__(23);
+
+var _humanizePlus2 = _interopRequireDefault(_humanizePlus);
+
+var _Legend = __webpack_require__(14);
+
+var _Legend2 = _interopRequireDefault(_Legend);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Line = function (_React$Component) {
+  _inherits(Line, _React$Component);
+
+  function Line() {
+    _classCallCheck(this, Line);
+
+    return _possibleConstructorReturn(this, (Line.__proto__ || Object.getPrototypeOf(Line)).apply(this, arguments));
+  }
+
+  _createClass(Line, [{
+    key: "render",
+    value: function render() {
+      return _react2.default.createElement(
+        "g",
+        null,
+        _react2.default.createElement("line", {
+          x1: this.props.x1,
+          y1: this.props.y1,
+          x2: this.props.x2,
+          y2: this.props.y2,
+          stroke: this.props.stroke,
+          strokeWidth: this.props.strokeWidth,
+          opacity: this.props.opacity })
+      );
+    }
+  }]);
+
+  return Line;
+}(_react2.default.Component);
+
+Line.defaultProps = {
+  x1: 0,
+  y1: 0,
+  x2: 0,
+  y2: 0,
+  stroke: "rgb(0,0,0)",
+  strokeWidth: 2,
+  opacity: 1
+};
+
+var YTickLabel = function (_React$Component2) {
+  _inherits(YTickLabel, _React$Component2);
+
+  function YTickLabel() {
+    _classCallCheck(this, YTickLabel);
+
+    return _possibleConstructorReturn(this, (YTickLabel.__proto__ || Object.getPrototypeOf(YTickLabel)).apply(this, arguments));
+  }
+
+  _createClass(YTickLabel, [{
+    key: "render",
+    value: function render() {
+      var printVal = void 0;
+      if (this.props.value < 1 && this.props.value > -1) {
+        if (this.props.yScale == "lin") {
+          printVal = +this.props.value.toFixed(3);
+        } else if (this.props.yScale == "log") {
+          printVal = +this.props.value.toFixed(5);
+        }
+      } else if (this.props.value < 1000 && this.props.value > -1000) {
+        printVal = +this.props.value.toFixed(1);
+      } else {
+        printVal = _humanizePlus2.default.compactInteger(this.props.value, 1);
+      }
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        _react2.default.createElement(
+          "text",
+          { x: this.props.x, y: this.props.y + 5,
+            fontSize: 15, fill: this.props.color, textAnchor: "end" },
+          printVal
+        )
+      );
+    }
+  }]);
+
+  return YTickLabel;
+}(_react2.default.Component);
+
+var YStep = function (_React$Component3) {
+  _inherits(YStep, _React$Component3);
+
+  function YStep() {
+    _classCallCheck(this, YStep);
+
+    return _possibleConstructorReturn(this, (YStep.__proto__ || Object.getPrototypeOf(YStep)).apply(this, arguments));
+  }
+
+  _createClass(YStep, [{
+    key: "render",
+    value: function render() {
+      var step = [];
+
+      step.push(_react2.default.createElement(Line, { key: "tick" + this.props.y,
+        x1: this.props.x, y1: this.props.y,
+        x2: this.props.x - this.props.length, y2: this.props.y,
+        stroke: this.props.color }));
+      step.push(_react2.default.createElement(YTickLabel, { key: "label" + this.props.y, x: this.props.x - 10, y: this.props.y,
+        value: this.props.value, color: this.props.color }));
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        step
+      );
+    }
+  }]);
+
+  return YStep;
+}(_react2.default.Component);
+
+var YAxis = function (_React$Component4) {
+  _inherits(YAxis, _React$Component4);
+
+  function YAxis() {
+    _classCallCheck(this, YAxis);
+
+    return _possibleConstructorReturn(this, (YAxis.__proto__ || Object.getPrototypeOf(YAxis)).apply(this, arguments));
+  }
+
+  _createClass(YAxis, [{
+    key: "render",
+    value: function render() {
+      var yAxis = [];
+
+      if (this.props.showYAxisLine) {
+        yAxis.push(_react2.default.createElement(Line, { key: "yAxisLine", x1: this.props.x, y1: this.props.y,
+          x2: this.props.x, y2: this.props.y + this.props.height,
+          stroke: this.props.style.axisColor, strokeWidth: this.props.style.lineWidth,
+          opacity: this.props.style.lineOpacity }));
+      }
+
+      if (this.props.yTitle) {
+        var rotation = "rotate(-90,10," + String(this.props.y + this.props.height / 2) + ")";
+        yAxis.push(_react2.default.createElement(
+          "text",
+          { key: "yTitle", x: 0, y: this.props.y + this.props.height / 2 + 10,
+            fontSize: 18, transform: rotation, fill: this.props.style.titleColor },
+          this.props.yTitle
+        ));
+      }
+
+      var ySpace = this.props.height / (this.props.ySteps - 1);
+
+      for (var i = 0; i < this.props.ySteps; i++) {
+        var tickPos = this.props.height + this.props.y - i * ySpace;
+
+        var yVal = 0;
+        if (this.props.yScale == "log") {
+          if (this.props.minY === 0) {
+            var valueRatio = Math.log10(this.props.maxY) / (this.props.ySteps - 1);
+            var pow10 = i * valueRatio;
+            yVal = Math.pow(10, pow10);
+          } else {
+            var _valueRatio = (Math.log10(this.props.maxY) - Math.log10(this.props.minY)) / (this.props.ySteps - 1);
+            var _pow = Math.log10(this.props.minY) + i * _valueRatio;
+            yVal = Math.pow(10, _pow);
+          }
+        } else {
+          yVal = this.props.minY + i * (this.props.maxY - this.props.minY) / (this.props.ySteps - 1);
+        }
+        if (this.props.showYLabels) {
+          yAxis.push(_react2.default.createElement(YStep, { key: "yStep" + i, x: this.props.x, y: tickPos,
+            value: yVal, length: 10, color: this.props.style.labelColor,
+            showYLabels: this.props.showYLabels }));
+        }
+
+        if (this.props.showGrid) {
+          if (i != 0) {
+            yAxis.push(_react2.default.createElement(Line, { key: "grid" + i, x1: this.props.x, y1: tickPos,
+              x2: this.props.x + this.props.width, y2: tickPos,
+              stroke: this.props.style.gridColor, strokeWidth: 1, opacity: 0.5 }));
+          }
+        }
+      }
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        yAxis
+      );
+    }
+  }]);
+
+  return YAxis;
+}(_react2.default.Component);
+
+YAxis.defaultProps = {
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 100,
+  yScale: "lin",
+  ySteps: 5,
+  showYAxisLine: true,
+  showYLabels: true,
+  showGrid: true,
+  minY: 0,
+  maxY: 100,
+  style: {
+    axisColor: "#000000",
+    labelColor: "#000000",
+    titleColor: "#000000",
+    gridColor: "#DDDDDD",
+    lineWidth: 2,
+    lineOpacity: 1
+  }
+};
+
+var XTickLabel = function (_React$Component5) {
+  _inherits(XTickLabel, _React$Component5);
+
+  function XTickLabel() {
+    _classCallCheck(this, XTickLabel);
+
+    return _possibleConstructorReturn(this, (XTickLabel.__proto__ || Object.getPrototypeOf(XTickLabel)).apply(this, arguments));
+  }
+
+  _createClass(XTickLabel, [{
+    key: "render",
+    value: function render() {
+      var printVal = void 0;
+      if (this.props.value < 1 && this.props.value > -1) {
+        if (this.props.xScale == "lin") {
+          printVal = +this.props.value.toFixed(3);
+        } else if (this.props.xScale == "log") {
+          printVal = +this.props.value.toFixed(5);
+        }
+      } else if (this.props.value < 1000 && this.props.value > -1000) {
+        printVal = +this.props.value.toFixed(1);
+      } else {
+        printVal = _humanizePlus2.default.compactInteger(this.props.value, 1);
+      }
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        _react2.default.createElement(
+          "text",
+          { x: this.props.x, y: this.props.y + 22,
+            fontSize: 15, fill: this.props.color, textAnchor: "middle" },
+          printVal
+        )
+      );
+    }
+  }]);
+
+  return XTickLabel;
+}(_react2.default.Component);
+
+var XStep = function (_React$Component6) {
+  _inherits(XStep, _React$Component6);
+
+  function XStep() {
+    _classCallCheck(this, XStep);
+
+    return _possibleConstructorReturn(this, (XStep.__proto__ || Object.getPrototypeOf(XStep)).apply(this, arguments));
+  }
+
+  _createClass(XStep, [{
+    key: "render",
+    value: function render() {
+      var step = [];
+
+      step.push(_react2.default.createElement(Line, { key: "tick" + this.props.x,
+        x1: this.props.x, y1: this.props.y,
+        x2: this.props.x, y2: this.props.y + this.props.length,
+        stroke: this.props.color }));
+      step.push(_react2.default.createElement(XTickLabel, { key: "label" + this.props.x, x: this.props.x, y: this.props.y,
+        value: this.props.value, color: this.props.color }));
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        step
+      );
+    }
+  }]);
+
+  return XStep;
+}(_react2.default.Component);
+
+var XAxisContinuous = function (_React$Component7) {
+  _inherits(XAxisContinuous, _React$Component7);
+
+  function XAxisContinuous() {
+    _classCallCheck(this, XAxisContinuous);
+
+    return _possibleConstructorReturn(this, (XAxisContinuous.__proto__ || Object.getPrototypeOf(XAxisContinuous)).apply(this, arguments));
+  }
+
+  _createClass(XAxisContinuous, [{
+    key: "render",
+    value: function render() {
+      var xAxis = [];
+
+      if (this.props.showXAxisLine) {
+        xAxis.push(_react2.default.createElement(Line, { key: "xAxisLine", x1: this.props.x, y1: this.props.y,
+          x2: this.props.x + this.props.width, y2: this.props.y,
+          stroke: this.props.style.axisColor, strokeWidth: this.props.style.lineWidth,
+          opacity: this.props.style.lineOpacity }));
+      }
+
+      if (this.props.xTitle) {
+        xAxis.push(_react2.default.createElement(
+          "text",
+          { key: "xTitle", textAnchor: "middle",
+            x: this.props.x + this.props.width / 2, y: this.props.y + 65,
+            fill: this.props.style.titleColor, fontSize: 18 },
+          this.props.xTitle
+        ));
+      }
+
+      if (this.props.showXLabels) {
+        var xSpace = this.props.width / (this.props.xSteps - 1);
+
+        for (var i = 0; i < this.props.xSteps; i++) {
+          var tickPos = this.props.x + i * xSpace;
+
+          var xVal = 0;
+          if (this.props.xScale == "log") {
+            if (this.props.minX === 0) {
+              var valueRatio = Math.log10(this.props.maxX) / (this.props.xSteps - 1);
+              var pow10 = i * valueRatio;
+              xVal = Math.pow(10, pow10);
+            } else {
+              var _valueRatio2 = (Math.log10(this.props.maxX) - Math.log10(this.props.minX)) / (this.props.xSteps - 1);
+              var _pow2 = Math.log10(this.props.minX) + i * _valueRatio2;
+              xVal = Math.pow(10, _pow2);
+            }
+          } else {
+            xVal = this.props.minX + i * (this.props.maxX - this.props.minX) / (this.props.xSteps - 1);
+          }
+          xAxis.push(_react2.default.createElement(XStep, { key: "xStep" + i, x: tickPos, y: this.props.y,
+            value: xVal, length: 10, color: this.props.style.labelColor,
+            showXLabels: this.props.showXLabels }));
+        }
+      }
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        xAxis
+      );
+    }
+  }]);
+
+  return XAxisContinuous;
+}(_react2.default.Component);
+
+XAxisContinuous.defaultProps = {
+  x: 0,
+  y: 0,
+  width: 100,
+  xScale: "lin",
+  xSteps: 5,
+  showXAxisLine: true,
+  showXLabels: true,
+  minX: 0,
+  maxX: 100,
+  style: {
+    axisColor: "#000000",
+    labelColor: "#000000",
+    titleColor: "#000000",
+    gridColor: "#DDDDDD",
+    lineWidth: 2,
+    lineOpacity: 1
+  }
+};
+
+var XAxisDiscrete = function (_React$Component8) {
+  _inherits(XAxisDiscrete, _React$Component8);
+
+  function XAxisDiscrete() {
+    _classCallCheck(this, XAxisDiscrete);
+
+    return _possibleConstructorReturn(this, (XAxisDiscrete.__proto__ || Object.getPrototypeOf(XAxisDiscrete)).apply(this, arguments));
+  }
+
+  _createClass(XAxisDiscrete, [{
+    key: "render",
+    value: function render() {
+      var xAxis = [];
+
+      if (this.props.showXAxisLine) {
+        xAxis.push(_react2.default.createElement(Line, { key: "xAxisLine", x1: this.props.x, y1: this.props.y,
+          x2: this.props.x + this.props.width, y2: this.props.y,
+          stroke: this.props.style.axisColor, strokeWidth: this.props.style.lineWidth,
+          opacity: this.props.style.lineOpacity }));
+      }
+
+      var size = 16;
+
+      if (this.props.showXLabels && this.props.labels) {
+        var labelWidth = this.props.width / this.props.labels.length;
+        var tilt = 0;
+        for (var i = 0; i < this.props.labels.length; i++) {
+          if (this.props.labels[i].length * 9 > labelWidth) {
+            tilt = -30;
+            size = 12;
+          }
+        }
+        var rotation = void 0,
+            anchor = void 0;
+        if (tilt != 0) {
+          anchor = "end";
+        } else {
+          anchor = "middle";
+        }
+
+        var offset = this.props.x + this.props.width / this.props.labels.length / 2;
+        var deltaX = this.props.width / this.props.labels.length;
+        if (this.props.xStart === "origin") {
+          offset = this.props.x;
+          deltaX = this.props.width / (this.props.labels.length - 1);
+        }
+
+        for (var _i = 0; _i < this.props.labels.length; _i++) {
+          rotation = "rotate(" + tilt + "," + (offset + _i * (this.props.width / this.props.labels.length) - 10) + "," + (this.props.y - 20) + ")";
+          xAxis.push(_react2.default.createElement(Line, { key: "tick" + _i,
+            x1: offset + _i * deltaX, y1: this.props.y,
+            x2: offset + _i * deltaX, y2: this.props.y + 8,
+            stroke: this.props.style.labelColor }));
+          xAxis.push(_react2.default.createElement(
+            "text",
+            { key: this.props.labels[_i], fill: this.props.style.labelColor,
+              x: offset + _i * deltaX,
+              y: this.props.y + 22, textAnchor: anchor, transform: rotation, fontSize: size },
+            this.props.labels[_i]
+          ));
+        }
+      }
+
+      if (this.props.xTitle) {
+        xAxis.push(_react2.default.createElement(
+          "text",
+          { key: "xTitle", textAnchor: "middle",
+            x: this.props.x + this.props.width / 2, y: this.props.y + 65,
+            fill: this.props.style.titleColor, fontSize: size + 2 },
+          this.props.xTitle
+        ));
+      }
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        xAxis
+      );
+    }
+  }]);
+
+  return XAxisDiscrete;
+}(_react2.default.Component);
+
+XAxisDiscrete.defaultProps = {
+  x: 0,
+  y: 0,
+  width: 100,
+  showXAxisLine: true,
+  showXLabels: true,
+  style: {
+    axisColor: "#000000",
+    labelColor: "#000000",
+    titleColor: "#000000",
+    lineWidth: 2,
+    lineOpacity: 1
+  }
+};
+
+var Axis = function (_React$Component9) {
+  _inherits(Axis, _React$Component9);
+
+  function Axis() {
+    _classCallCheck(this, Axis);
+
+    return _possibleConstructorReturn(this, (Axis.__proto__ || Object.getPrototypeOf(Axis)).apply(this, arguments));
+  }
+
+  _createClass(Axis, [{
+    key: "render",
+    value: function render() {
+      this.axes = [];
+      this.buffer = { top: 0, left: 0, bot: 0, right: 0 };
+      if (this.props.showYAxis) {
+        this.buffer.top += 10;
+        this.buffer.left += 60;
+        if (this.props.yTitle) {
+          this.buffer.left += 25;
+        }
+      }
+      if (this.props.showXAxis) {
+        this.buffer.bot += 25;
+        if (this.props.xTitle) {
+          this.buffer.bot += 45;
+        }
+        if (this.props.xStart === "origin") {
+          this.buffer.right += 25;
+        }
+      }
+      if (this.props.graphTitle) {
+        this.buffer.top += 25;
+      }
+      if (this.props.xAxisMode === "continuous") {
+        this.buffer.right += 25;
+      }
+      if (this.props.showLegend && this.props.legendValues) {
+        if (this.props.legendMode == "flat") {
+          this.buffer.bot += 80;
+        } else if (this.props.legendMode == "stack-outside") {
+          this.buffer.right += 125;
+        }
+      }
+
+      var xSteps = void 0,
+          ySteps = void 0;
+      if (this.props.ySteps) {
+        ySteps = this.props.ySteps;
+      } else {
+        ySteps = Math.ceil(this.props.height / 100) + 1;
+      }
+      if (this.props.xSteps) {
+        xSteps = this.props.xSteps;
+      } else {
+        xSteps = Math.ceil(this.props.width / 100) + 1;
+      }
+
+      if (this.props.showYAxis) {
+        this.axes.push(_react2.default.createElement(YAxis, { key: "YAxis", x: this.buffer.left, y: this.buffer.top, width: this.props.width - (this.buffer.left + this.buffer.right),
+          height: this.props.height - this.buffer.bot - this.buffer.top,
+          minY: this.props.minY, maxY: this.props.maxY, yScale: this.props.yScale,
+          ySteps: ySteps, yTitle: this.props.yTitle,
+          showYAxisLine: this.props.showYAxisLine, showYLabels: this.props.showYLabels,
+          showGrid: this.props.showGrid, style: this.props.axisStyle }));
+      }
+      if (this.props.showXAxis) {
+        if (this.props.xAxisMode == "discrete") {
+          this.axes.push(_react2.default.createElement(XAxisDiscrete, { key: "XAxis", x: this.buffer.left, y: this.props.height - this.buffer.bot,
+            width: this.props.width - this.buffer.left - this.buffer.right,
+            xTitle: this.props.xTitle, showXAxisLine: this.props.showXAxisLine,
+            showXLabels: this.props.showXLabels, labels: this.props.labels,
+            xStart: this.props.xStart, style: this.props.axisStyle }));
+        } else if (this.props.xAxisMode == "continuous") {
+          this.axes.push(_react2.default.createElement(XAxisContinuous, { key: "XAxis", x: this.buffer.left, y: this.props.height - this.buffer.bot,
+            width: this.props.width - this.buffer.left - this.buffer.right,
+            xTitle: this.props.xTitle, showXAxisLine: this.props.showXAxisLine,
+            showXLabels: this.props.showXLabels,
+            xScale: this.props.xScale, xSteps: xSteps,
+            minX: this.props.minX, maxX: this.props.maxX,
+            style: this.props.axisStyle }));
+        }
+      }
+      if (this.props.graphTitle) {
+        this.axes.push(_react2.default.createElement(
+          "text",
+          { key: "graphTitle", textAnchor: "middle",
+            fontSize: 18, fill: this.props.axisStyle.titleColor,
+            x: this.buffer.left + (this.props.width - this.buffer.left - this.buffer.right) / 2, y: 20 },
+          this.props.graphTitle
+        ));
+      }
+      if (this.props.legendValues) {
+        if (this.props.legendMode === "flat") {
+          this.axes.push(_react2.default.createElement(
+            "g",
+            { key: "Legend", transform: "translate(" + this.buffer.left + " " + (this.props.height - 75) + ")" },
+            _react2.default.createElement(_Legend2.default, { values: this.props.legendValues,
+              width: this.props.width - this.buffer.left - this.buffer.right,
+              showLegend: this.props.showLegend,
+              fontColor: this.props.legendStyle.fontColor,
+              backgroundColor: this.props.legendStyle.backgroundColor,
+              showBorder: this.props.legendStyle.showBorder,
+              borderColor: this.props.legendStyle.borderColor })
+          ));
+        } else if (this.props.legendMode === "stack-inside") {
+          this.axes.push(_react2.default.createElement(
+            "g",
+            { key: "Legend", transform: "translate(" + (this.props.width - 120) + " " + this.buffer.top + ")" },
+            _react2.default.createElement(_Legend2.default, { values: this.props.legendValues, mode: "stack",
+              showLegend: this.props.showLegend,
+              fontColor: this.props.legendStyle.fontColor,
+              backgroundColor: this.props.legendStyle.backgroundColor,
+              showBorder: this.props.legendStyle.showBorder,
+              borderColor: this.props.legendStyle.borderColor })
+          ));
+        } else if (this.props.legendMode === "stack-outside") {
+          this.axes.push(_react2.default.createElement(
+            "g",
+            { key: "Legend", transform: "translate(" + (this.props.width - 120) + " " + this.buffer.top + ")" },
+            _react2.default.createElement(_Legend2.default, { values: this.props.legendValues, mode: "stack",
+              showLegend: this.props.showLegend,
+              fontColor: this.props.legendStyle.fontColor,
+              backgroundColor: this.props.legendStyle.backgroundColor,
+              showBorder: this.props.legendStyle.showBorder,
+              borderColor: this.props.legendStyle.borderColor })
+          ));
+        }
+      }
+
+      var child = void 0;
+      if (this.props.children) {
+        child = _react2.default.cloneElement(this.props.children, { width: this.props.width - this.buffer.left - this.buffer.right,
+          height: this.props.height - this.buffer.top - this.buffer.bot });
+      }
+
+      return _react2.default.createElement(
+        "g",
+        null,
+        this.axes,
+        _react2.default.createElement(
+          "g",
+          { transform: "translate(" + this.buffer.left + " " + this.buffer.top + ")" },
+          child
+        )
+      );
+    }
+  }]);
+
+  return Axis;
+}(_react2.default.Component);
+
+Axis.defaultProps = {
+  x: 0,
+  y: 0,
+  width: 400,
+  height: 400,
+  xAxisMode: "discrete",
+  xScale: "lin",
+  yScale: "lin",
+  minY: 0,
+  maxY: 100,
+  minX: 0,
+  maxX: 100,
+  showXAxis: true,
+  showYAxis: true,
+  showXAxisLine: true,
+  showXLabels: true,
+  showYAxisLine: true,
+  showYLabels: true,
+  showGrid: true,
+  axisStyle: {
+    axisColor: "#000000",
+    labelColor: "#000000",
+    titleColor: "#000000",
+    gridColor: "#DDDDDD",
+    lineWidth: 2,
+    lineOpacity: 1
+  },
+  showLegend: true,
+  legendMode: "flat",
+  legendStyle: {
+    fontColor: "#000000",
+    backgroundColor: "none",
+    showBorder: true,
+    borderColor: "#000000"
+  }
+};
+
+Axis.propTypes = {
+  x: _propTypes2.default.number,
+  y: _propTypes2.default.number,
+  width: _propTypes2.default.number,
+  height: _propTypes2.default.number,
+  xAxisMode: _propTypes2.default.string,
+  graphHeight: _propTypes2.default.string,
+  xTitle: _propTypes2.default.string,
+  yTitle: _propTypes2.default.string,
+  xScale: _propTypes2.default.string,
+  xSteps: _propTypes2.default.number,
+  xStart: _propTypes2.default.string,
+  yScale: _propTypes2.default.string,
+  ySteps: _propTypes2.default.number,
+  minY: _propTypes2.default.number,
+  maxY: _propTypes2.default.number,
+  minX: _propTypes2.default.number,
+  maxX: _propTypes2.default.number,
+  showXAxisLine: _propTypes2.default.bool,
+  showXLabels: _propTypes2.default.bool,
+  labels: _propTypes2.default.array,
+  showYAxisLine: _propTypes2.default.bool,
+  showYLabels: _propTypes2.default.bool,
+  showGrid: _propTypes2.default.bool,
+  axisStyle: _propTypes2.default.object,
+  showLegend: _propTypes2.default.bool,
+  legendMode: _propTypes2.default.string,
+  legendStyle: _propTypes2.default.object
+};
+
+exports.default = Axis;
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(1);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _LoadingIcon = __webpack_require__(15);
 
 var _LoadingIcon2 = _interopRequireDefault(_LoadingIcon);
 
@@ -6023,7 +7071,7 @@ var Resize = function (_React$Component) {
 exports.default = Resize;
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6096,20 +7144,20 @@ var Tooltip = function (_React$Component) {
           coloring.backgroundColor = this.props.backgroundColor;
           coloring.borderColor = this.props.borderColor;
           coloring.fontColor = this.props.fontColor;
-          break;
       }
 
       var style = {
         outer: {
           zIndex: "1",
-          position: "absolute"
+          position: "absolute",
+          pointerEvents: "none"
         },
         inner: {
           display: "inline-block",
           position: "absolute",
           width: width,
           textAlign: "center",
-          padding: this.props.padding,
+          padding: "10px 0px",
           backgroundColor: coloring.backgroundColor,
           border: "1px solid",
           borderColor: coloring.borderColor,
@@ -6215,7 +7263,7 @@ var Tooltip = function (_React$Component) {
 
 Tooltip.defaultProps = {
   width: 200,
-  padding: 10,
+  padding: "10px 0px",
   backgroundColor: "#181818",
   fontColor: "#ffffff",
   borderColor: "#585858",
@@ -6226,7 +7274,7 @@ Tooltip.defaultProps = {
 exports.default = Tooltip;
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6235,28 +7283,38 @@ exports.default = Tooltip;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LoadingIcon = exports.Resize = exports.Tooltip = undefined;
+exports.Axis = exports.Legend = exports.LoadingIcon = exports.Resize = exports.Tooltip = undefined;
 
-var _Tooltip = __webpack_require__(17);
+var _Tooltip = __webpack_require__(19);
 
 var _Tooltip2 = _interopRequireDefault(_Tooltip);
 
-var _Resize = __webpack_require__(16);
+var _Resize = __webpack_require__(18);
 
 var _Resize2 = _interopRequireDefault(_Resize);
 
-var _LoadingIcon = __webpack_require__(14);
+var _LoadingIcon = __webpack_require__(15);
 
 var _LoadingIcon2 = _interopRequireDefault(_LoadingIcon);
+
+var _Legend = __webpack_require__(14);
+
+var _Legend2 = _interopRequireDefault(_Legend);
+
+var _Axis = __webpack_require__(17);
+
+var _Axis2 = _interopRequireDefault(_Axis);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.Tooltip = _Tooltip2.default;
 exports.Resize = _Resize2.default;
 exports.LoadingIcon = _LoadingIcon2.default;
+exports.Legend = _Legend2.default;
+exports.Axis = _Axis2.default;
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6272,13 +7330,13 @@ exports.LoadingIcon = _LoadingIcon2.default;
 
 
 
-var _assign = __webpack_require__(21);
+var _assign = __webpack_require__(24);
 
-var emptyObject = __webpack_require__(20);
-var _invariant = __webpack_require__(2);
+var emptyObject = __webpack_require__(22);
+var _invariant = __webpack_require__(3);
 
 if (process.env.NODE_ENV !== 'production') {
-  var warning = __webpack_require__(6);
+  var warning = __webpack_require__(7);
 }
 
 var MIXINS_KEY = 'mixins';
@@ -7136,7 +8194,7 @@ module.exports = factory;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7162,7 +8220,547 @@ module.exports = emptyObject;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 21 */
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* humanize.js - v1.8.2 */
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+/**
+ * Copyright 2013-2016 HubSpotDev
+ * MIT Licensed
+ *
+ * @module humanize.js
+ */
+
+(function (root, factory) {
+  if (( false ? 'undefined' : _typeof(exports)) === 'object') {
+    module.exports = factory();
+  } else if (true) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+      return root.Humanize = factory();
+    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else {
+    root.Humanize = factory();
+  }
+})(this, function () {
+  //------------------------------------------------------------------------------
+  // Constants
+  //------------------------------------------------------------------------------
+
+  var TIME_FORMATS = [{
+    name: 'second',
+    value: 1e3
+  }, {
+    name: 'minute',
+    value: 6e4
+  }, {
+    name: 'hour',
+    value: 36e5
+  }, {
+    name: 'day',
+    value: 864e5
+  }, {
+    name: 'week',
+    value: 6048e5
+  }];
+
+  var LABELS_FOR_POWERS_OF_KILO = {
+    P: Math.pow(2, 50),
+    T: Math.pow(2, 40),
+    G: Math.pow(2, 30),
+    M: Math.pow(2, 20)
+  };
+
+  //------------------------------------------------------------------------------
+  // Helpers
+  //------------------------------------------------------------------------------
+
+  var exists = function exists(maybe) {
+    return typeof maybe !== 'undefined' && maybe !== null;
+  };
+
+  var isNaN = function isNaN(value) {
+    return value !== value;
+  }; // eslint-disable-line
+
+  var isFiniteNumber = function isFiniteNumber(value) {
+    return isFinite(value) && !isNaN(parseFloat(value));
+  };
+
+  var isArray = function isArray(value) {
+    var type = Object.prototype.toString.call(value);
+    return type === '[object Array]';
+  };
+
+  //------------------------------------------------------------------------------
+  // Humanize
+  //------------------------------------------------------------------------------
+
+  var Humanize = {
+
+    // Converts a large integer to a friendly text representation.
+
+    intword: function intword(number, charWidth) {
+      var decimals = arguments.length <= 2 || arguments[2] === undefined ? 2 : arguments[2];
+
+      /*
+      * This method is deprecated. Please use compactInteger instead.
+      * intword will be going away in the next major version.
+      */
+      return Humanize.compactInteger(number, decimals);
+    },
+
+
+    // Converts an integer into its most compact representation
+    compactInteger: function compactInteger(input) {
+      var decimals = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+      decimals = Math.max(decimals, 0);
+      var number = parseInt(input, 10);
+      var signString = number < 0 ? '-' : '';
+      var unsignedNumber = Math.abs(number);
+      var unsignedNumberString = String(unsignedNumber);
+      var numberLength = unsignedNumberString.length;
+      var numberLengths = [13, 10, 7, 4];
+      var bigNumPrefixes = ['T', 'B', 'M', 'k'];
+
+      // small numbers
+      if (unsignedNumber < 1000) {
+        return '' + signString + unsignedNumberString;
+      }
+
+      // really big numbers
+      if (numberLength > numberLengths[0] + 3) {
+        return number.toExponential(decimals).replace('e+', 'x10^');
+      }
+
+      // 999 < unsignedNumber < 999,999,999,999,999
+      var length = void 0;
+      for (var i = 0; i < numberLengths.length; i++) {
+        var _length = numberLengths[i];
+        if (numberLength >= _length) {
+          length = _length;
+          break;
+        }
+      }
+
+      var decimalIndex = numberLength - length + 1;
+      var unsignedNumberCharacterArray = unsignedNumberString.split('');
+
+      var wholePartArray = unsignedNumberCharacterArray.slice(0, decimalIndex);
+      var decimalPartArray = unsignedNumberCharacterArray.slice(decimalIndex, decimalIndex + decimals + 1);
+
+      var wholePart = wholePartArray.join('');
+
+      // pad decimalPart if necessary
+      var decimalPart = decimalPartArray.join('');
+      if (decimalPart.length < decimals) {
+        decimalPart += '' + Array(decimals - decimalPart.length + 1).join('0');
+      }
+
+      var output = void 0;
+      if (decimals === 0) {
+        output = '' + signString + wholePart + bigNumPrefixes[numberLengths.indexOf(length)];
+      } else {
+        var outputNumber = Number(wholePart + '.' + decimalPart).toFixed(decimals);
+        output = '' + signString + outputNumber + bigNumPrefixes[numberLengths.indexOf(length)];
+      }
+
+      return output;
+    },
+
+
+    // Converts an integer to a string containing commas every three digits.
+    intComma: function intComma(number) {
+      var decimals = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+      return Humanize.formatNumber(number, decimals);
+    },
+    intcomma: function intcomma() {
+      return Humanize.intComma.apply(Humanize, arguments);
+    },
+
+
+    // Formats the value like a 'human-readable' file size (i.e. '13 KB', '4.1 MB', '102 bytes', etc).
+    fileSize: function fileSize(filesize) {
+      var precision = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
+
+      for (var label in LABELS_FOR_POWERS_OF_KILO) {
+        if (LABELS_FOR_POWERS_OF_KILO.hasOwnProperty(label)) {
+          var minnum = LABELS_FOR_POWERS_OF_KILO[label];
+          if (filesize >= minnum) {
+            return Humanize.formatNumber(filesize / minnum, precision, '') + ' ' + label + 'B';
+          }
+        }
+      }
+      if (filesize >= 1024) {
+        return Humanize.formatNumber(filesize / 1024, 0) + ' KB';
+      }
+
+      return Humanize.formatNumber(filesize, 0) + Humanize.pluralize(filesize, ' byte');
+    },
+    filesize: function filesize() {
+      return Humanize.fileSize.apply(Humanize, arguments);
+    },
+
+
+    // Formats a number to a human-readable string.
+    // Localize by overriding the precision, thousand and decimal arguments.
+    formatNumber: function formatNumber(number) {
+      var precision = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+      var thousand = arguments.length <= 2 || arguments[2] === undefined ? ',' : arguments[2];
+      var decimal = arguments.length <= 3 || arguments[3] === undefined ? '.' : arguments[3];
+
+      // Create some private utility functions to make the computational
+      // code that follows much easier to read.
+      var firstComma = function firstComma(_number, _thousand, _position) {
+        return _position ? _number.substr(0, _position) + _thousand : '';
+      };
+
+      var commas = function commas(_number, _thousand, _position) {
+        return _number.substr(_position).replace(/(\d{3})(?=\d)/g, '$1' + _thousand);
+      };
+
+      var decimals = function decimals(_number, _decimal, usePrecision) {
+        return usePrecision ? _decimal + Humanize.toFixed(Math.abs(_number), usePrecision).split('.')[1] : '';
+      };
+
+      var usePrecision = Humanize.normalizePrecision(precision);
+
+      // Do some calc
+      var negative = number < 0 && '-' || '';
+      var base = String(parseInt(Humanize.toFixed(Math.abs(number || 0), usePrecision), 10));
+      var mod = base.length > 3 ? base.length % 3 : 0;
+
+      // Format the number
+      return negative + firstComma(base, thousand, mod) + commas(base, thousand, mod) + decimals(number, decimal, usePrecision);
+    },
+
+
+    // Fixes binary rounding issues (eg. (0.615).toFixed(2) === '0.61')
+    toFixed: function toFixed(value, precision) {
+      precision = exists(precision) ? precision : Humanize.normalizePrecision(precision, 0);
+      var power = Math.pow(10, precision);
+
+      // Multiply up by precision, round accurately, then divide and use native toFixed()
+      return (Math.round(value * power) / power).toFixed(precision);
+    },
+
+
+    // Ensures precision value is a positive integer
+    normalizePrecision: function normalizePrecision(value, base) {
+      value = Math.round(Math.abs(value));
+      return isNaN(value) ? base : value;
+    },
+
+
+    // Converts an integer to its ordinal as a string.
+    ordinal: function ordinal(value) {
+      var number = parseInt(value, 10);
+
+      if (number === 0) {
+        return value;
+      }
+
+      var specialCase = number % 100;
+      if ([11, 12, 13].indexOf(specialCase) >= 0) {
+        return number + 'th';
+      }
+
+      var leastSignificant = number % 10;
+
+      var end = void 0;
+      switch (leastSignificant) {
+        case 1:
+          end = 'st';
+          break;
+        case 2:
+          end = 'nd';
+          break;
+        case 3:
+          end = 'rd';
+          break;
+        default:
+          end = 'th';
+      }
+
+      return '' + number + end;
+    },
+
+
+    // Interprets numbers as occurences. Also accepts an optional array/map of overrides.
+    times: function times(value) {
+      var overrides = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      if (isFiniteNumber(value) && value >= 0) {
+        var number = parseFloat(value);
+        var smallTimes = ['never', 'once', 'twice'];
+        if (exists(overrides[number])) {
+          return String(overrides[number]);
+        }
+
+        var numberString = exists(smallTimes[number]) && smallTimes[number].toString();
+        return numberString || number.toString() + ' times';
+      }
+      return null;
+    },
+
+
+    // Returns the plural version of a given word if the value is not 1. The default suffix is 's'.
+    pluralize: function pluralize(number, singular, plural) {
+      if (!(exists(number) && exists(singular))) {
+        return null;
+      }
+
+      plural = exists(plural) ? plural : singular + 's';
+
+      return parseInt(number, 10) === 1 ? singular : plural;
+    },
+
+
+    // Truncates a string if it is longer than the specified number of characters (inclusive).
+    // Truncated strings will end with a translatable ellipsis sequence ("…").
+    truncate: function truncate(str) {
+      var length = arguments.length <= 1 || arguments[1] === undefined ? 100 : arguments[1];
+      var ending = arguments.length <= 2 || arguments[2] === undefined ? '...' : arguments[2];
+
+      if (str.length > length) {
+        return str.substring(0, length - ending.length) + ending;
+      }
+      return str;
+    },
+
+
+    // Truncates a string after a certain number of words.
+    truncateWords: function truncateWords(string, length) {
+      var array = string.split(' ');
+      var result = '';
+      var i = 0;
+
+      while (i < length) {
+        if (exists(array[i])) {
+          result += array[i] + ' ';
+        }
+        i++;
+      }
+
+      if (array.length > length) {
+        return result + '...';
+      }
+
+      return null;
+    },
+    truncatewords: function truncatewords() {
+      return Humanize.truncateWords.apply(Humanize, arguments);
+    },
+
+
+    // Truncates a number to an upper bound.
+    boundedNumber: function boundedNumber(num) {
+      var bound = arguments.length <= 1 || arguments[1] === undefined ? 100 : arguments[1];
+      var ending = arguments.length <= 2 || arguments[2] === undefined ? '+' : arguments[2];
+
+      var result = void 0;
+
+      if (isFiniteNumber(num) && isFiniteNumber(bound)) {
+        if (num > bound) {
+          result = bound + ending;
+        }
+      }
+
+      return (result || num).toString();
+    },
+    truncatenumber: function truncatenumber() {
+      return Humanize.boundedNumber.apply(Humanize, arguments);
+    },
+
+
+    // Converts a list of items to a human readable string with an optional limit.
+    oxford: function oxford(items, limit, limitStr) {
+      var numItems = items.length;
+
+      var limitIndex = void 0;
+      if (numItems < 2) {
+        return String(items);
+      } else if (numItems === 2) {
+        return items.join(' and ');
+      } else if (exists(limit) && numItems > limit) {
+        var extra = numItems - limit;
+        limitIndex = limit;
+        limitStr = exists(limitStr) ? limitStr : ', and ' + extra + ' ' + Humanize.pluralize(extra, 'other');
+      } else {
+        limitIndex = -1;
+        limitStr = ', and ' + items[numItems - 1];
+      }
+
+      return items.slice(0, limitIndex).join(', ') + limitStr;
+    },
+
+
+    // Converts an object to a definition-like string
+    dictionary: function dictionary(object) {
+      var joiner = arguments.length <= 1 || arguments[1] === undefined ? ' is ' : arguments[1];
+      var separator = arguments.length <= 2 || arguments[2] === undefined ? ', ' : arguments[2];
+
+      var result = '';
+
+      if (exists(object) && (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object' && !isArray(object)) {
+        var defs = [];
+        for (var key in object) {
+          if (object.hasOwnProperty(key)) {
+            var val = object[key];
+            defs.push('' + key + joiner + val);
+          }
+        }
+
+        return defs.join(separator);
+      }
+
+      return result;
+    },
+
+
+    // Describes how many times an item appears in a list
+    frequency: function frequency(list, verb) {
+      if (!isArray(list)) {
+        return null;
+      }
+
+      var len = list.length;
+      var times = Humanize.times(len);
+
+      if (len === 0) {
+        return times + ' ' + verb;
+      }
+
+      return verb + ' ' + times;
+    },
+    pace: function pace(value, intervalMs) {
+      var unit = arguments.length <= 2 || arguments[2] === undefined ? 'time' : arguments[2];
+
+      if (value === 0 || intervalMs === 0) {
+        // Needs a better string than this...
+        return 'No ' + Humanize.pluralize(0, unit);
+      }
+
+      // Expose these as overridables?
+      var prefix = 'Approximately';
+      var timeUnit = void 0;
+      var relativePace = void 0;
+
+      var rate = value / intervalMs;
+      for (var i = 0; i < TIME_FORMATS.length; ++i) {
+        // assumes sorted list
+        var f = TIME_FORMATS[i];
+        relativePace = rate * f.value;
+        if (relativePace > 1) {
+          timeUnit = f.name;
+          break;
+        }
+      }
+
+      // Use the last time unit if there is nothing smaller
+      if (!timeUnit) {
+        prefix = 'Less than';
+        relativePace = 1;
+        timeUnit = TIME_FORMATS[TIME_FORMATS.length - 1].name;
+      }
+
+      var roundedPace = Math.round(relativePace);
+      unit = Humanize.pluralize(roundedPace, unit);
+
+      return prefix + ' ' + roundedPace + ' ' + unit + ' per ' + timeUnit;
+    },
+
+
+    // Converts newlines to <br/> tags
+    nl2br: function nl2br(string) {
+      var replacement = arguments.length <= 1 || arguments[1] === undefined ? '<br/>' : arguments[1];
+
+      return string.replace(/\n/g, replacement);
+    },
+
+
+    // Converts <br/> tags to newlines
+    br2nl: function br2nl(string) {
+      var replacement = arguments.length <= 1 || arguments[1] === undefined ? '\r\n' : arguments[1];
+
+      return string.replace(/\<br\s*\/?\>/g, replacement);
+    },
+
+
+    // Capitalizes first letter in a string
+    capitalize: function capitalize(string) {
+      var downCaseTail = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+      return '' + string.charAt(0).toUpperCase() + (downCaseTail ? string.slice(1).toLowerCase() : string.slice(1));
+    },
+
+
+    // Capitalizes the first letter of each word in a string
+    capitalizeAll: function capitalizeAll(string) {
+      return string.replace(/(?:^|\s)\S/g, function (a) {
+        return a.toUpperCase();
+      });
+    },
+
+
+    // Titlecase words in a string.
+    titleCase: function titleCase(string) {
+      var smallWords = /\b(a|an|and|at|but|by|de|en|for|if|in|of|on|or|the|to|via|vs?\.?)\b/i;
+      var internalCaps = /\S+[A-Z]+\S*/;
+      var splitOnWhiteSpaceRegex = /\s+/;
+      var splitOnHyphensRegex = /-/;
+
+      var _doTitleCase = void 0;
+      _doTitleCase = function doTitleCase(_string) {
+        var hyphenated = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+        var firstOrLast = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
+        var titleCasedArray = [];
+        var stringArray = _string.split(hyphenated ? splitOnHyphensRegex : splitOnWhiteSpaceRegex);
+
+        for (var index = 0; index < stringArray.length; ++index) {
+          var word = stringArray[index];
+          if (word.indexOf('-') !== -1) {
+            titleCasedArray.push(_doTitleCase(word, true, index === 0 || index === stringArray.length - 1));
+            continue;
+          }
+
+          if (firstOrLast && (index === 0 || index === stringArray.length - 1)) {
+            titleCasedArray.push(internalCaps.test(word) ? word : Humanize.capitalize(word));
+            continue;
+          }
+
+          if (internalCaps.test(word)) {
+            titleCasedArray.push(word);
+          } else if (smallWords.test(word)) {
+            titleCasedArray.push(word.toLowerCase());
+          } else {
+            titleCasedArray.push(Humanize.capitalize(word));
+          }
+        }
+
+        return titleCasedArray.join(hyphenated ? '-' : ' ');
+      };
+
+      return _doTitleCase(string);
+    },
+    titlecase: function titlecase() {
+      return Humanize.titleCase.apply(Humanize, arguments);
+    }
+  };
+
+  return Humanize;
+});
+
+/***/ }),
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7259,7 +8857,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7275,8 +8873,8 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 if (process.env.NODE_ENV !== 'production') {
-  var invariant = __webpack_require__(2);
-  var warning = __webpack_require__(6);
+  var invariant = __webpack_require__(3);
+  var warning = __webpack_require__(7);
   var ReactPropTypesSecret = __webpack_require__(9);
   var loggedTypeFailures = {};
 }
@@ -7328,7 +8926,7 @@ module.exports = checkPropTypes;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7343,8 +8941,8 @@ module.exports = checkPropTypes;
 
 
 
-var emptyFunction = __webpack_require__(5);
-var invariant = __webpack_require__(2);
+var emptyFunction = __webpack_require__(6);
+var invariant = __webpack_require__(3);
 var ReactPropTypesSecret = __webpack_require__(9);
 
 module.exports = function() {
@@ -7394,7 +8992,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7409,12 +9007,12 @@ module.exports = function() {
 
 
 
-var emptyFunction = __webpack_require__(5);
-var invariant = __webpack_require__(2);
-var warning = __webpack_require__(6);
+var emptyFunction = __webpack_require__(6);
+var invariant = __webpack_require__(3);
+var warning = __webpack_require__(7);
 
 var ReactPropTypesSecret = __webpack_require__(9);
-var checkPropTypes = __webpack_require__(22);
+var checkPropTypes = __webpack_require__(25);
 
 module.exports = function(isValidElement, throwOnDirectAccess) {
   /* global Symbol */
@@ -7914,7 +9512,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {// Generated by CoffeeScript 1.12.2
@@ -7957,7 +9555,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7973,7 +9571,7 @@ var _mapToZero = __webpack_require__(11);
 
 var _mapToZero2 = _interopRequireDefault(_mapToZero);
 
-var _stripStyle = __webpack_require__(3);
+var _stripStyle = __webpack_require__(4);
 
 var _stripStyle2 = _interopRequireDefault(_stripStyle);
 
@@ -7981,7 +9579,7 @@ var _stepper3 = __webpack_require__(13);
 
 var _stepper4 = _interopRequireDefault(_stepper3);
 
-var _performanceNow = __webpack_require__(7);
+var _performanceNow = __webpack_require__(8);
 
 var _performanceNow2 = _interopRequireDefault(_performanceNow);
 
@@ -7997,11 +9595,11 @@ var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(8);
+var _propTypes = __webpack_require__(2);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _createReactClass = __webpack_require__(4);
+var _createReactClass = __webpack_require__(5);
 
 var _createReactClass2 = _interopRequireDefault(_createReactClass);
 
@@ -8210,7 +9808,7 @@ exports['default'] = Motion;
 module.exports = exports['default'];
 
 /***/ }),
-/* 27 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8226,7 +9824,7 @@ var _mapToZero = __webpack_require__(11);
 
 var _mapToZero2 = _interopRequireDefault(_mapToZero);
 
-var _stripStyle = __webpack_require__(3);
+var _stripStyle = __webpack_require__(4);
 
 var _stripStyle2 = _interopRequireDefault(_stripStyle);
 
@@ -8234,7 +9832,7 @@ var _stepper3 = __webpack_require__(13);
 
 var _stepper4 = _interopRequireDefault(_stepper3);
 
-var _performanceNow = __webpack_require__(7);
+var _performanceNow = __webpack_require__(8);
 
 var _performanceNow2 = _interopRequireDefault(_performanceNow);
 
@@ -8250,11 +9848,11 @@ var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(8);
+var _propTypes = __webpack_require__(2);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _createReactClass = __webpack_require__(4);
+var _createReactClass = __webpack_require__(5);
 
 var _createReactClass2 = _interopRequireDefault(_createReactClass);
 
@@ -8484,7 +10082,7 @@ exports['default'] = StaggeredMotion;
 module.exports = exports['default'];
 
 /***/ }),
-/* 28 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8500,7 +10098,7 @@ var _mapToZero = __webpack_require__(11);
 
 var _mapToZero2 = _interopRequireDefault(_mapToZero);
 
-var _stripStyle = __webpack_require__(3);
+var _stripStyle = __webpack_require__(4);
 
 var _stripStyle2 = _interopRequireDefault(_stripStyle);
 
@@ -8508,11 +10106,11 @@ var _stepper3 = __webpack_require__(13);
 
 var _stepper4 = _interopRequireDefault(_stepper3);
 
-var _mergeDiff = __webpack_require__(29);
+var _mergeDiff = __webpack_require__(32);
 
 var _mergeDiff2 = _interopRequireDefault(_mergeDiff);
 
-var _performanceNow = __webpack_require__(7);
+var _performanceNow = __webpack_require__(8);
 
 var _performanceNow2 = _interopRequireDefault(_performanceNow);
 
@@ -8528,11 +10126,11 @@ var _react = __webpack_require__(1);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(8);
+var _propTypes = __webpack_require__(2);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _createReactClass = __webpack_require__(4);
+var _createReactClass = __webpack_require__(5);
 
 var _createReactClass2 = _interopRequireDefault(_createReactClass);
 
@@ -8992,7 +10590,7 @@ module.exports = exports['default'];
 // that you've unmounted but that's still animating. This is where it lives
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9106,7 +10704,7 @@ module.exports = exports['default'];
 // to loop through and find a key's index each time), but I no longer care
 
 /***/ }),
-/* 30 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9116,38 +10714,38 @@ exports.__esModule = true;
 
 function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
-var _Motion = __webpack_require__(26);
+var _Motion = __webpack_require__(29);
 
 exports.Motion = _interopRequire(_Motion);
 
-var _StaggeredMotion = __webpack_require__(27);
+var _StaggeredMotion = __webpack_require__(30);
 
 exports.StaggeredMotion = _interopRequire(_StaggeredMotion);
 
-var _TransitionMotion = __webpack_require__(28);
+var _TransitionMotion = __webpack_require__(31);
 
 exports.TransitionMotion = _interopRequire(_TransitionMotion);
 
-var _spring = __webpack_require__(32);
+var _spring = __webpack_require__(35);
 
 exports.spring = _interopRequire(_spring);
 
-var _presets = __webpack_require__(15);
+var _presets = __webpack_require__(16);
 
 exports.presets = _interopRequire(_presets);
 
-var _stripStyle = __webpack_require__(3);
+var _stripStyle = __webpack_require__(4);
 
 exports.stripStyle = _interopRequire(_stripStyle);
 
 // deprecated, dummy warning function
 
-var _reorderKeys = __webpack_require__(31);
+var _reorderKeys = __webpack_require__(34);
 
 exports.reorderKeys = _interopRequire(_reorderKeys);
 
 /***/ }),
-/* 31 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9171,7 +10769,7 @@ module.exports = exports['default'];
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9185,7 +10783,7 @@ exports['default'] = spring;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _presets = __webpack_require__(15);
+var _presets = __webpack_require__(16);
 
 var _presets2 = _interopRequireDefault(_presets);
 
@@ -9200,7 +10798,7 @@ function spring(val, config) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports) {
 
 var g;
