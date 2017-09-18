@@ -75,7 +75,7 @@ class TreeRects extends React.Component {
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
                   onClick={this.props.handleClick.bind(this,
-                    this.props.level, this.props.title)}
+                    this.props.level, this.props.title, null)}
                   onMouseOver={this.props.activateTooltip.bind(this,
                     this.props.titleKey, this.props.title,
                     this.props.rectData, this.props.allData)}
@@ -169,12 +169,13 @@ class OtherRect extends React.Component {
                   width={interpolatingStyles.width}
                   height={interpolatingStyles.height}
                   onClick={this.props.handleClick.bind(this,
-                    this.props.level, this.props.title)}
+                    this.props.level, this.props.title,
+                    this.props.maxLayers)}
                   onMouseOver={this.props.activateTooltip.bind(this,
                     this.props.titleKey, this.props.title,
                     this.props.rectData, this.props.allData)}
                   onMouseOut={this.props.deactivateTooltip}
-                  style={{cursor: "pointer"}}
+                  style={this.props.level < this.props.maxLayers ? {cursor: "pointer"} : null}
                   >
                   <div style={{width: "100%", height: "100%", display: "table"}}>
                     <div style={{display: "table-cell", verticalAlign: "middle"}}>

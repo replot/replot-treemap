@@ -57,7 +57,7 @@ class TreeMapManager extends React.Component {
     })
   }
 
-  handleClick(level, chosenRect) {
+  handleClick(level, chosenRect, maxLayers) {
     let newMapList = this.state.mapList.slice()
     let index = level
     if (newMapList[index].chosenValue != null) {
@@ -76,18 +76,19 @@ class TreeMapManager extends React.Component {
         }
       }
     } else if (chosenRect == "Other"){ //clicking on an active map, specifically the "other" rect
-      let newOtherMap = {}
-      newOtherMap.key = "other" + (level+1)
-      newOtherMap.visible = true
-      newOtherMap.chosenValue = null
-      newOtherMap.shadowLevel = 0
-      newMapList.splice(index+1, 0, newOtherMap)
-      if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
-        this.interpolateShadow(newMapList, level + 1)
+      if (level < maxLayers) {
+        let newOtherMap = {}
+        newOtherMap.key = "other" + (level+1)
+        newOtherMap.visible = true
+        newOtherMap.chosenValue = null
+        newOtherMap.shadowLevel = 0
+        newMapList.splice(index+1, 0, newOtherMap)
+        if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
+          this.interpolateShadow(newMapList, level + 1)
+        }
+        newMapList[index].chosenValue = chosenRect
       }
-      newMapList[index].chosenValue = chosenRect
-    }
-    else if (!newMapList[index].chosenValue && index != (newMapList.length-1)) {
+    } else if (!newMapList[index].chosenValue && index != (newMapList.length-1)) {
       //clicking on an active map to go forward, not "other" rect and not last level
       if (level + 1 < newMapList.length && newMapList[level.chosenValue] == null) {
         this.interpolateShadow(newMapList, level + 1)
