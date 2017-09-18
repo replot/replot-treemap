@@ -135,20 +135,23 @@ class OtherRect extends React.Component {
       >
         {
           (interpolatingStyles) => {
+            let percentageFontSize = Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200);
+
             let titleStyle = {
               color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
-              textAlign: "center",
+              textAlign: "left",
               fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
-              transform: "rotate(270deg)",
-              width: "1px",
-              margin: `0px ${this.props.width / 2.25}px ${- this.props.width / 3}px`
+              transform: `rotate(270deg) translate(50%, 50%)`,
+              transformOrigin: "bottom",
+              marginBottom: `${- percentageFontSize / 1.25}px`,
             }
 
             let percentageStyle = {
               color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
+              fontSize: `${percentageFontSize}px`,
               opacity: 0.75,
+              transform: "translateY(100%)",
             }
 
             return (
