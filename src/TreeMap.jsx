@@ -328,6 +328,7 @@ TreeMap.defaultProps = {
   textLight: "#eee",
   titleScale: 3.5,
   percentageScale: 2.5,
+  maxLayers: 3,
 }
 
 
