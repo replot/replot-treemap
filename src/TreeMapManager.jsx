@@ -176,7 +176,7 @@ class TreeMapManager extends React.Component {
             color={this.props.color} dataTotal={dataTotal}
             parent={i-1 >= 0 ? this.state.mapList[i-1].chosenValue : null}
             otherParent={this.chooseParentIfOther(i)}
-            otherDepth={this.otherDepth(i)}
+            maxLayers={this.props.maxLayers} otherDepth={this.otherDepth(i)}
             otherThreshold={this.props.otherThreshold} level={i}
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
             active={this.state.mapList[i].chosenValue == null}
@@ -253,6 +253,7 @@ TreeMapManager.propTypes = {
   weightKey: PropTypes.string,
   color: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
   otherThreshold: PropTypes.number,
+  maxLayers: PropTypes.number,
   displayPercentages: PropTypes.bool,
   initialAnimation: PropTypes.bool,
   tooltip: PropTypes.bool,
