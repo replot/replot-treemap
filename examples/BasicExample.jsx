@@ -95,7 +95,8 @@ class BasicExample extends React.Component {
     return(
       <div>
         <TreeMap data={data} weightKey="size"
-          keyOrder={["country", "university", "size"]} width="100%" />
+          keyOrder={["country", "university", "size"]} width="100%"
+          titleScale={2} />
       </div>
     )
   }

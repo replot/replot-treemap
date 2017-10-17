@@ -188,7 +188,8 @@ class TreeMapManager extends React.Component {
             colorKey={this.props.colorKey}
             colorPalette={this.props.colorPalette}
             displayPercentages={this.props.displayPercentages}
-            initialAnimation={this.props.initialAnimation} />
+            initialAnimation={this.props.initialAnimation}
+          titleScale={this.props.titleScale} />
         </div>
       )
     }
@@ -241,7 +242,8 @@ TreeMapManager.defaultProps = {
   ],
   otherThreshold: .025,
   displayPercentages: true,
-  initialAnimation: true
+  initialAnimation: true,
+  titleScale: 3.5,
 }
 
 TreeMapManager.propTypes = {
@@ -258,7 +260,8 @@ TreeMapManager.propTypes = {
   initialAnimation: PropTypes.bool,
   tooltip: PropTypes.bool,
   tooltipColor: PropTypes.string,
-  tooltipContents: PropTypes.func
+  tooltipContents: PropTypes.func,
+  titleScale: PropTypes.number,
 }
 
 export default TreeMapManagerResponsive
