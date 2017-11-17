@@ -240,7 +240,8 @@ TreeMapManager.defaultProps = {
     "#FEA30D", "#FD7C54", "#D1638C", "#AE41B8",
     "#7A1FDF", "#4A46DA", "#0071BB", "#2D95EA", "#9FBAF7"
   ],
-  otherThreshold: .025,
+  otherThreshold: .020,
+  maxOtherSize: 0.05,
   displayPercentages: true,
   initialAnimation: true,
   titleScale: 3.5,

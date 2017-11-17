@@ -13,8 +13,7 @@ class TreeMap extends React.Component {
     }
 
     let total = weights.reduce((a, b) => a + b, 0)
-    let threshold = (this.props.otherThreshold < .025 ?
-      .025 : this.props.otherThreshold) * total
+    let threshold = (this.props.otherThreshold) * total
 
     let totalForOther = 0
     let numOther = 0
