@@ -1,6 +1,6 @@
 {
   "name": "replot-treemap",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "SVG treemap react component",
   "main": "src/index.jsx",
   "directories": {
