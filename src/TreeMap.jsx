@@ -5,43 +5,61 @@ import {TreeRects, OtherRect} from "./Rectangles.jsx"
 
 class TreeMap extends React.Component {
 
-  needOther(testData) { //Determines if an "other" cluster is necessary, and adjusts the data if so
+  needOther(rawData) {
+    //Determines if an "other" cluster is necessary, and adjusts the data if so
+    rawData = rawData.filter((e) => e[this.props.weightKey] > 0)
     let newData = []
-    let weights = []
-    for (let dataPoint of testData) {
-      weights.push(dataPoint[this.props.weightKey])
-    }
 
-    let total = weights.reduce((a, b) => a + b, 0)
-    let threshold = (this.props.otherThreshold) * total
+    let weights = rawData.map((e) => e[this.props.weightKey])
 
-    let totalForOther = 0
-    let numOther = 0
-    for (var index = 0; index < weights.length; index++){
-      if (weights[index] < threshold){
-        totalForOther += weights[index]
-        numOther++
+    let totalWeight = weights.reduce((a, b) => a + b, 0)
+
+    let threshold = this.props.otherThreshold * totalWeight
+    const maxSize = this.props.maxOtherSize * totalWeight
+
+    let otherWeight = 0
+    let otherList = []
+    let isOtherNeeded = false
+
+    for (let weight of weights){
+      if (weight < threshold){
+        otherWeight += weight
+        otherList.push(weight)
+        isOtherNeeded = true
       }
     }
 
-    if (numOther > 1) {
-      for (let dataPoint of testData){
+    otherList.sort((a,b) => a - b)
+
+    // Consider the maxOtherSize property and modify threshold
+    if (maxSize < otherWeight) {
+      let reducedOtherWeight = otherWeight
+      let maxThreshold = 0
+      while (maxSize < reducedOtherWeight && otherList.length > 0) {
+        let unitWeight = otherList.pop()
+        reducedOtherWeight -= unitWeight
+        maxThreshold = unitWeight
+      }
+      if (threshold > maxThreshold) {
+        threshold = maxThreshold
+        otherWeight = reducedOtherWeight
+      }
+    }
+
+    if (isOtherNeeded) {
+      for (let dataPoint of rawData){
         if (dataPoint[this.props.weightKey] > threshold){
           newData.push(dataPoint)
         }
       }
       let other = {}
-      other[this.props.weightKey] = totalForOther
+      other[this.props.weightKey] = otherWeight
       other[this.props.titleKey] = "Other"
       newData.push(other)
-      return [newData, true, total]
+      return [newData, true, totalWeight]
+    } else {
+      return [rawData, false, totalWeight]
     }
-    for (let dataPoint of testData){
-      if (dataPoint[this.props.weightKey] > 0){ //Don't consider data points with negative or 0 value
-        newData.push(dataPoint)
-      }
-    }
-    return [newData, false, total]
   }
 
   pickData(data, titleKey) {

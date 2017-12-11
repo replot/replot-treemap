@@ -61,7 +61,7 @@ class BasicExample extends React.Component {
       <div>
         <TreeMap data={data} weightKey="size"
           keyOrder={["name", "size"]} width="100%"
-          titleScale={2}
+          titleScale={2} maxOtherSize={0.15} otherThreshold={0.02}
         />
       </div>
     )
