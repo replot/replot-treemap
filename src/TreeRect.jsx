@@ -5,6 +5,17 @@ import {spring, Motion} from "react-motion"
 
 class TreeRect extends React.Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      showTitles: false
+    }
+  }
+
+  addTitles() {
+    this.setState({showTitles: true})
+  }
+
   render() {
 
     let percentage = null
@@ -32,26 +43,74 @@ class TreeRect extends React.Component {
       <Motion
         defaultStyle={initialStyle}
         style={{
-          x: spring(this.props.x, {stiffness: 120, damping: 26}),
-          y: spring(this.props.y, {stiffness: 120, damping: 26}),
-          width: spring(this.props.width, {stiffness: 100, damping: 26}),
-          height: spring(this.props.height, {stiffness: 100, damping: 26}),
+          x: spring(this.props.x, {stiffness: 130, damping: 20}),
+          y: spring(this.props.y, {stiffness: 130, damping: 20}),
+          width: spring(this.props.width, {stiffness: 130, damping: 20}),
+          height: spring(this.props.height, {stiffness: 130, damping: 20}),
         }}
+        onRest={this.addTitles.bind(this)}
       >
         {
           (interpolatingStyles) => {
             let titleStyle = {
               color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.titleScale * interpolatingStyles.width * this.props.height / 200)}px`
+              fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 200)}px`
             }
 
             let percentageStyle = {
               color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
               textAlign: "center",
-              fontSize: `${Math.sqrt(this.props.percentageScale * interpolatingStyles.width * this.props.height / 200)}px`,
+              fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
               opacity: 0.75,
             }
+
+            let maxLayers = null
+            let clickable = this.props.clickable
+
+            if (this.props.otherRect) {
+              let percentageFontSize = Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)
+
+              titleStyle = {
+                color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
+                textAlign: "left",
+                fontSize: `${Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 100)}px`,
+                transform: `rotate(270deg) translate(50%, 50%)`,
+                transformOrigin: "bottom",
+                marginBottom: `${- percentageFontSize / 1.25}px`,
+              }
+
+              percentageStyle = {
+                color: isLight(this.props.fill) ? this.props.textDark : this.props.textLight,
+                textAlign: "center",
+                fontSize: `${percentageFontSize}px`,
+                opacity: 0.75,
+                transform: "translateY(100%)",
+              }
+
+              maxLayers = this.props.maxLayers
+              clickable = this.props.level < this.props.maxLayers
+            }
+
+            let rectContents =
+              <foreignObject
+                x={this.props.x} y={this.props.y}
+                width={this.props.width} height={this.props.height}
+                onClick={this.props.handleClick.bind(this,
+                  this.props.level, this.props.title, maxLayers)}
+                onMouseOver={this.props.activateTooltip.bind(this,
+                  this.props.titleKey, this.props.title,
+                  this.props.rectData, this.props.allData)}
+                onMouseOut={this.props.deactivateTooltip}
+                style={clickable ? {cursor: "pointer"} : null}
+                >
+                <div style={{width: "100%", height: "100%", display: "table"}}>
+                  <div style={{display: "table-cell", verticalAlign: "middle"}}>
+                    <div style={titleStyle}>{this.props.title}</div>
+                    <div style={percentageStyle}>{percentage}</div>
+                  </div>
+                </div>
+              </foreignObject>
 
             if (Math.sqrt(this.props.titleScale * this.props.width * this.props.height / 200) * 4 > this.props.width){
               titleStyle.transform = "rotate(270deg)"
@@ -69,26 +128,7 @@ class TreeRect extends React.Component {
                   height={interpolatingStyles.height}
                   fill={this.props.fill(this.props.index + this.props.level, this.props.rectData)}
                   />
-                <foreignObject
-                  x={interpolatingStyles.x}
-                  y={interpolatingStyles.y}
-                  width={interpolatingStyles.width}
-                  height={interpolatingStyles.height}
-                  onClick={this.props.handleClick.bind(this,
-                    this.props.level, this.props.title, null)}
-                  onMouseOver={this.props.activateTooltip.bind(this,
-                    this.props.titleKey, this.props.title,
-                    this.props.rectData, this.props.allData)}
-                  onMouseOut={this.props.deactivateTooltip}
-                  style={this.props.clickable ? {cursor: "pointer"} : null}
-                  >
-                  <div style={{width: "100%", height: "100%", display: "table"}}>
-                    <div style={{display: "table-cell", verticalAlign: "middle"}}>
-                      <div style={titleStyle}>{this.props.title}</div>
-                      <div style={percentageStyle}>{percentage}</div>
-                    </div>
-                  </div>
-                </foreignObject>
+                { this.state.showTitles && rectContents}
               </g>
             )
           }

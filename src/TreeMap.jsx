@@ -1,7 +1,6 @@
 import React from "react"
 import Squarify from "./Squarify.js"
 import TreeRect from "./TreeRect.jsx"
-import OtherRect from "./OtherRect.jsx"
 
 
 class TreeMap extends React.PureComponent {
@@ -303,7 +302,9 @@ class TreeMap extends React.PureComponent {
     }
     if (considerOther[1] == true){
       rects.push(
-        <OtherRect key="other" data={formattedData[formattedData.length-1]}
+        <TreeRect key="other"
+          otherRect={true}
+          data={formattedData[formattedData.length-1]}
           rectData={this.getRectData(this.props.titleKey, "Other", considerOther[2])}
           allData={this.props.data}
           x={this.props.width-otherWidth} y={0}
