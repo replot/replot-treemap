@@ -63,6 +63,7 @@ class TreeRect extends React.Component {
               textAlign: "center",
               fontSize: `${Math.sqrt(this.props.percentageScale * this.props.width * this.props.height / 200)}px`,
               opacity: 0.75,
+              paddingTop: "8px"
             }
 
             let maxLayers = null
@@ -86,6 +87,7 @@ class TreeRect extends React.Component {
                 fontSize: `${percentageFontSize}px`,
                 opacity: 0.75,
                 transform: "translateY(100%)",
+                paddingTop: "3px"
               }
 
               maxLayers = this.props.maxLayers
@@ -104,7 +106,7 @@ class TreeRect extends React.Component {
                 onMouseOut={this.props.deactivateTooltip}
                 style={clickable ? {cursor: "pointer"} : null}
                 >
-                <div style={{width: "100%", height: "100%", display: "table"}}>
+                <div style={{width: "100%", height: "100%", display: "table", padding: "3px"}}>
                   <div style={{display: "table-cell", verticalAlign: "middle"}}>
                     <div style={titleStyle}>{this.props.title}</div>
                     <div style={percentageStyle}>{percentage}</div>
