@@ -1,60 +1,32 @@
 import React from "react"
 import PropTypes from "prop-types"
 import TreeMap from "./TreeMap.jsx"
-import {Tooltip, Resize} from "replot-core"
 
 
-class TreeMapManager extends React.Component {
+class TreeMapManager extends React.PureComponent {
 
   constructor(props) {
     super(props)
+
     this.state = {
-      mapList: [],
-      tooltipContents: null,
-      mouseOver: false,
-      mouseX: null,
-      mouseY: null
+      mapList: []
     }
-    for (let i = 0; i < this.props.keyOrder.length; i++){
+
+    this.state.mapList = this.props.keyOrder.map( (key, i) => {
       let map = {}
-      map.key = (this.props.keyOrder.length == 1 && i == 0 ? this.props.titleKey : this.props.keyOrder[i])
-      map.visible = (i == 0 ? true : false)
+      if (i === 0) {
+        map.visible = true
+      } else {
+        map.visible = false
+      }
+      map.key = key
       map.chosenValue = null
       map.shadowLevel = 0
-      this.state.mapList.push(map)
-    }
+
+      return map
+    })
+
     this.timeouts = []
-  }
-
-  activateTooltip(hoverKey, hoverValue, hoverData, allData) {
-    let newContents
-    if (this.props.tooltipContents){
-      newContents = this.props.tooltipContents(hoverKey, hoverValue, hoverData, allData)
-    }
-    else {
-      newContents = (
-        <div>
-          <h1>{hoverValue}</h1>
-        </div>
-      )
-    }
-    this.setState({
-      tooltipContents: newContents,
-      mouseOver: true,
-    })
-  }
-
-  deactivateTooltip() {
-    this.setState({
-      mouseOver: false
-    })
-  }
-
-  updateMousePosition(e) {
-    this.setState({
-      mouseX: e.pageX,
-      mouseY: e.pageY - 12
-    })
   }
 
   handleClick(level, chosenRect, maxLayers) {
@@ -157,6 +129,7 @@ class TreeMapManager extends React.Component {
   }
 
   render() {
+    console.log("render TreeMapManager")
     let dataTotal = 0
     for (let dataPoint of this.props.data) {
       dataTotal += dataPoint[this.props.weightKey]
@@ -170,7 +143,8 @@ class TreeMapManager extends React.Component {
           {position: "absolute", top: `${i*this.getNestPosition()}px`,
             left: `${i*this.getNestPosition()}px`,
             boxShadow: `${this.getShadow(this.state.mapList[i].shadowLevel)}`}}>
-          <TreeMap width={this.props.width} height={this.props.height}
+          <TreeMap key={this.state.mapList[i].key}
+            width={this.props.width} height={this.props.height}
             data={this.props.data} weightKey={this.props.weightKey}
             titleKey={this.chooseTitleKey(i)}
             color={this.props.color} dataTotal={dataTotal}
@@ -179,12 +153,12 @@ class TreeMapManager extends React.Component {
             maxLayers={this.props.maxLayers} otherDepth={this.otherDepth(i)}
             maxOtherSize={this.props.maxOtherSize}
             otherThreshold={this.props.otherThreshold} level={i}
-            keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder}
+            keyOrder={this.props.keyOrder}
             active={this.state.mapList[i].chosenValue == null}
             visible={this.state.mapList[i].visible}
             handleClick={this.handleClick.bind(this)}
-            activateTooltip={this.activateTooltip.bind(this)}
-            deactivateTooltip={this.deactivateTooltip.bind(this)}
+            activateTooltip={this.props.activateTooltip}
+            deactivateTooltip={this.props.deactivateTooltip}
             colorFunction={this.state.colorFunction}
             colorKey={this.props.colorKey}
             colorPalette={this.props.colorPalette}
@@ -196,41 +170,16 @@ class TreeMapManager extends React.Component {
     }
 
     return (
-      <div onMouseMove={this.props.tooltip ? this.updateMousePosition.bind(this) : null}>
-        {this.props.tooltip &&
-          <Tooltip
-            x={this.state.mouseX} y={this.state.mouseY}
-            active={this.state.mouseOver}
-            contents={this.state.tooltipContents}
-            colorScheme={this.props.tooltipColor}
-          />
-        }
-        <div style={{height: `${this.props.height + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
-          width: `${this.props.width + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
-          position: "relative", textAlign: "initial"}}>
-          {treeMaps}
-        </div>
+      <div style={{height: `${this.props.height + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
+        width: `${this.props.width + (this.state.mapList.length-1)*(this.getNestPosition())}px`,
+        position: "relative", textAlign: "initial"}}>
+        {treeMaps}
       </div>
     )
   }
 
 }
 
-class TreeMapManagerResponsive extends React.Component {
-
-  render() {
-
-    return (
-      <Resize width={this.props.width}>
-        <TreeMapManager {...this.props} />
-      </Resize>
-    )
-  }
-}
-
-TreeMapManagerResponsive.defaultProps = {
-  width: 800
-}
 
 TreeMapManager.defaultProps = {
   height: 400,
@@ -267,4 +216,4 @@ TreeMapManager.propTypes = {
   titleScale: PropTypes.number,
 }
 
-export default TreeMapManagerResponsive
+export default TreeMapManager

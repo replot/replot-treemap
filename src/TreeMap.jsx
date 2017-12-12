@@ -1,9 +1,10 @@
 import React from "react"
 import Squarify from "./Squarify.js"
-import {TreeRects, OtherRect} from "./Rectangles.jsx"
+import TreeRect from "./TreeRect.jsx"
+import OtherRect from "./OtherRect.jsx"
 
 
-class TreeMap extends React.Component {
+class TreeMap extends React.PureComponent {
 
   needOther(rawData) {
     //Determines if an "other" cluster is necessary, and adjusts the data if so
@@ -238,6 +239,7 @@ class TreeMap extends React.Component {
   }
 
   render() {
+    console.log("render TreeMap")
 
     if (!this.props.visible) {
       return (
@@ -275,7 +277,7 @@ class TreeMap extends React.Component {
     for (let row of s.rows) {
       for (let datum of row.data) {
         rects.push(
-          <TreeRects key={datum.index} data={datum.raw} allData={this.props.data}
+          <TreeRect key={datum.index} data={datum.raw} allData={this.props.data}
             rectData={this.getRectData(this.props.titleKey, datum.raw[this.props.titleKey])}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
