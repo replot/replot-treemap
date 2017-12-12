@@ -129,7 +129,6 @@ class TreeMapManager extends React.PureComponent {
   }
 
   render() {
-    console.log("render TreeMapManager")
     let dataTotal = 0
     for (let dataPoint of this.props.data) {
       dataTotal += dataPoint[this.props.weightKey]

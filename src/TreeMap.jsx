@@ -239,7 +239,6 @@ class TreeMap extends React.PureComponent {
   }
 
   render() {
-    console.log("render TreeMap")
 
     if (!this.props.visible) {
       return (
