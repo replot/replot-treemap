@@ -61,10 +61,10 @@ class TreeRect extends React.PureComponent {
       <Motion
         defaultStyle={initialStyle}
         style={{
-          x: spring(this.props.x, {stiffness: 130, damping: 20}),
-          y: spring(this.props.y, {stiffness: 130, damping: 20}),
-          width: spring(this.props.width, {stiffness: 130, damping: 20}),
-          height: spring(this.props.height, {stiffness: 130, damping: 20}),
+          x: spring(this.props.x, {stiffness: 120, damping: 26}),
+          y: spring(this.props.y, {stiffness: 120, damping: 26}),
+          width: spring(this.props.width, {stiffness: 100, damping: 20}),
+          height: spring(this.props.height, {stiffness: 100, damping: 20}),
         }}
         onRest={this.addTitles}
       >
