@@ -61,10 +61,10 @@ class TreeRect extends React.PureComponent {
       <Motion
         defaultStyle={initialStyle}
         style={{
-          x: spring(this.props.x, {stiffness: 120, damping: 26}),
-          y: spring(this.props.y, {stiffness: 120, damping: 26}),
-          width: spring(this.props.width, {stiffness: 100, damping: 20}),
-          height: spring(this.props.height, {stiffness: 100, damping: 20}),
+          x: spring(this.props.x, {stiffness: 140, damping: 14}),
+          y: spring(this.props.y, {stiffness: 140, damping: 14}),
+          width: spring(this.props.width, {stiffness: 140, damping: 10}),
+          height: spring(this.props.height, {stiffness: 140, damping: 10}),
         }}
         onRest={this.addTitles}
       >
@@ -123,8 +123,23 @@ class TreeRect extends React.PureComponent {
                 >
                 <div style={{width: "100%", height: "100%", display: "table", padding: "3px"}}>
                   <div style={{display: "table-cell", verticalAlign: "middle"}}>
-                    <div style={titleStyle}>{this.props.title}</div>
-                    <div style={percentageStyle}>{percentage}</div>
+                    <Motion
+                      defaultStyle={{opacity: 0}}
+                      style={{
+                        opacity: spring(1, {stiffness: 100, damping: 25})
+                      }}
+                    >
+                      {
+                        (interpolatingStyles) => {
+                          return (
+                            <div style={{opacity: interpolatingStyles.opacity}}>
+                              <div style={titleStyle}>{this.props.title}</div>
+                              <div style={percentageStyle}>{percentage}</div>
+                            </div>
+                          )
+                        }
+                      }
+                    </Motion>
                   </div>
                 </div>
               </foreignObject>

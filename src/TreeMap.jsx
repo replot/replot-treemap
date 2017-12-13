@@ -51,6 +51,13 @@ class TreeMap extends React.PureComponent {
       }
     }
 
+    // Remove edge cases
+    if (otherList.length < 3) {
+      isOtherNeeded = false
+    } else if (otherWeight / totalWeight < 0.02) {
+      isOtherNeeded = false
+    }
+
     if (isOtherNeeded) {
       for (let dataPoint of rawData){
         if (dataPoint[this.props.weightKey] > threshold){
