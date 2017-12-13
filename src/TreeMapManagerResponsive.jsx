@@ -2,7 +2,7 @@ import React from "react"
 import TreeMapManager from "./TreeMapManager.jsx"
 import {Resize} from "replot-core"
 
-class TreeMapManagerTooltip extends React.Component {
+class TreeMapManagerTooltip extends React.PureComponent {
 
   constructor(props) {
     super(props)
@@ -13,6 +13,10 @@ class TreeMapManagerTooltip extends React.Component {
       mouseX: null,
       mouseY: null
     }
+
+    this.updateMousePosition = this.updateMousePosition.bind(this)
+    this.activateTooltip = this.activateTooltip.bind(this)
+    this.deactivateTooltip = this.deactivateTooltip.bind(this)
 
   }
 
@@ -28,16 +32,16 @@ class TreeMapManagerTooltip extends React.Component {
         </div>
       )
     }
-    // this.setState({
-    //   tooltipContents: newContents,
-    //   mouseOver: true,
-    // })
+    this.setState({
+      tooltipContents: newContents,
+      mouseOver: true,
+    })
   }
 
   deactivateTooltip() {
-    // this.setState({
-    //   mouseOver: false
-    // })
+    this.setState({
+      mouseOver: false
+    })
   }
 
   updateMousePosition(e) {
@@ -52,7 +56,7 @@ class TreeMapManagerTooltip extends React.Component {
   render() {
     return (
       <div>
-        <div onMouseMove={this.updateMousePosition.bind(this)}>
+        <div onMouseMove={this.updateMousePosition}>
           {this.props.tooltip &&
             <Tooltip
               x={this.state.mouseX} y={this.state.mouseY}
@@ -62,8 +66,8 @@ class TreeMapManagerTooltip extends React.Component {
             />
           }
           <TreeMapManager {...this.props}
-            activateTooltip={this.activateTooltip.bind(this)}
-            deactivateTooltip={this.activateTooltip.bind(this)}
+            activateTooltip={this.activateTooltip}
+            deactivateTooltip={this.deactivateTooltip}
             keyOrder={this.props.keyOrder.length == 1 ? [this.props.titleKey] : this.props.keyOrder} />
         </div>
       </div>
@@ -71,7 +75,7 @@ class TreeMapManagerTooltip extends React.Component {
   }
 }
 
-class TreeMapManagerResponsive extends React.Component {
+class TreeMapManagerResponsive extends React.PureComponent {
 
   render() {
     return (

@@ -27,6 +27,8 @@ class TreeMapManager extends React.PureComponent {
     })
 
     this.timeouts = []
+
+    this.handleClick = this.handleClick.bind(this)
   }
 
   handleClick(level, chosenRect, maxLayers) {
@@ -155,7 +157,7 @@ class TreeMapManager extends React.PureComponent {
             keyOrder={this.props.keyOrder}
             active={this.state.mapList[i].chosenValue == null}
             visible={this.state.mapList[i].visible}
-            handleClick={this.handleClick.bind(this)}
+            handleClick={this.handleClick}
             activateTooltip={this.props.activateTooltip}
             deactivateTooltip={this.props.deactivateTooltip}
             colorFunction={this.state.colorFunction}

@@ -5,6 +5,11 @@ import TreeRect from "./TreeRect.jsx"
 
 class TreeMap extends React.PureComponent {
 
+  constructor(props) {
+    super(props)
+    this.colorFunc = this.colorFunc.bind(this)
+  }
+
   needOther(rawData) {
     //Determines if an "other" cluster is necessary, and adjusts the data if so
     rawData = rawData.filter((e) => e[this.props.weightKey] > 0)
@@ -262,7 +267,7 @@ class TreeMap extends React.PureComponent {
         considerOther[1] == true ? formattedData.slice(0,formattedData.length-1) : formattedData
       )),
       {
-        width: this.props.width-otherWidth,
+        width: this.props.width - otherWidth,
         height: this.props.height,
         weightKey: this.props.weightKey,
         dataTotal: this.props.dataTotal
@@ -279,7 +284,7 @@ class TreeMap extends React.PureComponent {
             rectData={this.getRectData(this.props.titleKey, datum.raw[this.props.titleKey])}
             x={datum.origin.x} y= {datum.origin.y}
             width={datum.dimensions.x} height={datum.dimensions.y}
-            fill={this.colorFunc.bind(this)} index={rectIndex}
+            fill={this.colorFunc} index={rectIndex}
             titleKey={this.props.titleKey} title={datum.raw[this.props.titleKey]}
             level={this.props.level}
             weightKey={this.props.weightKey}
@@ -309,7 +314,7 @@ class TreeMap extends React.PureComponent {
           allData={this.props.data}
           x={this.props.width-otherWidth} y={0}
           width={otherWidth} height={this.props.height}
-          fill={this.colorFunc.bind(this)} index={rectIndex}
+          fill={this.colorFunc} index={rectIndex}
           titleKey={this.props.titleKey} title="Other"
           titleScale={this.props.titleScale} level={this.props.level}
           maxLayers = {this.props.maxLayers}

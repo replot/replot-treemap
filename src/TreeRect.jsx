@@ -3,17 +3,35 @@ import isLight from "./isLight.js"
 import {spring, Motion} from "react-motion"
 
 
-class TreeRect extends React.Component {
+class TreeRect extends React.PureComponent {
 
   constructor(props) {
     super(props)
     this.state = {
       showTitles: false
     }
+
+    this.addTitles = this.addTitles.bind(this)
+    this.handleClick = this.handleClick.bind(this)
   }
 
   addTitles() {
     this.setState({showTitles: true})
+  }
+
+  handleClick(maxLayers) {
+    return () => {
+      this.props.handleClick(this.props.level, this.props.title, maxLayers)
+    }
+  }
+
+  mouseOver() {
+    return () => {
+      this.props.activateTooltip(
+        this.props.titleKey, this.props.title,
+        this.props.rectData, this.props.allData
+      )
+    }
   }
 
   render() {
@@ -48,7 +66,7 @@ class TreeRect extends React.Component {
           width: spring(this.props.width, {stiffness: 130, damping: 20}),
           height: spring(this.props.height, {stiffness: 130, damping: 20}),
         }}
-        onRest={this.addTitles.bind(this)}
+        onRest={this.addTitles}
       >
         {
           (interpolatingStyles) => {
@@ -98,11 +116,8 @@ class TreeRect extends React.Component {
               <foreignObject
                 x={this.props.x} y={this.props.y}
                 width={this.props.width} height={this.props.height}
-                onClick={this.props.handleClick.bind(this,
-                  this.props.level, this.props.title, maxLayers)}
-                onMouseOver={this.props.activateTooltip.bind(this,
-                  this.props.titleKey, this.props.title,
-                  this.props.rectData, this.props.allData)}
+                onClick={this.handleClick(maxLayers)}
+                onMouseOver={this.mouseOver}
                 onMouseOut={this.props.deactivateTooltip}
                 style={clickable ? {cursor: "pointer"} : null}
                 >
