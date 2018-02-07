@@ -26,7 +26,7 @@
   "author": "Sanjay Guruprasad (http://sanjaypojo.com/)",
   "license": "MIT",
   "peerDependencies": {
-    "react": "^0.14.0 || ^15.0.0"
+    "react": "^0.14.0 || ^15.0.0 || ^16.0.0"
   },
   "bugs": {
     "url": "https://github.com/MacroConnections/replot-treemap/issues"
@@ -45,7 +45,7 @@
     "webpack": "^2.2.1"
   },
   "dependencies": {
-    "prop-types": "^15.5.10",
-    "react-motion": "^0.4.7"
+    "prop-types": "^15.6.0",
+    "react-motion": "^0.5.2"
   }
 }
