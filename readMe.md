@@ -1,8 +1,6 @@
 # replot-treemap: TreeMaps for react
 Intelligent and customizable treemap components for your wicked cool projects.
 
-![Tree!](docs/img/tree-photo.jpg)
-
 ## Installation
 Only works with React projects. React must be installed separately.
 ```bash
