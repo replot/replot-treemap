@@ -14,11 +14,10 @@ modules, use as you would anything else.
 import TreeMap from 'replot-treemap'
 ```
 
-## API
+## Quick Start
 replot-treemap is designed to create beautiful treemaps right out of the box.
 The only *required* input is properly formatted data.
 
-### Basic Usage
 In the simplest case, just supply data (as a Javascript array) and specify the
 keys for the titles and weights -:
 
@@ -41,7 +40,7 @@ render() {
 - `titleKey` defaults to `"title"`
 - `weightKey` defaults to `"weight"`
 
-### Advanced Usage - Nesting
+### Nesting
 Replot treemaps are able to display nested data, as long as the structure of the
 data is an proper flat format. If flat nested data is supplied, a `keyOrder`
 prop, which details titleKeys at various levels in the form of a Javascript
@@ -71,6 +70,8 @@ render() {
   )
 }
 ```
+
+## API
 
 ### Dimensions
 Dimensions may be specified by passing in `width` and `height` props. The
